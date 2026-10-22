@@ -3,10 +3,11 @@
 FrameStats records a bounded 10,000-frame ring. Snapshot computation sorts only
 once per second. Average FPS is inverse mean frame duration; 1%/0.1% lows are
 inverse means of the slowest ceil(N*0.01) / ceil(N*0.001) samples. The HUD labels
-fewer than 1,000 samples as warming up. Gaps >=1 second are omitted to avoid
-mixing screen/world transitions with continuous sampling; this means the current
-HUD must NOT be used as a complete stutter benchmark. Samples come from HUD
-render callbacks, so hidden-HUD periods and menus are not fully captured.
+fewer than 1,000 samples as warming up. Frame boundaries are now sampled at the
+start of Minecraft's main game-loop method, including menus, hidden-HUD periods,
+and intervals longer than one second. These stalls are retained in the slow tail.
+World loading and startup transitions can influence the rolling sample window;
+controlled benchmark scenarios still require separate capture/reset support.
 
 No FPS improvement, 165 FPS guarantee, input latency improvement, or memory
 reduction has been measured. No optimization is marked as validated.

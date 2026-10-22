@@ -34,6 +34,13 @@ public final class CoreTest {
         ImageIO.write(new BufferedImage(63,32,BufferedImage.TYPE_INT_ARGB),"png",image.toFile());
         rejected=false;try{CapeFrames.load(image);}catch(java.io.IOException e){rejected=true;}check(rejected,"invalid cape dimensions");
         try(java.util.stream.Stream<Path> files=Files.walk(dir)){for(Path path:(Iterable<Path>)files.sorted(Comparator.reverseOrder())::iterator)Files.delete(path);}
+        ToggleLatch latch=new ToggleLatch();latch.press();check(latch.active(),"toggle on");latch.press();check(!latch.active(),"toggle off");latch.press();latch.reset();check(!latch.active(),"menu reset");
+        check(HudLayout.position(.5f,100,20)==40,"normalized available width");check(HudLayout.position(1,10,20)==0,"oversized widget");
+        check(HudLayout.fraction(40,100,20)==.5f,"drag geometry roundtrip");check(HudLayout.snap(3,100,20,false)==0,"edge snapping");
+        ClientSettings settings=new ClientSettings();Properties values=new Properties();values.setProperty("zoom.factor","NaN");values.setProperty("crosshair.length","900");settings.load(values);
+        check(settings.zoomFactor==4&&settings.crosshairLength==20,"settings bounds and NaN");
+        settings.crosshairColor=0x8099aabb;settings.save(values);ClientSettings restored=new ClientSettings();restored.load(values);check(restored.crosshairColor==0x8099aabb,"ARGB roundtrip");
+        modules.get("a").scale=2;modules.get("a").saveStyle(values);modules.get("a").resetLayout();modules.get("a").loadStyle(values);check(modules.get("a").scale==2,"HUD style roundtrip");
         System.out.println("Core tests passed: "+checks);
     }
 }

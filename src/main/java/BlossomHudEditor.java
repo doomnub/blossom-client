@@ -1,4 +1,4 @@
-import dev.blossom.core.Modules;
+import dev.blossom.core.*;
 import org.lwjgl.input.Keyboard;
 public final class BlossomHudEditor extends axu {
     private final axu previous;
@@ -6,25 +6,35 @@ public final class BlossomHudEditor extends axu {
     private int offsetX,offsetY;
     public BlossomHudEditor(axu previous){this.previous=previous;}
     @Override public void a(int mx,int my,float partial) {
-        BlossomHooks.drawHud();
-        q.a("Drag HUD elements | Hold Shift for 8px grid | Esc saves",8, m-12,0xffffffff);
+        BlossomHud.draw();
+        for(Modules.Module module:BlossomHooks.modules.all())if(module.enabled&&module.category.equals("HUD")) {
+            int x=BlossomHud.x(module,l),y=BlossomHud.y(module,m),w=BlossomHud.width(module),h=BlossomHud.height(module);
+            if(module==dragging||mx>=x&&mx<x+w&&my>=y&&my<y+h) {
+                int color=module.locked?0xff888888:BlossomHooks.accent;
+                a(x,y,x+w,y+1,color);a(x,y+h-1,x+w,y+h,color);
+                a(x,y,x+1,y+h,color);a(x+w-1,y,x+w,y+h,color);
+            }
+        }
+        q.a("Drag | Shift: grid | Right click: style | Esc: save",8,m-12,0xffffffff);
     }
     @Override protected void a(int mx,int my,int button) {
-        if(button!=0)return;
-        for(Modules.Module module:BlossomHooks.modules.all()) if(module.enabled&&module.category.equals("HUD")) {
-            int width=q.a(BlossomHooks.text(module))+8,x=BlossomHooks.x(module,l,width),y=BlossomHooks.y(module,m);
-            if(mx>=x&&mx<x+width&&my>=y&&my<y+16){dragging=module;offsetX=mx-x;offsetY=my-y;}
+        for(Modules.Module module:BlossomHooks.modules.all())if(module.enabled&&module.category.equals("HUD")) {
+            int x=BlossomHud.x(module,l),y=BlossomHud.y(module,m);
+            if(mx>=x&&mx<x+BlossomHud.width(module)&&my>=y&&my<y+BlossomHud.height(module)) {
+                if(button==1){j.a(new BlossomModuleSettings(this,module));return;}
+                if(button==0&&!module.locked){dragging=module;offsetX=mx-x;offsetY=my-y;}
+            }
         }
     }
     @Override protected void a(int mx,int my,int button,long elapsed) {
         if(dragging==null)return;
-        int x=mx-offsetX,y=my-offsetY;
-        if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){x=Math.round(x/8f)*8;y=Math.round(y/8f)*8;}
-        dragging.x=Math.max(0,Math.min(1,x/(float)Math.max(1,l-q.a(BlossomHooks.text(dragging))-8)));
-        dragging.y=Math.max(0,Math.min(1,y/(float)Math.max(1,m-16)));
+        int w=BlossomHud.width(dragging),h=BlossomHud.height(dragging);
+        boolean grid=Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
+        dragging.x=HudLayout.fraction(HudLayout.snap(mx-offsetX,l,w,grid),l,w);
+        dragging.y=HudLayout.fraction(HudLayout.snap(my-offsetY,m,h,grid),m,h);
     }
     @Override protected void b(int x,int y,int button){dragging=null;}
-    @Override protected void a(char c,int key) {if(key==Keyboard.KEY_ESCAPE){BlossomHooks.save("default");j.a(previous);}}
+    @Override protected void a(char c,int key){if(key==Keyboard.KEY_ESCAPE)j.a(previous);}
     @Override public void m(){BlossomHooks.save("default");}
     @Override public boolean d(){return false;}
 }

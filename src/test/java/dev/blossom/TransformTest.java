@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"ave","avo","bet"}) {
+            for(String name:new String[]{"ave","avo","bet","avb"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -23,6 +23,6 @@ public final class TransformTest {
                 if(hooks[0]<(name.equals("ave")?2:1))throw new AssertionError("Hook missing: "+name);
             }
         }
-        System.out.println("Real 1.8.9 bytecode transform checks passed: 3 classes");
+        System.out.println("Real 1.8.9 bytecode transform checks passed: 4 classes");
     }
 }

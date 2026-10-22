@@ -14,7 +14,8 @@ public final class BlossomMenu extends axu {
         int perPage=Math.max(1,(m-140)/24);page=Math.min(page,Math.max(0,(visible.size()-1)/perPage));
         for(int index=page*perPage;index<Math.min(visible.size(),(page+1)*perPage);index++) {
             Modules.Module module=visible.get(index);
-            n.add(new avs(index,l/2-145,52+(index-page*perPage)*24,290,20,(module.enabled?"§aON  ":"§7OFF ")+module.name));
+            n.add(new avs(index,l/2-145,52+(index-page*perPage)*24,232,20,(module.enabled?"§aON  ":"§7OFF ")+module.name));
+            n.add(new avs(200+index,l/2+91,52+(index-page*perPage)*24,54,20,"Settings"));
         }
         int y=m-76;
         n.add(new avs(100,l/2-145,y,94,20,"Edit HUD"));
@@ -26,6 +27,7 @@ public final class BlossomMenu extends axu {
         if(visible.size()>perPage) n.add(new avs(106,l/2+150,52,38,20,"Next"));
     }
     @Override protected void a(avs button) {
+        if(button.k>=200){j.a(new BlossomModuleSettings(this,visible.get(button.k-200)));return;}
         if(button.k<100){Modules.Module module=visible.get(button.k);module.enabled=!module.enabled;}
         else switch(button.k) {
             case 100:j.a(new BlossomHudEditor(this));return;
