@@ -1,0 +1,32 @@
+name: Publish alpha release
+on:
+  create:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: blossom-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/build.py
+      - run: python scripts/package_release.py
+      - name: Publish prerelease with tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="v$(cat VERSION)"
+          test -f "docs/releases/$version.md"
+          gh release create "$version" build/release/* --target "$GITHUB_SHA" --prerelease --title "Blossom $version" --notes-file "docs/releases/$version.md"

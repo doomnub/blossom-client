@@ -5,7 +5,8 @@ Blossom original source: MIT, see LICENSE.
 Minecraft and its libraries are downloaded to the ignored .deps directory only
 for compilation and inspection. They are NOT included in Blossom distributions.
 Minecraft remains the property of Mojang/Microsoft. Use a legitimate account and
-launcher. No game authentication is implemented or replaced by Blossom.
+launcher. The standalone Blossom launcher uses Microsoft device-code sign-in and
+checks Minecraft entitlement through the official services.
 
 MCP 1.8.9 SRG names were consulted to identify method/field signatures. No MCP
 sources, decompiled Minecraft sources, or mappings archive are redistributed.
@@ -39,3 +40,6 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+Gson 2.11.0 is included only in the launcher JAR under Apache License 2.0.
+Copyright 2008 Google Inc. Full license: licenses/Apache-2.0.txt.

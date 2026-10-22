@@ -1,6 +1,6 @@
 plugins { id 'base' }
 group = 'dev.blossom'
-version = '0.1.0-dev'
+version = file('VERSION').text.trim()
 // Use the same pinned, checksum-verified compiler and relocation pipeline on every host.
 // No Minecraft binaries are ever copied into the output jar.
 tasks.register('compileAndVerify', Exec) {

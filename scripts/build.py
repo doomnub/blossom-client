@@ -37,7 +37,8 @@ def main():
     subprocess.run(['java','-cp',str(classes)+os.pathsep+cp,'dev.blossom.RelocateIntegration',str(classes)],check=True)
     subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+cp,'dev.blossom.CoreTest'],check=True)
     subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+cp,'dev.blossom.TransformTest',str(DEPS/'client.jar')],check=True)
-    out=ROOT/'build/libs/blossom-client-0.1.0-dev.jar'; out.parent.mkdir(parents=True,exist_ok=True)
+    version=(ROOT/'VERSION').read_text().strip()
+    out=ROOT/('build/libs/blossom-client-'+version+'.jar'); out.parent.mkdir(parents=True,exist_ok=True)
     entries={}
     with zipfile.ZipFile(DEPS/'asm.jar') as asm:
         for name in asm.namelist():
@@ -53,5 +54,30 @@ def main():
             info=zipfile.ZipInfo(name,(2026,1,1,0,0,0)); info.compress_type=zipfile.ZIP_DEFLATED
             jar.writestr(info,data)
     subprocess.run(['java','-Xverify:all','-javaagent:'+str(out),'-cp',str(classes)+os.pathsep+cp,'dev.blossom.LinkageTest'],check=True)
+    build_launcher(out,version)
     print('Built',out,'SHA-256',hashlib.sha256(out.read_bytes()).hexdigest())
+def build_launcher(agent,version):
+    import shutil
+    fetch('https://repo.maven.apache.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar',DEPS/'gson.jar','57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b')
+    classes=ROOT/'build/launcher-classes';shutil.rmtree(classes,ignore_errors=True);classes.mkdir(parents=True)
+    sources=sorted((ROOT/'launcher/src').rglob('*.java'))
+    subprocess.run(['java','-jar',str(DEPS/'ecj.jar'),'-8','-encoding','UTF-8','-warn:none','-cp',str(DEPS/'gson.jar'),'-d',str(classes)]+list(map(str,sources)),check=True)
+    if (classes/'dev/blossom/launcher/LauncherTest.class').exists():
+        subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+str(DEPS/'gson.jar'),'dev.blossom.launcher.LauncherTest'],check=True)
+    entries={}
+    with zipfile.ZipFile(DEPS/'gson.jar') as gson:
+        for name in gson.namelist():
+            if not name.endswith('/') and (name.startswith('com/google/gson/') or name.startswith('META-INF/LICENSE')):entries[name]=gson.read(name)
+    for file in classes.rglob('*.class'):
+        if 'Test' not in file.name:entries[file.relative_to(classes).as_posix()]=file.read_bytes()
+    entries['licenses/Apache-2.0.txt']=(ROOT/'licenses/Apache-2.0.txt').read_bytes()
+    entries['client/blossom-agent.jar']=agent.read_bytes()
+    entries['build.properties']=('version='+version+'\nagent.sha256='+hashlib.sha256(agent.read_bytes()).hexdigest()+'\n').encode()
+    entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\r\nMain-Class: dev.blossom.launcher.Launcher\r\n\r\n'
+    for name in ['LICENSE','LICENSES.md']:entries[name]=(ROOT/name).read_bytes()
+    output=ROOT/('build/libs/blossom-launcher-'+version+'.jar')
+    with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as jar:
+        for name,data in sorted(entries.items()):
+            info=zipfile.ZipInfo(name,(2026,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;jar.writestr(info,data)
+    print('Built',output,'SHA-256',hashlib.sha256(output.read_bytes()).hexdigest())
 if __name__=='__main__': main()

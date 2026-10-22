@@ -52,3 +52,16 @@ Graphical acceptance remains NOT RUN.
 Cape continuation: monotonic pause/speed continuity, horizontal sheets, staged
 validated import, duplicate preservation, rename, recoverable removal and traversal
 checks pass. Full graphical cape acceptance remains NOT RUN.
+
+## Standalone launcher alpha
+
+21 checks cover path traversal, native archive extraction, bounded responses,
+OS rules, launch argument boundaries, session expiry, token redaction, invalid
+application IDs and download host/checksum validation. A headless Swing render
+was inspected. Live auth, graphical gameplay and Windows desktop testing remain
+outstanding.
+
+Installer smoke test completed on Linux x86_64 using the real pinned Mojang
+manifest: client, selected libraries, native archives, all 734 assets and logging
+configuration downloaded and verified. The workspace HTTP proxy was required.
+This verifies installation, not game startup.
