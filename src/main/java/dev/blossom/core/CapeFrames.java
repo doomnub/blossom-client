@@ -9,8 +9,15 @@ import javax.imageio.stream.ImageInputStream;
 public final class CapeFrames {
     public final BufferedImage[] images;
     public final Timeline timeline;
+    public final boolean pingPong;
+    private final int[] durations;
+    public Timeline timeline(boolean reverse,int fps){
+        int[] timing=durations.clone();
+        if(fps!=0){if(fps<1||fps>100)throw new IllegalArgumentException("FPS must be 1–100");Arrays.fill(timing,1000/fps);}
+        return new Timeline(timing,reverse);
+    }
     private CapeFrames(BufferedImage[] images,int[] durations,boolean pingPong) {
-        this.images=images; timeline=new Timeline(durations,pingPong);
+        this.images=images;this.durations=durations.clone();this.pingPong=pingPong; timeline=new Timeline(durations,pingPong);
     }
     public static BufferedImage png(Path file) throws IOException {
         if(Files.size(file)>16*1024*1024) throw new IOException("PNG exceeds 16 MiB");
@@ -41,6 +48,7 @@ public final class CapeFrames {
                 if(files.length<1||files.length>256) throw new IOException("Use 1-256 PNG frames");
                 long pixels=0;
                 for(Path file:files) {
+                    if(Thread.currentThread().isInterrupted())throw new IOException("Cancelled");
                     BufferedImage image=png(file); validateFrame(image);
                     pixels+=(long)image.getWidth()*image.getHeight();
                     if(pixels>8388608) throw new IOException("Animation exceeds 32 MiB decoded pixels");
@@ -49,12 +57,14 @@ public final class CapeFrames {
             }
         } else {
             BufferedImage sheet=png(selected);
-            // Single PNG: static 2:1, otherwise a vertical strip of 2:1 frames.
-            int w=sheet.getWidth(), fh=w/2;
-            if(w%64!=0||w>1024||fh<1||sheet.getHeight()%fh!=0) throw new IOException("Use 64x32 multiples or vertical frame strip");
-            int count=sheet.getHeight()/fh;
-            if(count>256) throw new IOException("Too many frames");
-            for(int i=0;i<count;i++) frames.add(sheet.getSubimage(0,i*fh,w,fh));
+            // Infer static 2:1, vertical strips, or horizontal strips by aspect ratio.
+            int w=sheet.getWidth(),h=sheet.getHeight();
+            boolean horizontal=w>h*2;
+            int fw=horizontal?h*2:w,fh=horizontal?h:w/2;
+            if(fw<64||fw%64!=0||fw>1024||fh!=fw/2||w%fw!=0||h%fh!=0)throw new IOException("Use 64x32 multiples or aligned horizontal/vertical strips");
+            int count=horizontal?w/fw:h/fh;
+            if(count<1||count>256)throw new IOException("Use 1–256 frames");
+            for(int i=0;i<count;i++)frames.add(sheet.getSubimage(horizontal?i*fw:0,horizontal?0:i*fh,fw,fh));
         }
         int w=frames.get(0).getWidth(),h=frames.get(0).getHeight();
         for(BufferedImage f:frames) if(f.getWidth()!=w||f.getHeight()!=h) throw new IOException("Frame sizes differ");

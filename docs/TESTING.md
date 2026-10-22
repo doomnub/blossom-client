@@ -7,7 +7,7 @@ Minecraft compile/transform fixture: official 1.8.9 client SHA-1
 Passed locally:
 
 - Java compilation to classfile version 52 (Java 8).
-- 32 core assertions: timestamp expiration, bounded CPS storage, actual slow-tail
+- 43 core assertions: timestamp expiration, bounded CPS storage, actual slow-tail
   FPS means, frame-duration boundaries, ping-pong playback, invalid durations,
   profile round-trip, previous-version backup, NaN normalization, traversal
   rejection, listener isolation/unsubscribe, module state, PNG sheet splitting,
@@ -15,7 +15,7 @@ Passed locally:
 - Transformation of real Minecraft/GuiIngame/AbstractClientPlayer classes.
 - Hook instruction presence including mouse event observation.
 - Packaged startup agent under JVM `-Xverify:all`: all four transformed game
-  classes and all eight relocated integration classes loaded and linked without
+  classes and all ten relocated integration classes loaded and linked without
   class initialization. This caught and resolved the signed-package collision.
 
 These tests do NOT initialize a window, authenticate, load a world, render a cape,
@@ -48,3 +48,7 @@ Continuation checkpoint: key latches, bounds/color/style persistence and HUD geo
 checks pass. Crosshair/keybinding/main-loop hooks pass bytecode and JVM checks.
 Attempting to install a virtual display failed because the container denies setgroups/setuid.
 Graphical acceptance remains NOT RUN.
+
+Cape continuation: monotonic pause/speed continuity, horizontal sheets, staged
+validated import, duplicate preservation, rename, recoverable removal and traversal
+checks pass. Full graphical cape acceptance remains NOT RUN.

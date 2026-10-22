@@ -19,7 +19,7 @@ public final class BlossomMenu extends axu {
         }
         int y=m-76;
         n.add(new avs(100,l/2-145,y,94,20,"Edit HUD"));
-        n.add(new avs(101,l/2-47,y,94,20,"Next cape"));
+        n.add(new avs(101,l/2-47,y,94,20,"Capes"));
         n.add(new avs(102,l/2+51,y,94,20,"Cape folder"));
         n.add(new avs(103,l/2-145,y+24,94,20,"Save preset"));
         n.add(new avs(104,l/2-47,y+24,94,20,"Load preset"));
@@ -27,11 +27,11 @@ public final class BlossomMenu extends axu {
         if(visible.size()>perPage) n.add(new avs(106,l/2+150,52,38,20,"Next"));
     }
     @Override protected void a(avs button) {
-        if(button.k>=200){j.a(new BlossomModuleSettings(this,visible.get(button.k-200)));return;}
+        if(button.k>=200){Modules.Module module=visible.get(button.k-200);j.a(module.id.equals("cape")?new BlossomCapeMenu(this):new BlossomModuleSettings(this,module));return;}
         if(button.k<100){Modules.Module module=visible.get(button.k);module.enabled=!module.enabled;}
         else switch(button.k) {
             case 100:j.a(new BlossomHudEditor(this));return;
-            case 101:BlossomHooks.capes.cycle();break;
+            case 101:j.a(new BlossomCapeMenu(this));return;
             case 102:BlossomHooks.capes.openFolder();break;
             case 103:BlossomHooks.save("preset");break;
             case 104:BlossomHooks.load("preset");break;

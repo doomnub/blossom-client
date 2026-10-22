@@ -33,6 +33,15 @@ public final class CoreTest {
         CapeFrames cape=CapeFrames.load(image);check(cape.images.length==3,"vertical sheet frames");
         ImageIO.write(new BufferedImage(63,32,BufferedImage.TYPE_INT_ARGB),"png",image.toFile());
         rejected=false;try{CapeFrames.load(image);}catch(java.io.IOException e){rejected=true;}check(rejected,"invalid cape dimensions");
+        PlaybackClock clock=new PlaybackClock(0);check(clock.elapsed(100)==100,"clock runs");clock.paused(true,100);check(clock.elapsed(500)==100,"pause holds");
+        clock.speed(2,600);clock.paused(false,700);check(clock.elapsed(800)==300,"speed and resume continuity");clock.restart(900);check(clock.elapsed(950)==100,"restart retains speed");
+        ImageIO.write(new BufferedImage(192,32,BufferedImage.TYPE_INT_ARGB),"png",image.toFile());
+        check(CapeFrames.load(image).images.length==3,"horizontal spritesheet");
+        CapeLibrary library=new CapeLibrary(dir.resolve("library"));String imported=library.importEntry(image);
+        check(library.list().contains(imported),"validated staged import");String duplicate=library.importEntry(image);check(!duplicate.equals(imported),"imports never overwrite");
+        String renamed=library.rename(imported,"pink");check(renamed.equals("pink.png"),"rename preserves PNG extension");library.trash(renamed);check(!library.list().contains(renamed),"remove moves out of active library");
+        try(java.util.stream.Stream<Path> trash=Files.list(dir.resolve("library/.trash"))){check(trash.count()==1,"removed artwork is recoverable");}
+        rejected=false;try{library.entry("../escape");}catch(IllegalArgumentException e){rejected=true;}check(rejected,"cape traversal rejected");
         try(java.util.stream.Stream<Path> files=Files.walk(dir)){for(Path path:(Iterable<Path>)files.sorted(Comparator.reverseOrder())::iterator)Files.delete(path);}
         ToggleLatch latch=new ToggleLatch();latch.press();check(latch.active(),"toggle on");latch.press();check(!latch.active(),"toggle off");latch.press();latch.reset();check(!latch.active(),"menu reset");
         check(HudLayout.position(.5f,100,20)==40,"normalized available width");check(HudLayout.position(1,10,20)==0,"oversized widget");

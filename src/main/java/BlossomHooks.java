@@ -61,7 +61,7 @@ public final class BlossomHooks {
             }
             settings.load(p);
             background=Boolean.parseBoolean(p.getProperty("hud.background","true"));
-            capes.select(p.getProperty("cape.selected",""));message="Loaded "+name;
+            capes.load(p);message="Loaded "+name;
         } catch(Exception e){if(name.equals("default"))profileWritable=false;message="Profile not loaded: "+e.getMessage();}
     }
     public static void save(String name) {
@@ -72,7 +72,7 @@ public final class BlossomHooks {
             p.setProperty(m.id+".x",Float.toString(m.x));p.setProperty(m.id+".y",Float.toString(m.y));m.saveStyle(p);
         }
         settings.save(p);
-        p.setProperty("cape.selected",capes.selected);p.setProperty("hud.background",Boolean.toString(background));
+        capes.save(p);p.setProperty("hud.background",Boolean.toString(background));
         saves.execute(()->{try{store.save(name,p);}catch(Exception e){System.err.println("[Blossom] Profile save failed: "+e.getMessage());}});
         message="Saving "+name;
     }
@@ -121,6 +121,7 @@ public final class BlossomHooks {
     }
     public static jy cape(jy original,bet player) {
         if(!initialized||failed||player!=ave.A().h||!modules.on("cape")) return original;
+        if(capes.hidden())return null;
         jy selected=capes.current();return selected==null?original:selected;
     }
     public static String text(Modules.Module m) {

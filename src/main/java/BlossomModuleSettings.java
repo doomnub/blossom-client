@@ -6,7 +6,7 @@ public final class BlossomModuleSettings extends axu {
     private final Modules.Module module;
     private boolean binding;
     public BlossomModuleSettings(axu previous,Modules.Module module){this.previous=previous;this.module=module;}
-    private void add(int id,String label,int row){n.add(new avs(id,l/2-140,48+row*23,280,20,label));}
+    private void add(int id,String label,int row){n.add(new avs(id,l/2-140,44+row*21,280,20,label));}
     @Override public void b(){
         n.clear();int row=0;
         add(0,"Enabled: "+module.enabled,row++);
@@ -30,7 +30,7 @@ public final class BlossomModuleSettings extends axu {
             add(24,"Color: "+Integer.toHexString(BlossomHooks.settings.crosshairColor),row++);
         }
         if(module.id.equals("coords"))add(30,"Privacy: "+BlossomHooks.settings.privacy,row++);
-        n.add(new avs(99,l/2-140,Math.max(48+row*23,m-30),280,20,"Back"));
+        n.add(new avs(99,l/2-140,m-25,280,20,"Back"));
     }
     private void color(boolean bg){
         int value=bg?module.backgroundColor:module.textColor;

@@ -1,14 +1,15 @@
 # Local capes
 
 Open Right Shift > Cape folder. Place original/user-provided PNG artwork here.
-Click Next cape to cycle the sorted list; the empty selection restores your
-normal Minecraft cape. Enable the Local cape module and Minecraft's own cape
+Open Capes to browse entries, preview playback, or import a PNG/frame directory.
+Default cape restores your Minecraft cape; No cape hides it locally. Enable the Local cape module and Minecraft's own cape
 visibility under Skin Customization. Only your local player is overridden.
 
 Supported input:
 
 - Static PNG: 64x32, 128x64, or integer multiples up to 1024x512. Standard Minecraft
   cape UV layout, including the thin edges; not a stretched single face.
+- Horizontal spritesheet: 2:1 frames placed side by side, inferred from aspect ratio.
 - Vertical spritesheet: each frame is width x width/2, stacked downwards.
   Default playback 20 FPS, looping.
 - Directory of equally sized PNG frames, sorted by filename (use 000.png, 001.png).
@@ -26,6 +27,13 @@ The game's original cape geometry, UVs, sneaking and swing physics are retained.
 The texture return hook is shared by player rendering, but actual third-person
 and inventory preview correctness still needs graphical verification.
 
-Not yet implemented: horizontal sheets, GIF/APNG, graphical import/preview,
-renaming/deletion UI, per-selection FPS UI, pause, speed control, no-cape mode,
-custom physics, or resource-reload lifecycle acceptance tests.
+The browser provides pause/resume, file/default FPS or fixed FPS, speed, looping,
+and file/on/off ping-pong overrides. The preview displays the current texture atlas,
+not a 3D model. Settings are saved with profiles. Import never overwrites existing
+artwork; Rename checks names and Remove asks before moving to `.trash/`.
+
+GPU uploads are staged at most two frames per client tick. The old cape remains
+visible until the new sequence is fully uploaded. Cancelled staging textures are freed.
+
+Not yet implemented: GIF/APNG, 3D player preview, custom physics, arbitrary frame
+reordering, or resource-reload lifecycle acceptance tests.
