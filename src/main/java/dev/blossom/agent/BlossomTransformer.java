@@ -21,15 +21,15 @@ public final class BlossomTransformer implements ClassFileTransformer {
                         super.visitMethodInsn(opcode,owner,m,d,itf);
                         if(tick && owner.equals("org/lwjgl/input/Mouse") && m.equals("next") && d.equals("()Z")) {
                             super.visitInsn(Opcodes.DUP);
-                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"BlossomHooks","mouseEvent","(Z)V",false);
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHooks","mouseEvent","(Z)V",false);
                         }
                     }
                     @Override public void visitInsn(int opcode) {
                         if(opcode==Opcodes.RETURN && (tick||hud))
-                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"BlossomHooks",tick?"tick":"hud","()V",false);
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHooks",tick?"tick":"hud","()V",false);
                         if(opcode==Opcodes.ARETURN && cape) {
                             super.visitVarInsn(Opcodes.ALOAD,0);
-                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"BlossomHooks","cape","(Ljy;Lbet;)Ljy;",false);
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHooks","cape","(Ljy;Lbet;)Ljy;",false);
                         }
                         super.visitInsn(opcode);
                     }

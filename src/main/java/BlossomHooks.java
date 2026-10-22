@@ -13,6 +13,7 @@ public final class BlossomHooks {
     public static boolean background=true;
     public static String message="";
     private static boolean initialized,failed,shift,zooming,bright;
+    private static boolean profileWritable=true;
     private static float savedFov,savedGamma;
     private static ProfileStore store;
     private static long lastFrame,refresh;
@@ -35,6 +36,10 @@ public final class BlossomHooks {
         if(initialized) return;
         Path root=ave.A().v.toPath().resolve("blossom");
         store=new ProfileStore(root.resolve("profiles"));capes=new BlossomCapes(root.resolve("capes"));
+        Runtime.getRuntime().addShutdownHook(new Thread(()->{
+            saves.shutdown();
+            try{saves.awaitTermination(3,java.util.concurrent.TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}
+        },"Blossom save flush"));
         initialized=true;
         load("default");
     }
@@ -47,9 +52,10 @@ public final class BlossomHooks {
             }
             background=Boolean.parseBoolean(p.getProperty("hud.background","true"));
             capes.select(p.getProperty("cape.selected",""));message="Loaded "+name;
-        } catch(Exception e){message="Profile not loaded: "+e.getMessage();}
+        } catch(Exception e){if(name.equals("default"))profileWritable=false;message="Profile not loaded: "+e.getMessage();}
     }
     public static void save(String name) {
+        if(name.equals("default")&&!profileWritable){message="Corrupt default profile preserved; rename it before restart";return;}
         Properties p=new Properties();
         for(Modules.Module m:modules.all()) {
             p.setProperty(m.id+".enabled",Boolean.toString(m.enabled));
@@ -72,12 +78,17 @@ public final class BlossomHooks {
             if(wantBright&&!bright){savedGamma=mc.t.aJ;mc.t.aJ=12f;bright=true;}
             if(!wantBright&&bright){mc.t.aJ=savedGamma;bright=false;}
             capes.uploadReady();ticks.post(System.nanoTime());
-        } catch(Exception|LinkageError e){failed=true;System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
+        } catch(Exception|LinkageError e){failed=true;restoreSettings();System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
+    }
+    private static void restoreSettings() {
+        ave mc=ave.A();
+        if(zooming){mc.t.aI=savedFov;zooming=false;}
+        if(bright){mc.t.aJ=savedGamma;bright=false;}
     }
     public static void mouseEvent(boolean available) {
         if(!available||!Mouse.getEventButtonState()) return;
-        if(Mouse.getEventButton()==0) left.click(Mouse.getEventNanoseconds());
-        if(Mouse.getEventButton()==1) right.click(Mouse.getEventNanoseconds());
+        if(Mouse.getEventButton()==0) left.click(System.nanoTime());
+        if(Mouse.getEventButton()==1) right.click(System.nanoTime());
     }
     public static jy cape(jy original,bet player) {
         if(!initialized||failed||player!=ave.A().h||!modules.on("cape")) return original;

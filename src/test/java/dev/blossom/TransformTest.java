@@ -17,7 +17,7 @@ public final class TransformTest {
                 if(patched==null)throw new AssertionError("Missing target "+name);
                 int[] hooks={0};new ClassReader(patched).accept(new ClassVisitor(Opcodes.ASM9){
                     public MethodVisitor visitMethod(int a,String m,String d,String s,String[] e){return new MethodVisitor(Opcodes.ASM9){
-                        public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.equals("BlossomHooks"))hooks[0]++;}
+                        public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.equals("dev/blossom/integration/BlossomHooks"))hooks[0]++;}
                     };}
                 },0);
                 if(hooks[0]<(name.equals("ave")?2:1))throw new AssertionError("Hook missing: "+name);

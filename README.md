@@ -1,11 +1,46 @@
 # Blossom Client
 
-Original Forge-free Minecraft 1.8.9 PvP client, **early development**.
+An original, local-first, Forge-free **Minecraft 1.8.9** PvP client in development.
+Pink by default. No Lunar services, store, account system or bundled game files.
 
-A startup Java agent patches the user's own vanilla 1.8.9 classes. No Minecraft,
-OptiFine, or Lunar code/assets are bundled. Authentication stays with your launcher.
+**This is an early compiled checkpoint, not a finished Lunar-equivalent client.**
+The full requested scope is preserved in [SPECIFICATION](docs/SPECIFICATION.md).
+Most advanced features are still planned. No graphical game launch, multiplayer,
+OptiFine compatibility or performance improvement is claimed yet.
 
-The full requested scope is retained in [docs/SPECIFICATION.md](docs/SPECIFICATION.md).
-Implementation and validation status will be tracked in docs/FEATURES.md.
+## Try the development build
 
-This is not a finished client. OptiFine and public-server compatibility are unverified.
+Download [the compiled JAR](dist/blossom-client-0.1.0-dev.jar) or a GitHub Actions
+artifact. Follow [installation](docs/INSTALLATION.md); launch vanilla 1.8.9 with
+Java 8 and the `-javaagent` JVM argument. Running the JAR itself shows instructions.
+It does not replace your authenticated launcher. Remove the argument to uninstall.
+
+Implemented paths, pending graphical acceptance:
+
+- Right Shift module menu with search, toggles and two profile slots.
+- Draggable normalized HUD positions with optional grid snapping/backgrounds.
+- FPS slow-tail statistics, left/right CPS, keystrokes, server ping, coordinates,
+  heading, clock and heap-memory display.
+- Hold-C zoom and reversible gamma/fullbright control.
+- Local static PNG, vertical spritesheet and PNG-sequence cape selection; worker
+  decoding, cached textures, per-frame durations and ping-pong animation.
+
+Validated here: compilation, 22 core assertions, transformation of real 1.8.9
+classes, and full JVM verification/linking. See [test record](docs/TESTING.md).
+Unsupported class fingerprints disable Blossom cleanly. OptiFine is not supported
+by this initial adapter; it needs a separately tested integration.
+
+## Develop
+
+`python3 scripts/build.py` (Linux) / `py scripts/build.py` (Windows), with Java 17+
+on PATH. `gradle build` delegates to the same pinned pipeline. Build details are
+in [BUILDING](docs/BUILDING.md). Output targets Java 8 and excludes game binaries.
+
+[Feature matrix](docs/FEATURES.md) · [Architecture](docs/ARCHITECTURE.md) ·
+[Capes](docs/CAPES.md) · [Configuration](docs/CONFIGURATION.md) ·
+[Performance](docs/PERFORMANCE.md) · [Reference audit](docs/RESEARCH.md) ·
+[Licenses](LICENSES.md)
+
+Commit and push coherent checkpoints. Never mark a feature tested on the basis
+of compilation alone. Next gate: authenticated Java 8 graphical startup, then
+world/menu/cape acceptance testing before expanding the remaining modules.
