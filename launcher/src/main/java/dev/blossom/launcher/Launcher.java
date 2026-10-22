@@ -23,6 +23,8 @@ public final class Launcher extends JPanel {
     private final JLabel status=new JLabel("Ready"),account=new JLabel("Not signed in"),authHint=new JLabel();
     private final JProgressBar progress=new JProgressBar();
     private final JButton signIn=new JButton("Sign in with Microsoft"),play=new JButton("PLAY  1.8.9"),install=new JButton("Install / repair"),cancel=new JButton("Cancel task"),signOut=new JButton("Sign out");
+    private final JButton offlinePlay=new JButton("Play offline");
+    private final JTextField offlineName=new JTextField("Player",16);
     private final JTextField javaPath=new JTextField(),gamePath=new JTextField(),clientId=new JTextField();
     private final JSpinner ram=new JSpinner(new SpinnerNumberModel(4096,1024,16384,512));
     private final JSpinner width=new JSpinner(new SpinnerNumberModel(1280,640,7680,160)),height=new JSpinner(new SpinnerNumberModel(720,360,4320,90));
@@ -41,7 +43,7 @@ public final class Launcher extends JPanel {
         JTabbedPane tabs=new JTabbedPane();tabs.addTab("Play",playPanel());tabs.addTab("Settings",settingsPanel());tabs.addTab("Logs",logsPanel());add(tabs,BorderLayout.CENTER);
         JPanel footer=new JPanel(new BorderLayout(12,8));footer.setOpaque(false);status.setForeground(MUTED);footer.add(status,BorderLayout.NORTH);
         progress.setIndeterminate(false);progress.setPreferredSize(new Dimension(200,6));footer.add(progress,BorderLayout.CENTER);cancel.setEnabled(false);footer.add(cancel,BorderLayout.EAST);add(footer,BorderLayout.SOUTH);
-        signIn.addActionListener(e->login());play.addActionListener(e->launch());install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
+        offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
         signOut.addActionListener(e->{session=null;account.setText("Not signed in");updateButtons();});
         theme(this);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));updateButtons();
     }
@@ -53,8 +55,11 @@ public final class Launcher extends JPanel {
         info.add(new JLabel("Alpha build: gameplay and live Microsoft sign-in still need verification."));info.add(Box.createVerticalStrut(26));
         account.setFont(new Font("SansSerif",Font.BOLD,16));info.add(account);info.add(Box.createVerticalStrut(10));
         JPanel buttons=new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));buttons.setOpaque(false);buttons.add(signIn);buttons.add(Box.createHorizontalStrut(10));buttons.add(signOut);buttons.setMaximumSize(new Dimension(Integer.MAX_VALUE,36));info.add(buttons);
-        info.add(Box.createVerticalStrut(12));authHint.setForeground(MUTED);authHint.setText(clientId.getText().isEmpty()?"First setup: add Blossom's Microsoft application ID in Settings.":"Sign-in opens Microsoft's device-code page.");info.add(authHint);
-        info.add(Box.createVerticalStrut(24));info.add(new JLabel("Tokens stay in memory. Sign in again after closing the launcher."));
+        info.add(Box.createVerticalStrut(12));authHint.setForeground(MUTED);authHint.setText(clientId.getText().isEmpty()?"Microsoft sign-in needs an application ID. Offline play does not.":"Sign-in opens Microsoft's device-code page.");info.add(authHint);
+        info.add(Box.createVerticalStrut(18));
+        JPanel offlineRow=new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));offlineRow.setOpaque(false);offlineRow.add(new JLabel("Offline username  "));offlineRow.add(offlineName);offlineRow.add(Box.createHorizontalStrut(10));offlineRow.add(offlinePlay);offlineRow.setMaximumSize(new Dimension(Integer.MAX_VALUE,36));info.add(offlineRow);
+        info.add(Box.createVerticalStrut(8));info.add(new JLabel("Offline: local identity; authenticated servers require Microsoft sign-in."));
+        info.add(Box.createVerticalStrut(12));info.add(new JLabel("First installation needs internet. Installed files can be used offline."));
         for(Component c:info.getComponents())if(c instanceof JComponent)((JComponent)c).setAlignmentX(0);
         panel.add(info,BorderLayout.CENTER);
         JPanel bottom=new JPanel(new BorderLayout(12,0));bottom.setOpaque(false);play.setPreferredSize(new Dimension(250,58));bottom.add(play,BorderLayout.CENTER);bottom.add(install,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
@@ -64,7 +69,7 @@ public final class Launcher extends JPanel {
         row(form,g,0,"Java 8 executable",javaPath,()->choose(javaPath,false));row(form,g,1,"Game directory",gamePath,()->choose(gamePath,true));row(form,g,2,"Microsoft application ID",clientId,null);
         row(form,g,3,"Memory (MiB)",ram,null);row(form,g,4,"Window width",width,null);row(form,g,5,"Window height",height,null);
         JLabel note=new JLabel("Use Blossom's registered public-client ID; Microsoft may require Minecraft API approval.");g.gridx=0;g.gridy=6;g.gridwidth=3;form.add(note,g);
-        JButton save=new JButton("Save settings");save.addActionListener(e->{try{saveConfig();authHint.setText(clientId.getText().trim().isEmpty()?"First setup: add Blossom's Microsoft application ID in Settings.":"Sign-in opens Microsoft's device-code page.");setStatus("Settings saved");}catch(Exception ex){error(ex);}});g.gridy=7;form.add(save,g);
+        JButton save=new JButton("Save settings");save.addActionListener(e->{try{saveConfig();authHint.setText(clientId.getText().trim().isEmpty()?"Microsoft sign-in needs an application ID. Offline play does not.":"Sign-in opens Microsoft's device-code page.");setStatus("Settings saved");}catch(Exception ex){error(ex);}});g.gridy=7;form.add(save,g);
         g.gridy=8;g.weighty=1;form.add(new JPanel(),g);return form;
     }
     private void row(JPanel panel,GridBagConstraints g,int row,String label,JComponent field,Runnable browse){
@@ -82,10 +87,12 @@ public final class Launcher extends JPanel {
         javaPath.setText(config.getProperty("java",Paths.get(java8==null?System.getProperty("java.home"):java8,"bin",exe).toString()));
         gamePath.setText(config.getProperty("game",root.resolve("instances/default").toString()));
         String id=System.getenv("BLOSSOM_MICROSOFT_CLIENT_ID");clientId.setText(config.getProperty("clientId",id==null?"":id));
+        offlineName.setText(config.getProperty("offlineName","Player"));
         ram.setValue(number("memory",4096,1024,16384));width.setValue(number("width",1280,640,7680));height.setValue(number("height",720,360,4320));
     }
     private int number(String key,int fallback,int min,int max){try{return Math.max(min,Math.min(max,Integer.parseInt(config.getProperty(key))));}catch(RuntimeException e){return fallback;}}
     private void saveConfig()throws IOException {
+        config.setProperty("offlineName",offlineName.getText().trim());
         config.setProperty("java",javaPath.getText().trim());config.setProperty("game",gamePath.getText().trim());config.setProperty("clientId",clientId.getText().trim());
         config.setProperty("memory",ram.getValue().toString());config.setProperty("width",width.getValue().toString());config.setProperty("height",height.getValue().toString());
         Path temp=Files.createTempFile(root,"settings-",".tmp");try{try(Writer w=Files.newBufferedWriter(temp)){config.store(w,"Blossom launcher settings; no credentials");}Net.move(temp,root.resolve("launcher.properties"));}finally{Files.deleteIfExists(temp);}
@@ -115,12 +122,12 @@ public final class Launcher extends JPanel {
         try{saveConfig();dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();}catch(Exception e){error(e);return;}
         runTask(()->{GameInstall.install(root.resolve("cache"),dir,this::setStatus);agent();setStatus("Installation verified. Sign in and select Java 8 to play.");});
     }
-    private void launch(){
-        final MicrosoftLogin.Session signed=session;final Path java,dir;final int memory,w,h;
-        try{saveConfig();if(signed==null||!signed.valid())throw new IOException("Sign in with Microsoft first.");java=Paths.get(javaPath.getText().trim());dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();memory=(Integer)ram.getValue();w=(Integer)width.getValue();h=(Integer)height.getValue();}catch(Exception e){error(e);return;}
+    private void launch(boolean offline){
+        final MicrosoftLogin.Session signed;final Path java,dir;final int memory,w,h;
+        try{signed=offline?MicrosoftLogin.Session.offline(offlineName.getText().trim()):session;saveConfig();if(signed==null||!signed.valid())throw new IOException("Sign in with Microsoft first.");java=Paths.get(javaPath.getText().trim());dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();memory=(Integer)ram.getValue();w=(Integer)width.getValue();h=(Integer)height.getValue();}catch(Exception e){error(e);return;}
         runTask(()->{
             LaunchPlan.verifyJava8(java);GameInstall.Installed installed=GameInstall.install(root.resolve("cache"),dir,this::setStatus);Path agent=agent();
-            List<String> command=LaunchPlan.command(java,agent,dir,installed,signed,memory,w,h);setStatus("Launching Minecraft...");
+            List<String> command=LaunchPlan.command(java,agent,dir,installed,signed,memory,w,h);setStatus(signed.offline?"Launching offline as "+signed.username+"...":"Launching Minecraft...");
             synchronized(this){if(Thread.currentThread().isInterrupted())throw new InterruptedException();
             game=LaunchPlan.start(command,dir,signed);}SwingUtilities.invokeLater(()->cancel.setEnabled(false));
             try(BufferedReader reader=new BufferedReader(new InputStreamReader(game.getInputStream(),StandardCharsets.UTF_8))){String line;while((line=reader.readLine())!=null)appendLog(LaunchPlan.redact(line,signed));}
@@ -134,7 +141,7 @@ public final class Launcher extends JPanel {
             Path temp=Files.createTempFile(target.getParent(),"agent-",".tmp");try(InputStream in=Launcher.class.getResourceAsStream("/client/blossom-agent.jar")){if(in==null)throw new IOException("Missing bundled client");Files.copy(in,temp,StandardCopyOption.REPLACE_EXISTING);if(!Net.hash(temp,"SHA-256").equals(hash))throw new IOException("Bundled client checksum mismatch");Net.move(temp,target);}finally{Files.deleteIfExists(temp);}
         }return target;
     }
-    private void updateButtons(){signIn.setEnabled(!busy);install.setEnabled(!busy);play.setEnabled(!busy&&(game==null||!game.isAlive())&&session!=null&&session.valid());signOut.setEnabled(!busy&&session!=null);}
+    private void updateButtons(){offlinePlay.setEnabled(!busy&&(game==null||!game.isAlive()));offlineName.setEnabled(!busy);signIn.setEnabled(!busy);install.setEnabled(!busy);play.setEnabled(!busy&&(game==null||!game.isAlive())&&session!=null&&session.valid());signOut.setEnabled(!busy&&session!=null);}
     private void setStatus(String text){SwingUtilities.invokeLater(()->status.setText(text));appendLog(text);}
     private void appendLog(String text){
         SwingUtilities.invokeLater(()->{if(log.getDocument().getLength()>150000)log.setText(log.getText().substring(75000));log.append(text+"\n");log.setCaretPosition(log.getDocument().getLength());});
@@ -155,7 +162,7 @@ public final class Launcher extends JPanel {
         if(args.length==2&&args[0].equals("--render-preview")){
             Path temporary=Files.createTempDirectory("blossom-preview-");SwingUtilities.invokeAndWait(()->{try{Launcher panel=new Launcher(temporary);panel.setSize(980,680);layoutAll(panel);java.awt.image.BufferedImage image=new java.awt.image.BufferedImage(980,680,java.awt.image.BufferedImage.TYPE_INT_RGB);Graphics2D graphics=image.createGraphics();panel.printAll(graphics);graphics.dispose();javax.imageio.ImageIO.write(image,"png",Paths.get(args[1]).toFile());panel.worker.shutdownNow();}catch(Exception e){throw new RuntimeException(e);}});return;
         }
-        if(GraphicsEnvironment.isHeadless()){System.err.println("Blossom Launcher requires a graphical desktop.");return;}
+        if(GraphicsEnvironment.isHeadless()){System.err.println("Blossom Launcher cannot access Java graphical support. Use a non-headless Java runtime from a desktop terminal. On Fedora: install java-21-openjdk and launch with /usr/lib/jvm/jre-21-openjdk/bin/java.");return;}
         Files.createDirectories(root);FileChannel channel=FileChannel.open(root.resolve("launcher.lock"),StandardOpenOption.CREATE,StandardOpenOption.WRITE);FileLock lock=channel.tryLock();
         if(lock==null){channel.close();JOptionPane.showMessageDialog(null,"Blossom Launcher is already open.");return;}
         SwingUtilities.invokeLater(()->{try{

@@ -10,7 +10,7 @@ public final class LaunchPlan {
         List<String> command=new ArrayList<String>(Arrays.asList(java.toString(),"-Xms512M","-Xmx"+memory+"M","-Djava.library.path="+install.natives.toAbsolutePath(),
             "-Dlog4j.configurationFile="+install.logging.toAbsolutePath(),"-javaagent:"+agent.toAbsolutePath(),"-cp",String.join(File.pathSeparator,cp),"dev.blossom.agent.GameBootstrap",
             "--username",session.username,"--version","1.8.9","--gameDir",game.toAbsolutePath().toString(),"--assetsDir",install.assets.toAbsolutePath().toString(),"--assetIndex",install.assetIndex,
-            "--uuid",session.uuid,"--accessToken","@BLOSSOM_SESSION@","--userProperties","{}","--userType","msa","--width",Integer.toString(width),"--height",Integer.toString(height)));
+            "--uuid",session.uuid,"--accessToken","@BLOSSOM_SESSION@","--userProperties","{}","--userType",session.offline?"legacy":"msa","--width",Integer.toString(width),"--height",Integer.toString(height)));
         return Collections.unmodifiableList(command);
     }
     public static void verifyJava8(Path executable)throws Exception {
@@ -25,5 +25,5 @@ public final class LaunchPlan {
         try(DataOutputStream out=new DataOutputStream(process.getOutputStream())){out.writeUTF(session.token);out.flush();}
         catch(IOException e){process.destroy();throw e;}return process;
     }
-    public static String redact(String line,MicrosoftLogin.Session session){return line.replace(session.token,"[session redacted]");}
+    public static String redact(String line,MicrosoftLogin.Session session){return session.offline?line:line.replace(session.token,"[session redacted]");}
 }

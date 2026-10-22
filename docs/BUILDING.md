@@ -18,7 +18,7 @@ run JVM `-Xverify:all` with the packaged startup agent. Test/build classes and a
 Minecraft libraries are excluded from the output. ASM core and license notices
 are included. Build-time ASM Commons and ECJ are excluded.
 
-Output: `build/libs/blossom-client-0.2.0-alpha.1.jar`.
+Output: `build/libs/blossom-client-0.2.0-alpha.2.jar`.
 
 CI runs this pipeline on Linux and Windows and uploads the compiled JAR. A green
 CI build verifies compilation and non-graphical tests, not gameplay.
@@ -26,6 +26,6 @@ CI build verifies compilation and non-graphical tests, not gameplay.
 The original spec is in docs/SPECIFICATION.md. Commit coherent working checkpoints
 and push each checkpoint; never represent planned matrix rows as completed.
 
-The pipeline also builds `build/libs/blossom-launcher-0.2.0-alpha.1.jar`, embedding
+The pipeline also builds `build/libs/blossom-launcher-0.2.0-alpha.2.jar`, embedding
 the tested agent. Run `python scripts/package_release.py` after building to create
 the release ZIP and checksums under `build/release`.

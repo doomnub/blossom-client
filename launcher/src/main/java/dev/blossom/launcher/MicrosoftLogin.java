@@ -12,8 +12,15 @@ public final class MicrosoftLogin {
         public final String username,uuid;
         final String token;
         final long expiresAt;
-        Session(String username,String uuid,String token,long expiresAt){this.username=username;this.uuid=uuid;this.token=token;this.expiresAt=expiresAt;}
-        public boolean valid(){return System.currentTimeMillis()<expiresAt-60000;}
+        public final boolean offline;
+        Session(String username,String uuid,String token,long expiresAt){this(username,uuid,token,expiresAt,false);}
+        private Session(String username,String uuid,String token,long expiresAt,boolean offline){this.username=username;this.uuid=uuid;this.token=token;this.expiresAt=expiresAt;this.offline=offline;}
+        public static Session offline(String username){
+            if(username==null||!username.matches("[A-Za-z0-9_]{1,16}"))throw new IllegalArgumentException("Offline username must contain 1–16 letters, numbers or underscores.");
+            String uuid=UUID.nameUUIDFromBytes(("OfflinePlayer:"+username).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString().replace("-","");
+            return new Session(username,uuid,"0",Long.MAX_VALUE,true);
+        }
+        public boolean valid(){return offline||System.currentTimeMillis()<expiresAt-60000;}
     }
     public static final class DeviceCode {
         public final String code,url;

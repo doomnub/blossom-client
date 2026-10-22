@@ -65,3 +65,13 @@ Installer smoke test completed on Linux x86_64 using the real pinned Mojang
 manifest: client, selected libraries, native archives, all 734 assets and logging
 configuration downloaded and verified. The workspace HTTP proxy was required.
 This verifies installation, not game startup.
+
+## 0.2.0-alpha.2 offline launch
+
+32 launcher checks now include offline username validation, the vanilla-compatible
+name-based UUID, case sensitivity, legacy session arguments, expiry behavior,
+unchanged offline logs and verified cached downloads. Online-session checks remain.
+A full installed cache was checked with HTTPS_PROXY pointing to an unreachable
+local port: all 734 assets and required game files verified without network.
+The updated Swing layout was rendered headlessly. Graphical game startup remains
+unverified in this environment.
