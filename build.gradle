@@ -1,0 +1,26 @@
+plugins { id 'java' }
+group = 'dev.blossom'
+version = '0.1.0-dev'
+repositories { mavenCentral() }
+java { sourceCompatibility = JavaVersion.VERSION_1_8; targetCompatibility = JavaVersion.VERSION_1_8 }
+tasks.register('prepareGame', Exec) { commandLine 'python3', 'scripts/build.py', '--prepare-only' }
+compileJava.dependsOn prepareGame
+dependencies {
+    implementation 'org.ow2.asm:asm:9.7.1'
+    compileOnly files('.deps/client.jar')
+    compileOnly fileTree('.deps/libraries') { include '**/*.jar' }
+}
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest { attributes 'Premain-Class': 'dev.blossom.agent.BlossomAgent', 'Main-Class': 'dev.blossom.agent.InstallHelp' }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA', 'module-info.class'
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+tasks.register('coreTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.blossom.CoreTest'
+}
+check.dependsOn coreTest
