@@ -2,7 +2,7 @@ package dev.blossom;
 /** JVM verifier links transformed game classes without initializing Minecraft or graphics. */
 public final class LinkageTest {
     public static void main(String[] args)throws Exception {
-        for(String name:new String[]{"ave","avo","bet","avb","dev.blossom.integration.BlossomHooks","dev.blossom.integration.BlossomCapes","dev.blossom.integration.BlossomMenu","dev.blossom.integration.BlossomHudEditor","dev.blossom.integration.BlossomControls","dev.blossom.integration.BlossomHud","dev.blossom.integration.BlossomModuleSettings","dev.blossom.integration.BlossomTextInput","dev.blossom.integration.BlossomCapeMenu","dev.blossom.integration.BlossomConfirm"}) {
+        for(String name:new String[]{"ave","avo","bet","avb","aya","dev.blossom.integration.BlossomHooks","dev.blossom.integration.BlossomCapes","dev.blossom.integration.BlossomMenu","dev.blossom.integration.BlossomHudEditor","dev.blossom.integration.BlossomControls","dev.blossom.integration.BlossomHud","dev.blossom.integration.BlossomModuleSettings","dev.blossom.integration.BlossomTextInput","dev.blossom.integration.BlossomCapeMenu","dev.blossom.integration.BlossomConfirm"}) {
             Class<?> type=Class.forName(name,false,LinkageTest.class.getClassLoader());
             type.getDeclaredMethods();type.getDeclaredFields();type.getDeclaredConstructors();
             System.out.println("Verified and linked "+name);

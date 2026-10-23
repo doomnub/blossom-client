@@ -14,13 +14,13 @@ public final class BlossomControls {
     public static void press(int code) {
         updateContext();ave mc=ave.A();
         if(mc.m!=null||mc.h==null)return;
-        if(BlossomHooks.modules.on("sprint")&&code==mc.t.ai.h())sprint.press();
+        if(BlossomHooks.modules.on("sprint")&&code==mc.t.ae.h())sprint.press();
         if(BlossomHooks.modules.on("sneak")&&code==mc.t.ad.h())sneak.press();
     }
     public static boolean down(boolean original,avb binding) {
         updateContext();ave mc=ave.A();
         if(mc.m!=null||mc.h==null)return original;
-        if(binding==mc.t.ai&&BlossomHooks.modules.on("sprint"))return sprint.active();
+        if(binding==mc.t.ae&&BlossomHooks.modules.on("sprint"))return sprint.active();
         if(binding==mc.t.ad&&BlossomHooks.modules.on("sneak"))return sneak.active();
         return original;
     }

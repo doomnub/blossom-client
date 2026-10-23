@@ -8,7 +8,7 @@ The full requested scope is preserved in [SPECIFICATION](docs/SPECIFICATION.md).
 Most advanced features are still planned. No graphical game launch, multiplayer,
 OptiFine compatibility or performance improvement is claimed yet.
 
-## Try 0.2.1
+## Try 0.2.2
 
 The custom launcher installs vanilla 1.8.9, embeds the Blossom agent, and offers
 Microsoft device-code sign-in or offline play with a local username. Download the ZIP from [Releases](https://github.com/doomnub/blossom-client/releases)
@@ -27,7 +27,7 @@ Implemented paths, pending graphical acceptance:
 - Local static PNG, horizontal/vertical spritesheet and PNG-sequence cape selection; worker
   decoding, cached textures, per-frame durations and ping-pong animation.
 
-Validated here: compilation, 43 core assertions and 43 launcher checks, transformation of real 1.8.9
+Validated here: compilation, 48 core assertions and 43 launcher checks, transformation of real 1.8.9
 classes, and full JVM verification/linking. See [test record](docs/TESTING.md).
 Unsupported class fingerprints disable Blossom cleanly. OptiFine is not supported
 by this initial adapter; it needs a separately tested integration.

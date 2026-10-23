@@ -5,7 +5,7 @@ public final class ClientSettings {
     public int zoomKey=46, crosshairLength=5, crosshairGap=3, crosshairThickness=1;
     public int crosshairColor=0xffff83b5, menuKey=54;
     public float zoomFactor=4;
-    public boolean crosshairDot=false, privacy=false;
+    public boolean crosshairDot=false, privacy=false, fpsAverage=false, fpsLows=false;
     public void load(Properties p) {
         zoomKey=integer(p,"zoom.key",46,1,255);
         menuKey=integer(p,"menu.key",54,1,255);
@@ -15,9 +15,12 @@ public final class ClientSettings {
         crosshairThickness=integer(p,"crosshair.thickness",1,1,6);
         crosshairColor=color(p,"crosshair.color",0xffff83b5);
         crosshairDot=Boolean.parseBoolean(p.getProperty("crosshair.dot","false"));
+        fpsAverage=Boolean.parseBoolean(p.getProperty("fps.average","false"));
+        fpsLows=Boolean.parseBoolean(p.getProperty("fps.lows","false"));
         privacy=Boolean.parseBoolean(p.getProperty("privacy","false"));
     }
     public void save(Properties p) {
+        p.setProperty("fps.average",Boolean.toString(fpsAverage));p.setProperty("fps.lows",Boolean.toString(fpsLows));
         p.setProperty("zoom.key",Integer.toString(zoomKey));p.setProperty("menu.key",Integer.toString(menuKey));
         p.setProperty("zoom.factor",Float.toString(zoomFactor));
         p.setProperty("crosshair.length",Integer.toString(crosshairLength));

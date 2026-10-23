@@ -27,7 +27,7 @@ public final class BlossomMenu extends axu {
         if(visible.size()>perPage) n.add(new avs(106,l/2+150,52,38,20,"Next"));
     }
     @Override protected void a(avs button) {
-        if(button.k>=200){Modules.Module module=visible.get(button.k-200);j.a(module.id.equals("cape")?new BlossomCapeMenu(this):new BlossomModuleSettings(this,module));return;}
+        if(button.k>=200){Modules.Module module=visible.get(button.k-200);j.a(new BlossomModuleSettings(this,module));return;}
         if(button.k<100){Modules.Module module=visible.get(button.k);module.enabled=!module.enabled;}
         else switch(button.k) {
             case 100:j.a(new BlossomHudEditor(this));return;

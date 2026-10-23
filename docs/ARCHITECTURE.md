@@ -60,3 +60,9 @@ Additional hooks: ave.av()V main-loop entry samples every frame; avo.b()Z retain
 vanilla crosshair eligibility while suppressing its texture when custom is enabled;
 avb.d()Z adapts only the configured sprint/sneak key query. Keyboard.next() events
 inside runTick observe press edges. No player movement method is transformed.
+
+0.2.2 adds fingerprint-checked `aya` (GuiMainMenu) init/action hooks. The vanilla
+screen passes its button list and dimensions into Blossom; no reflective access
+to protected screen fields is needed. Sprint key reads use `avh.ae`, verified
+against the vanilla constructor's `key.sprint` declaration. No player movement
+or sprint-state method is patched.

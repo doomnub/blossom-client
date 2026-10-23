@@ -1,4 +1,4 @@
-# Blossom Launcher — 0.2.1
+# Blossom Launcher — 0.2.2
 
 Standalone dark/pink launcher for the Forge-free Blossom Minecraft 1.8.9 client.
 Supported targets: Windows and Linux, x86_64. Gameplay remains experimental.
@@ -65,7 +65,7 @@ macOS, ARM and 32-bit systems are not supported by this adapter.
 - Right Shift opens the client menu in-game. OptiFine/mod loaders are unsupported.
 
 Existing authenticated launchers may use the separate agent JAR with
-`-javaagent:/absolute/path/blossom-client-0.2.1.jar` and vanilla 1.8.9 on Java 8.
+`-javaagent:/absolute/path/blossom-client-0.2.2.jar` and vanilla 1.8.9 on Java 8.
 
 ## Verification limits
 

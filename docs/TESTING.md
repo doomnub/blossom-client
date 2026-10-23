@@ -85,3 +85,19 @@ Azul Zulu 8u504; the installed executable reported Java 8 and 64-bit. Reuse with
 an unreachable HTTPS proxy succeeded. Launcher tests and a headless Swing render
 also ran using the downloaded Java 8. Windows CI checks the Java installer and
 the packaged PowerShell bootstrap. This does not establish graphical gameplay.
+
+## 0.2.2 module feedback fixes
+
+48 core assertions and 43 launcher checks pass. New FPS tests cover migration
+defaults, option persistence and current-vs-average output. Real-game ASM checks
+read the vanilla `key.sprint` constructor mapping, require the integration to use
+it for both press and held-key queries, reject interception of the attack binding,
+and verify the player-mechanics class is not transformed. Five vanilla classes
+now undergo transformation tests, including both main-menu button hooks. JVM
+verification links the transformed main menu and all integration screens.
+
+Manual acceptance still needed: open settings from the title screen; inspect both
+tabs at different GUI scales; stop/restart forward movement with sprint latched;
+confirm hunger/collision/item-use restrictions and ordinary mouse attacks remain
+vanilla; switch FPS mode and reopen the profile. These are not claimed tested
+without graphical Minecraft.

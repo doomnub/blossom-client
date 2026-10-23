@@ -19,10 +19,10 @@ public final class BlossomHooks {
     private static float savedFov,savedGamma;
     private static ProfileStore store;
     private static long lastFrame,refresh;
-    private static String fps="Collecting frame samples";
+    private static double[] fpsStats=new double[6];
     private static final java.util.concurrent.ExecutorService saves=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom profile writer");t.setDaemon(true);return t;});
     static {
-        modules.add("fps","Frame statistics","HUD","Average FPS and slowest 1% / 0.1% frames",true,.03f);
+        modules.add("fps","Frame statistics","HUD","Current or average FPS, with optional slow-frame statistics",true,.03f);
         modules.add("cps","Clicks per second","HUD","Actual left/right mouse input events",true,.09f);
         modules.add("keys","Keystrokes","HUD","Movement bindings and mouse state",true,.15f);
         modules.add("ping","Server ping","HUD","Server-provided player-list latency",true,.21f);
@@ -97,6 +97,13 @@ public final class BlossomHooks {
         if(zooming){mc.t.aI=savedFov;zooming=false;}
         if(bright){mc.t.aJ=savedGamma;bright=false;}
     }
+    public static void mainMenuInit(axu screen,java.util.List<avs> buttons,int width,int height) {
+        try {init();buttons.add(new avs(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
+        catch(Exception|LinkageError e){System.err.println("[Blossom] Main menu entry unavailable: "+e.getMessage());}
+    }
+    public static void mainMenuClick(axu screen,avs button) {
+        if(button.k==42069&&initialized&&!failed)ave.A().a(new BlossomMenu(screen));
+    }
     public static void mouseEvent(boolean available) {
         if(!available||!Mouse.getEventButtonState()) return;
         if(initialized&&!failed)BlossomControls.press(Mouse.getEventButton()-100);
@@ -127,7 +134,7 @@ public final class BlossomHooks {
     public static String text(Modules.Module m) {
         ave mc=ave.A();long now=System.nanoTime();
         switch(m.id) {
-            case "fps":return fps;
+            case "fps":return FpsDisplay.format(ave.ai(),fpsStats,settings.fpsAverage,settings.fpsLows);
             case "cps":return left.count(now,1000000000L)+" | "+right.count(now,1000000000L)+" CPS";
             case "keys":return (mc.t.Y.d()?"[W]":" W ")+(mc.t.ab.d()?"[A]":" A ")+(mc.t.Z.d()?"[S]":" S ")+(mc.t.aa.d()?"[D]":" D ")+(mc.t.ac.d()?" [SPACE]":" SPACE")+(Mouse.isButtonDown(0)?" [L]":" L")+(Mouse.isButtonDown(1)?" [R]":" R");
             case "movement":return BlossomControls.status();
@@ -147,7 +154,7 @@ public final class BlossomHooks {
     public static void hud() {
         if(!initialized||failed) return;
         long now=System.nanoTime();
-        if(now-refresh>1000000000L){double[] s=frames.snapshot();fps=String.format(Locale.ROOT,"%.0f FPS | 1%% %.0f | 0.1%% %.0f%s",s[0],s[1],s[2],s[5]<1000?" (warming)":"");refresh=now;}
+        if(now-refresh>1000000000L){fpsStats=frames.snapshot();refresh=now;}
         if(ave.A().m instanceof BlossomHudEditor) return;
         drawHud();
     }

@@ -19,3 +19,26 @@ rename the corrupt file before restarting to create a new one.
 
 Not implemented: migrations beyond schema 1, unlimited named profile UI,
 import/export dialogs, profile-specific keybinds/colors/video settings, recovery UI.
+
+## Module settings (0.2.2)
+
+Every module Settings screen has Visuals and Functionality tabs. Visuals contains
+HUD text size, opacity, text/background colors, shadow, position lock and reset;
+crosshair shape/color options also live here. Functionality contains enablement,
+FPS content, zoom behavior/keybind and coordinate privacy where applicable.
+Small GUI sizes paginate the controls. Cape settings link to the existing library
+and animation controls. Modules without visual options explicitly say so.
+
+FPS defaults to Current: Minecraft's built-in recent FPS counter (updated roughly
+once per second). Average uses the collected frame-time samples, up to 10,000
+frames. Slow-tail 1%/0.1% values can be enabled independently; they default off.
+`fps.average` and `fps.lows` are boolean profile settings. Existing profiles that
+lack these keys get the new Current default.
+
+Toggle sprint listens to the vanilla sprint binding (normally Left Ctrl), not the
+attack binding. While latched on, it supplies a held sprint-key input; stopping
+and restarting forward movement does not clear it. Vanilla decides when sprinting
+is allowed. Menus, player/world changes and module disable still clear the latch.
+
+The Minecraft title screen now has a Blossom settings button in the upper-right.
+Escape from the Blossom module menu returns to the title screen.

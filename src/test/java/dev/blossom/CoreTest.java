@@ -50,6 +50,13 @@ public final class CoreTest {
         check(settings.zoomFactor==4&&settings.crosshairLength==20,"settings bounds and NaN");
         settings.crosshairColor=0x8099aabb;settings.save(values);ClientSettings restored=new ClientSettings();restored.load(values);check(restored.crosshairColor==0x8099aabb,"ARGB roundtrip");
         modules.get("a").scale=2;modules.get("a").saveStyle(values);modules.get("a").resetLayout();modules.get("a").loadStyle(values);check(modules.get("a").scale==2,"HUD style roundtrip");
+        ClientSettings defaults=new ClientSettings();defaults.load(new Properties());
+        check(!defaults.fpsAverage&&!defaults.fpsLows,"current FPS is the default for new and existing profiles");
+        defaults.fpsAverage=true;defaults.fpsLows=true;Properties fpsValues=new Properties();defaults.save(fpsValues);ClientSettings fpsRestored=new ClientSettings();fpsRestored.load(fpsValues);
+        check(fpsRestored.fpsAverage&&fpsRestored.fpsLows,"FPS behavior settings persist");
+        check(FpsDisplay.format(165,s,false,false).equals("165 FPS"),"current FPS uses vanilla counter, not historical average");
+        check(FpsDisplay.format(165,s,true,false).equals("96 FPS (average)"),"average FPS selection");
+        check(FpsDisplay.format(165,s,false,true).contains("1% 20"),"slow-frame statistics optional");
         System.out.println("Core tests passed: "+checks);
     }
 }

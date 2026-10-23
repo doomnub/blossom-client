@@ -4,6 +4,7 @@ import java.io.*;
 import java.security.MessageDigest;
 public final class BlossomAgent {
     private static final String[][] EXPECTED={
+        {"aya","459cbafe9aacb8afa13c1427a332dc6bc35f4f11d71339447cc703fe08f735fe"},
         {"avb","4e4885a7bfeeb54bfedcf3bfe1b2a3c9330fba4527d0dc44110c00b397d10ab3"},
         {"ave","430a17aa1911bcd0251aa4dcecb013b6c5b251bb5d0122c7305de0e36dc33e82"},
         {"avo","e883bdbfc9170fffba120e7915f62a7224116e5259dba7b91129757323509e78"},
