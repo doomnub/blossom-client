@@ -1,7 +1,7 @@
 package dev.blossom.core;
 /** Time-based FOV-ratio interpolation; scroll adjustment belongs only to one hold. */
 public final class SmoothZoom {
-    private static final long DURATION=250000000L;
+    private static final long DURATION=80000000L;
     private double from=1,target=1,factor=4;
     private long start;
     private boolean held;

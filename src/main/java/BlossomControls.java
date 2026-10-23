@@ -15,8 +15,8 @@ public final class BlossomControls {
     public static void press(int code) {
         updateContext();ave mc=ave.A();
         if(mc.m!=null||mc.h==null)return;
-        if(BlossomHooks.modules.on("sprint")&&code==mc.t.ae.h())sprint.press();
-        if(BlossomHooks.modules.on("sneak")&&code==mc.t.ad.h())sneak.press();
+        if(BlossomHooks.modules.on("sprint")&&code==mc.t.ae.i())sprint.press();
+        if(BlossomHooks.modules.on("sneak")&&code==mc.t.ad.i())sneak.press();
     }
     public static boolean down(boolean original,avb binding) {
         updateContext();ave mc=ave.A();

@@ -6,13 +6,14 @@ import org.objectweb.asm.*;
 public final class BlossomTransformer implements ClassFileTransformer {
     private static final String HOOKS="dev/blossom/integration/BlossomHooks";
     @Override public byte[] transform(ClassLoader loader,String name,Class<?> type,ProtectionDomain domain,byte[] bytes) {
-        if(!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name))return null;
+        if(!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return null;
         ClassReader reader=new ClassReader(bytes);
         ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);
         final int[] hooks={0};
         reader.accept(new ClassVisitor(Opcodes.ASM9,writer){
             @Override public MethodVisitor visitMethod(int access,String method,String desc,String sig,String[] ex){
                 MethodVisitor base=super.visitMethod(access,method,desc,sig,ex);
+                final boolean raw=name.equals("avf")&&method.equals("c")&&desc.equals("()V");
                 final boolean fov=name.equals("bfk")&&method.equals("a")&&desc.equals("(FZ)F");
                 final boolean tick=name.equals("ave")&&method.equals("s")&&desc.equals("()V");
                 final boolean frame=name.equals("ave")&&method.equals("av")&&desc.equals("()V");
@@ -20,9 +21,9 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 final boolean crosshair=name.equals("avo")&&method.equals("b")&&desc.equals("()Z");
                 final boolean cape=name.equals("bet")&&method.equals("k")&&desc.equals("()Ljy;");
                 final boolean key=name.equals("avb")&&method.equals("d")&&desc.equals("()Z");
-                final boolean menuInit=name.equals("aya")&&method.equals("b")&&desc.equals("()V");
-                final boolean menuClick=name.equals("aya")&&method.equals("a")&&desc.equals("(Lavs;)V");
-                if(tick||frame||hud||crosshair||cape||key||menuInit||menuClick||fov)hooks[0]++;
+                final boolean menuInit=(name.equals("aya")||name.equals("axp"))&&method.equals("b")&&desc.equals("()V");
+                final boolean menuClick=(name.equals("aya")||name.equals("axp"))&&method.equals("a")&&desc.equals("(Lavs;)V");
+                if(tick||frame||hud||crosshair||cape||key||menuInit||menuClick||fov||raw)hooks[0]++;
                 return new MethodVisitor(Opcodes.ASM9,base){
                     @Override public void visitCode(){
                         super.visitCode();
@@ -38,13 +39,14 @@ public final class BlossomTransformer implements ClassFileTransformer {
                         }
                     }
                     @Override public void visitInsn(int op){
+                        if(op==Opcodes.RETURN&&raw){super.visitVarInsn(Opcodes.ALOAD,0);super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"rawMouse","(Lavf;)V",false);}
                         if(op==Opcodes.FRETURN&&fov){super.visitVarInsn(Opcodes.ILOAD,2);super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"cameraFov","(FZ)F",false);}
                         if(op==Opcodes.RETURN&&menuInit){
                             super.visitVarInsn(Opcodes.ALOAD,0);
-                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"aya","n","Ljava/util/List;");
-                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"aya","l","I");
-                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"aya","m","I");
-                            super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"mainMenuInit","(Laxu;Ljava/util/List;II)V",false);
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,name,"n","Ljava/util/List;");
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,name,"l","I");
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,name,"m","I");
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,name.equals("axp")?"pauseMenuInit":"mainMenuInit","(Laxu;Ljava/util/List;II)V",false);
                         }
                         if(op==Opcodes.RETURN&&(tick||hud))super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,tick?"tick":"hud","()V",false);
                         if(op==Opcodes.ARETURN&&cape){super.visitVarInsn(Opcodes.ALOAD,0);super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"cape","(Ljy;Lbet;)Ljy;",false);}
@@ -55,7 +57,7 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 };
             }
         },0);
-        int expected=name.equals("ave")||name.equals("avo")||name.equals("aya")?2:1;
+        int expected=name.equals("ave")||name.equals("avo")||name.equals("aya")||name.equals("axp")?2:1;
         if(hooks[0]!=expected){System.err.println("[Blossom] Unsupported class layout: "+name);return null;}
         System.out.println("[Blossom] Patched "+name);
         return writer.toByteArray();

@@ -24,7 +24,8 @@ public final class BlossomMenu extends axu {
         n.add(new BlossomButton(103,l/2-145,y+24,94,20,"Save preset"));
         n.add(new BlossomButton(104,l/2-47,y+24,94,20,"Load preset"));
         n.add(new BlossomButton(105,l/2+51,y+24,94,20,"Background"));
-        n.add(new BlossomButton(107,l/2-145,y+48,192,20,"All HUD visuals"));
+        n.add(new BlossomButton(107,l/2-145,y+48,94,20,"HUD visuals"));
+        n.add(new BlossomButton(109,l/2-47,y+48,94,20,"Keybindings"));
         n.add(new BlossomButton(108,l/2+51,y+48,94,20,"Back"));
         if(visible.size()>perPage) n.add(new BlossomButton(106,l/2+95,28,50,20,"Next"));
     }
@@ -39,6 +40,7 @@ public final class BlossomMenu extends axu {
             case 104:BlossomHooks.load("preset");break;
             case 105:BlossomHooks.background=!BlossomHooks.background;break;
             case 107:j.a(new BlossomModuleSettings(this));return;
+            case 109:j.a(new ayj(this,j.t));return;
             case 108:j.a(previous);return;
             case 106:page++;if(page*Math.max(1,(m-164)/24)>=visible.size()) page=0;break;
             default:break;
@@ -55,7 +57,7 @@ public final class BlossomMenu extends axu {
         q.a(status,l/2-145,m-25,0xffd8a9c4);
     }
     @Override protected void a(char typed,int key) {
-        if(key==Keyboard.KEY_ESCAPE||key==Keyboard.KEY_RSHIFT){j.a(previous);return;}
+        if(key==Keyboard.KEY_ESCAPE||key==BlossomBindings.menu.i()){j.a(previous);return;}
         if(key==Keyboard.KEY_BACK&&query.length()>0)query=query.substring(0,query.length()-1);
         else if(typed>=32&&typed!=127&&query.length()<40)query+=typed;
         page=0;b();

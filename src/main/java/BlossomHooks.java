@@ -37,7 +37,8 @@ public final class BlossomHooks {
         modules.add("sprint","Toggle sprint","Controls","Press your vanilla sprint key to toggle; vanilla restrictions remain",false,0);
         modules.add("sneak","Toggle sneak","Controls","Press your vanilla sneak key to toggle; menus clear the latch",false,0);
         modules.add("crosshair","Custom crosshair","Visual","Original plus/dot crosshair with configurable dimensions",false,0);
-        modules.add("zoom","Zoom (hold C)","Visual","Smooth hold-to-zoom; scroll adjusts this hold only",true,0);
+        modules.add("zoom","Zoom","Visual","Smooth hold-to-zoom; scroll adjusts this hold only",true,0);
+        modules.add("rawmouse","Raw mouse input","Controls","Unaccelerated Windows Raw Input / Linux XInput2 motion",false,0);
         modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
         modules.add("cape","Local cape","Cosmetics","Replace your cape with a local texture animation",true,0);
@@ -51,7 +52,7 @@ public final class BlossomHooks {
             try{saves.awaitTermination(3,java.util.concurrent.TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}
         },"Blossom save flush"));
         initialized=true;
-        load("default");
+        load("default");BlossomBindings.init();
     }
     public static void load(String name) {
         try {
@@ -72,7 +73,7 @@ public final class BlossomHooks {
             p.setProperty(m.id+".enabled",Boolean.toString(m.enabled));
             p.setProperty(m.id+".x",Float.toString(m.x));p.setProperty(m.id+".y",Float.toString(m.y));m.saveStyle(p);
         }
-        settings.save(p);
+        BlossomBindings.sync();settings.save(p);
         capes.save(p);p.setProperty("hud.background",Boolean.toString(background));
         saves.execute(()->{try{store.save(name,p);}catch(Exception e){System.err.println("[Blossom] Profile save failed: "+e.getMessage());}});
         message="Saving "+name;
@@ -80,8 +81,8 @@ public final class BlossomHooks {
     public static void tick() {
         if(failed) return;
         try {
-            init();ave mc=ave.A();boolean down=Keyboard.isKeyDown(settings.menuKey);
-            if(down&&!shift&&!(mc.m instanceof BlossomMenu)&&!(mc.m instanceof BlossomHudEditor)) mc.a(new BlossomMenu(mc.m));
+            init();BlossomBindings.sync();ave mc=ave.A();boolean down=BlossomBindings.held(BlossomBindings.menu);
+            if(down&&!shift&&(mc.m==null||mc.m instanceof aya||mc.m instanceof axp)) mc.a(new BlossomMenu(mc.m));
             shift=down;
             boolean wantBright=modules.on("bright")&&mc.h!=null;
             if(wantBright&&!bright){savedGamma=mc.t.aJ;mc.t.aJ=12f;bright=true;}
@@ -98,6 +99,12 @@ public final class BlossomHooks {
         try {init();buttons.add(new BlossomButton(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
         catch(Exception|LinkageError e){System.err.println("[Blossom] Main menu entry unavailable: "+e.getMessage());}
     }
+    public static void pauseMenuInit(axu screen,java.util.List<avs> buttons,int width,int height){
+        try{init();buttons.add(new BlossomButton(42069,width/2-100,pauseButtonY(buttons,height),200,20,"Blossom settings"));}
+        catch(Exception|LinkageError e){System.err.println("[Blossom] Pause entry unavailable");}
+    }
+    private static int pauseButtonY(java.util.List<avs> buttons,int height){for(avs b:buttons)if(b.k==0)return b.i-24;return height/4+56;}
+    public static void rawMouse(avf helper){if(initialized&&!failed)BlossomMouse.sample(helper);}
     public static void mainMenuClick(axu screen,avs button) {
         if(button.k==42069&&initialized&&!failed)ave.A().a(new BlossomMenu(screen));
     }
@@ -121,6 +128,7 @@ public final class BlossomHooks {
     }
     public static void frame() {
         if(!initialized||failed)return;
+        BlossomMouse.idle();
         long now=System.nanoTime();
         if(lastFrame!=0)frames.record(now-lastFrame);
         lastFrame=now;

@@ -5,6 +5,7 @@ public final class BlossomModuleSettings extends axu {
     private final axu previous;
     private final Modules.Module module;
     private boolean binding,visuals=true;
+    private avb bindingTarget;
     private final boolean global;
     private int page,rows;
     public BlossomModuleSettings(axu previous,Modules.Module module){this.previous=previous;this.module=module;this.global=false;}
@@ -36,14 +37,17 @@ public final class BlossomModuleSettings extends axu {
         }else{
             add(0,"Enabled: "+module.enabled);
             if(module.id.equals("fps")){add(31,"FPS display: "+(BlossomHooks.settings.fpsAverage?"Average":"Current"));add(32,"Show 1% / 0.1% lows: "+BlossomHooks.settings.fpsLows);}
-            if(module.id.equals("zoom")){add(10,"Zoom factor: "+BlossomHooks.settings.zoomFactor);add(11,binding?"Press a key (Esc cancels)":"Zoom key: "+Keyboard.getKeyName(BlossomHooks.settings.zoomKey));}
+            if(module.id.equals("zoom")){add(10,"Zoom factor: "+BlossomHooks.settings.zoomFactor);add(11,binding?"Press key / mouse (Esc unbinds)":"Zoom key: "+BlossomBindings.label(BlossomBindings.zoom));}
+            if(module.id.equals("sprint")||module.id.equals("sneak"))add(12,binding?"Press key / mouse (Esc unbinds)":"Key: "+BlossomBindings.label(module.id.equals("sprint")?j.t.ae:j.t.ad));
+            if(module.id.equals("keys"))add(13,"Edit movement / mouse controls");
+            if(module.id.equals("rawmouse"))add(14,BlossomMouse.status());
             if(module.id.equals("coords"))add(30,"Privacy: "+BlossomHooks.settings.privacy);
             if(module.id.equals("cape"))add(40,"Animation playback / library");
             if(HudText.supportsCompact(module.id))add(33,"Extra text / units: "+module.extraText);
             if(module.id.equals("potions"))add(34,"Hide level 1: "+BlossomHooks.settings.hidePotionOne);
             if(module.id.equals("fov")){
                 FovSettings f=BlossomHooks.settings.fov;
-                add(50,"Constant FOV: "+f.constant);add(51,"Base FOV: "+f.base);add(52,"Dynamic sprint: "+f.dynamicSprint);
+                add(50,"FOV mode: "+(f.constant?"Static":"Dynamic"));add(51,"Base FOV: "+f.base);
                 add(53,"Sprint FOV: "+f.sprint);add(54,"Speed I FOV: "+f.speed);add(55,"Speed II+ FOV: "+f.speedTwo);
                 add(56,"Slowness FOV: "+f.slowness);add(57,"Flying FOV: "+f.flying);add(58,"Drawn bow FOV: "+f.bow);
             }
@@ -72,7 +76,9 @@ public final class BlossomModuleSettings extends axu {
             case 6:module.resetLayout();break;
             case 7:module.locked=!module.locked;break;
             case 10:s.zoomFactor=s.zoomFactor>=10?2:s.zoomFactor+1;break;
-            case 11:binding=true;break;
+            case 11:bindingTarget=BlossomBindings.zoom;binding=true;break;
+            case 12:bindingTarget=module.id.equals("sprint")?j.t.ae:j.t.ad;binding=true;break;
+            case 13:j.a(new ayj(this,j.t));return;
             case 20:s.crosshairLength=s.crosshairLength%20+1;break;
             case 21:s.crosshairGap=(s.crosshairGap+1)%17;break;
             case 22:s.crosshairThickness=s.crosshairThickness%6+1;break;
@@ -83,8 +89,8 @@ public final class BlossomModuleSettings extends axu {
             case 32:s.fpsLows=!s.fpsLows;break;
             case 33:module.extraText=!module.extraText;break;
             case 34:s.hidePotionOne=!s.hidePotionOne;break;
-            case 50:s.fov.constant=!s.fov.constant;break;
-            case 52:s.fov.dynamicSprint=!s.fov.dynamicSprint;break;
+            case 50:s.fov.setConstant(!s.fov.constant);break;
+            
             case 51:case 53:case 54:case 55:case 56:case 57:case 58:
                 final int id=button.k;final FovSettings f=s.fov;
                 float current=id==51?f.base:id==53?f.sprint:id==54?f.speed:id==55?f.speedTwo:id==56?f.slowness:id==57?f.flying:f.bow;
@@ -110,9 +116,10 @@ public final class BlossomModuleSettings extends axu {
         super.a(x,y,delta);
     }
     @Override protected void a(char typed,int key){
-        if(binding){if(key!=Keyboard.KEY_ESCAPE&&key>0){if(key==BlossomHooks.settings.menuKey){BlossomHooks.message="Key conflicts with mod menu";binding=false;b();return;}BlossomHooks.settings.zoomKey=key;}binding=false;b();return;}
+        if(binding){BlossomBindings.set(bindingTarget,key==Keyboard.KEY_ESCAPE?0:key);binding=false;b();return;}
         if(key==Keyboard.KEY_ESCAPE)j.a(previous);
     }
+    @Override protected void a(int x,int y,int button) {if(binding){BlossomBindings.set(bindingTarget,button-100);binding=false;b();return;}super.a(x,y,button);}
     @Override public void m(){BlossomHooks.save("default");}
     @Override public boolean d(){return false;}
 }

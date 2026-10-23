@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"ave","avo","bet","avb","aya","bfk"}) {
+            for(String name:new String[]{"ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -21,6 +21,8 @@ public final class TransformTest {
                         public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.equals("dev/blossom/integration/BlossomHooks")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
+                if(name.equals("axp")&&!calls.contains("pauseMenuInit"))throw new AssertionError("Pause menu hook missing");
+                if(name.equals("avf")&&!calls.contains("rawMouse"))throw new AssertionError("Raw mouse hook missing");
                 if(name.equals("bfk")&&!calls.contains("cameraFov"))throw new AssertionError("Camera FOV hook missing");
                 if(name.equals("ave")&&!calls.contains("mouseWheel"))throw new AssertionError("Zoom scroll hook missing");
                 if(name.equals("aya")&&!(calls.contains("mainMenuInit")&&calls.contains("mainMenuClick")))throw new AssertionError("Title-screen button hooks missing");
@@ -50,6 +52,6 @@ public final class TransformTest {
             if(transformer.transform(null,"bew",null,null,new byte[0])!=null)throw new AssertionError("Vanilla player mechanics must remain unmodified");
         }
         System.out.println("Sprint binding and vanilla player-mechanics regression checks passed");
-        System.out.println("Real 1.8.9 bytecode transform checks passed: 6 classes");
+        System.out.println("Real 1.8.9 bytecode transform checks passed: 8 classes");
     }
 }

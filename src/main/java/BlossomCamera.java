@@ -4,7 +4,7 @@ import org.lwjgl.input.Keyboard;
 public final class BlossomCamera {
     private static final SmoothZoom zoom=new SmoothZoom();
     private static Object player;
-    private static boolean held(){ave mc=ave.A();return mc.h!=null&&mc.m==null&&BlossomHooks.modules.on("zoom")&&Keyboard.isKeyDown(BlossomHooks.settings.zoomKey);}
+    private static boolean held(){ave mc=ave.A();return mc.h!=null&&mc.m==null&&BlossomHooks.modules.on("zoom")&&BlossomBindings.held(BlossomBindings.zoom);}
     public static float fov(float vanilla,boolean worldProjection){
         ave mc=ave.A();if(mc.h!=player){zoom.reset();player=mc.h;}
         if(!worldProjection||mc.h==null)return vanilla;
