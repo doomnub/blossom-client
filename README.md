@@ -8,7 +8,7 @@ The full requested scope is preserved in [SPECIFICATION](docs/SPECIFICATION.md).
 Most advanced features are still planned. No graphical game launch, multiplayer,
 OptiFine compatibility or performance improvement is claimed yet.
 
-## Try 0.2.2
+## Try 0.2.3
 
 The custom launcher installs vanilla 1.8.9, embeds the Blossom agent, and offers
 Microsoft device-code sign-in or offline play with a local username. Download the ZIP from [Releases](https://github.com/doomnub/blossom-client/releases)
@@ -23,11 +23,12 @@ Implemented paths, pending graphical acceptance:
 - Draggable normalized HUD positions with optional grid snapping/backgrounds.
 - FPS slow-tail statistics, left/right CPS, keystrokes, server ping, coordinates,
   heading, clock and heap-memory display.
-- Hold-C zoom and reversible gamma/fullbright control.
+- Smooth hold-C zoom with temporary scroll adjustment, configurable FOV, and gamma control.
+- Shared HUD styling, compact labels, optional potion levels, and persistent sprint toggle.
 - Local static PNG, horizontal/vertical spritesheet and PNG-sequence cape selection; worker
   decoding, cached textures, per-frame durations and ping-pong animation.
 
-Validated here: compilation, 48 core assertions and 43 launcher checks, transformation of real 1.8.9
+Validated here: compilation, 72 core assertions and 43 launcher checks, transformation of real 1.8.9
 classes, and full JVM verification/linking. See [test record](docs/TESTING.md).
 Unsupported class fingerprints disable Blossom cleanly. OptiFine is not supported
 by this initial adapter; it needs a separately tested integration.

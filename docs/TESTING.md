@@ -101,3 +101,20 @@ tabs at different GUI scales; stop/restart forward movement with sprint latched;
 confirm hunger/collision/item-use restrictions and ordinary mouse attacks remain
 vanilla; switch FPS mode and reopen the profile. These are not claimed tested
 without graphical Minecraft.
+
+
+## 0.2.3 camera, HUD and visual updates — 2026-10-23
+
+72 core assertions and 43 launcher checks pass. Added coverage for sprint latch
+preservation and suspended menu input, zoom interpolation/scroll/reset, constant
+and conditional FOV, compact labels, potion level visibility and shared HUD
+styles without moving/enabling modules. Six real vanilla classes transform;
+JVM verification links those plus thirteen relocated integration classes.
+Managed Java 8 install/reuse passes. The updated Swing launcher preview was
+rendered headlessly and visually inspected.
+
+Still requires graphical Minecraft acceptance: menu sprint suspension/resumption
+under vanilla hunger, collision and item-use restrictions; zoom release/scroll
+and hotbar suppression; FOV under each effect/bow/flight/water condition; module
+and cape layouts at all GUI scales; compact labels and shared style persistence.
+No live gameplay, performance or multiplayer acceptance is claimed.

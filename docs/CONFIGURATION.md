@@ -20,7 +20,7 @@ rename the corrupt file before restarting to create a new one.
 Not implemented: migrations beyond schema 1, unlimited named profile UI,
 import/export dialogs, profile-specific keybinds/colors/video settings, recovery UI.
 
-## Module settings (0.2.2)
+## Module settings (0.2.3)
 
 Every module Settings screen has Visuals and Functionality tabs. Visuals contains
 HUD text size, opacity, text/background colors, shadow, position lock and reset;
@@ -38,7 +38,31 @@ lack these keys get the new Current default.
 Toggle sprint listens to the vanilla sprint binding (normally Left Ctrl), not the
 attack binding. While latched on, it supplies a held sprint-key input; stopping
 and restarting forward movement does not clear it. Vanilla decides when sprinting
-is allowed. Menus, player/world changes and module disable still clear the latch.
+is allowed. Menus suspend sprint input without clearing the latch. Closing a menu resumes the held input. Player/world changes and module disable clear it.
 
 The Minecraft title screen now has a Blossom settings button in the upper-right.
 Escape from the Blossom module menu returns to the title screen.
+
+
+## Camera and HUD controls (0.2.3)
+
+Zoom interpolates the camera FOV over 250 ms on press, release and scroll changes.
+Scroll while holding the zoom key to adjust magnification between 2x and 20x;
+these events do not scroll the hotbar. Each hold starts from the configured zoom
+factor, and scroll adjustments are never saved to the profile.
+
+The optional FOV module defaults to Constant FOV. Turn Constant off for separate
+base, sprint, Speed I, Speed II+, slowness, flying and bow values (30–110 degrees).
+Slowness takes precedence over speed; sprint and flight add their difference from
+the base value; bow draw interpolates toward its configured value. Dynamic sprint
+can be disabled independently. This changes camera projection only. Constant mode
+also normalizes vanilla underwater/death FOV changes. Zoom applies afterward.
+
+Extra text can be disabled per applicable HUD in Functionality: FPS, CPS, ping,
+coordinates, direction, memory, resources, movement and armor. For example,
+`0 ms (server)` becomes `0`, and `0 | 0 CPS` becomes `0 | 0`.
+Potion effects have a Hide level 1 option, enabled by default; higher levels remain.
+
+All HUD visuals on the module page edits text size, opacity, text/background
+colors and shadow across every HUD, including disabled HUDs. Only the property
+you change is copied; positions, locks and enabled states remain intact.

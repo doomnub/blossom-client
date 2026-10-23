@@ -66,3 +66,10 @@ screen passes its button list and dimensions into Blossom; no reflective access
 to protected screen fields is needed. Sprint key reads use `avh.ae`, verified
 against the vanilla constructor's `key.sprint` declaration. No player movement
 or sprint-state method is patched.
+
+
+0.2.3 adds fingerprint-checked `bfk` EntityRenderer FOV return hooks and wraps
+Minecraft's wheel read. Projection changes never write game FOV settings or
+player physics. Monotonic 250 ms interpolation composes after optional FOV
+normalization; consumed zoom wheel input never reaches vanilla hotbar selection.
+Sprint keeps a separate latch from the menu-suspended held-key output.
