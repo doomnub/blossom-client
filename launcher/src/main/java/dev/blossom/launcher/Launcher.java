@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 /** Standalone Swing launcher. All network/disk/game work runs off the event thread. */
 public final class Launcher extends JPanel {
-    private static final Color BG=new Color(20,18,25),CARD=new Color(31,28,37),PINK=new Color(255,131,181),TEXT=new Color(239,235,242),MUTED=new Color(170,163,182);
+    private static final Color BG=new Color(25,17,29),CARD=new Color(39,25,40),PINK=new Color(255,131,181),TEXT=new Color(239,235,242),MUTED=new Color(170,163,182);
     private final Path root;
     private final Properties config=new Properties();
     private final ExecutorService worker=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom launcher worker");t.setDaemon(true);return t;});
@@ -40,14 +40,21 @@ public final class Launcher extends JPanel {
         this.root=root;Files.createDirectories(root);loadConfig();
         setLayout(new BorderLayout(0,20));setBorder(new EmptyBorder(28,32,24,32));setBackground(BG);
         JPanel header=new JPanel(new BorderLayout());header.setOpaque(false);
-        JLabel title=new JLabel("BLOSSOM");title.setFont(new Font("SansSerif",Font.BOLD,32));title.setForeground(PINK);header.add(title,BorderLayout.NORTH);
+        JLabel title=new JLabel("BLOSSOM");title.setFont(new Font("SansSerif",Font.BOLD,36));title.setForeground(PINK);header.add(title,BorderLayout.NORTH);
         JLabel tagline=new JLabel("Minecraft 1.8.9  /  Your client. Your capes.");tagline.setForeground(MUTED);tagline.setBorder(new EmptyBorder(8,0,0,0));header.add(tagline,BorderLayout.SOUTH);add(header,BorderLayout.NORTH);
         JTabbedPane tabs=new JTabbedPane();tabs.addTab("Play",playPanel());tabs.addTab("Settings",settingsPanel());tabs.addTab("Logs",logsPanel());add(tabs,BorderLayout.CENTER);
         JPanel footer=new JPanel(new BorderLayout(12,8));footer.setOpaque(false);status.setForeground(MUTED);footer.add(status,BorderLayout.NORTH);
         progress.setIndeterminate(false);progress.setPreferredSize(new Dimension(200,6));footer.add(progress,BorderLayout.CENTER);cancel.setEnabled(false);footer.add(cancel,BorderLayout.EAST);add(footer,BorderLayout.SOUTH);
         automaticJava.addActionListener(e->updateButtons());installJava.addActionListener(e->runTask(()->managedJava()));offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
         signOut.addActionListener(e->{session=null;account.setText("Not signed in");updateButtons();});
-        theme(this);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));updateButtons();
+        theme(this);tabs.setBackground(new Color(63,31,52));tabs.setForeground(TEXT);tabs.setBorder(BorderFactory.createMatteBorder(2,0,0,0,PINK));progress.setForeground(PINK);progress.setBackground(BG);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));offlinePlay.setBackground(new Color(115,48,85));offlinePlay.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(PINK),new EmptyBorder(7,14,7,14)));updateButtons();
+    }
+    @Override protected void paintComponent(Graphics graphics){
+        super.paintComponent(graphics);Graphics2D g=(Graphics2D)graphics.create();
+        g.setPaint(new GradientPaint(0,0,new Color(57,24,44),getWidth(),getHeight(),BG));g.fillRect(0,0,getWidth(),getHeight());
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        g.translate(getWidth()-82,66);g.setColor(new Color(255,131,181,48));for(int i=0;i<5;i++){g.rotate(Math.PI*2/5);g.fillOval(-11,-36,22,32);}
+        g.setColor(PINK);g.fillOval(-5,-5,10,10);g.dispose();
     }
     private JPanel playPanel(){
         JPanel panel=new JPanel(new BorderLayout(20,18));panel.setBorder(new EmptyBorder(24,24,24,24));
@@ -161,7 +168,7 @@ public final class Launcher extends JPanel {
     private static void theme(Component component){
         component.setForeground(TEXT);if(!(component instanceof JProgressBar))component.setBackground(component instanceof javax.swing.text.JTextComponent?BG:CARD);
         if(component instanceof JLabel&&((JLabel)component).getFont().getSize()<20)component.setFont(new Font("SansSerif",Font.PLAIN,13));
-        if(component instanceof JButton){((JButton)component).setFocusPainted(false);component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));}
+        if(component instanceof JButton){((JButton)component).setFocusPainted(false);((JButton)component).setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(112,61,91)),new EmptyBorder(6,12,6,12)));component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));}
         if(component instanceof Container)for(Component child:((Container)component).getComponents())theme(child);
     }
     public static void main(String[] args)throws Exception {
@@ -177,7 +184,7 @@ public final class Launcher extends JPanel {
         Files.createDirectories(root);FileChannel channel=FileChannel.open(root.resolve("launcher.lock"),StandardOpenOption.CREATE,StandardOpenOption.WRITE);FileLock lock=channel.tryLock();
         if(lock==null){channel.close();JOptionPane.showMessageDialog(null,"Blossom Launcher is already open.");return;}
         SwingUtilities.invokeLater(()->{try{
-            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Launcher • 0.2.2");frame.setContentPane(panel);frame.setMinimumSize(new Dimension(880,640));frame.setSize(980,680);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Launcher • 0.2.3");frame.setContentPane(panel);frame.setMinimumSize(new Dimension(880,640));frame.setSize(980,680);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter(){public void windowClosing(WindowEvent event){synchronized(panel){if(panel.game!=null&&panel.game.isAlive()){JOptionPane.showMessageDialog(frame,"Close Minecraft before closing the launcher.");return;}if(panel.task!=null)panel.task.cancel(true);panel.worker.shutdownNow();try{lock.release();channel.close();}catch(IOException ignored){}frame.dispose();System.exit(0);}}});frame.setVisible(true);
         }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage(),"Blossom",JOptionPane.ERROR_MESSAGE);System.exit(1);}});
     }

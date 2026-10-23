@@ -8,15 +8,17 @@ public final class Modules {
         public float x, y;
         public float scale=1, opacity=1;
         public int textColor=0xffff83b5, backgroundColor=0x99201a23;
-        public boolean shadow=true, locked=false;
+        public boolean shadow=true, locked=false, extraText=true;
         public final float defaultY;
         public void resetLayout(){x=.02f;y=defaultY;scale=1;opacity=1;textColor=0xffff83b5;backgroundColor=0x99201a23;shadow=true;locked=false;}
         public void loadStyle(Properties p){
+            extraText=Boolean.parseBoolean(p.getProperty(id+".extraText","true"));
             scale=ClientSettings.number(p,id+".scale",1,.5f,3);opacity=ClientSettings.number(p,id+".opacity",1,.1f,1);
             textColor=ClientSettings.color(p,id+".textColor",0xffff83b5);backgroundColor=ClientSettings.color(p,id+".backgroundColor",0x99201a23);
             shadow=Boolean.parseBoolean(p.getProperty(id+".shadow","true"));locked=Boolean.parseBoolean(p.getProperty(id+".locked","false"));
         }
         public void saveStyle(Properties p){
+            p.setProperty(id+".extraText",Boolean.toString(extraText));
             p.setProperty(id+".scale",Float.toString(scale));p.setProperty(id+".opacity",Float.toString(opacity));
             p.setProperty(id+".textColor",Integer.toHexString(textColor));p.setProperty(id+".backgroundColor",Integer.toHexString(backgroundColor));
             p.setProperty(id+".shadow",Boolean.toString(shadow));p.setProperty(id+".locked",Boolean.toString(locked));
@@ -30,6 +32,11 @@ public final class Modules {
     public void add(String id,String name,String category,String description,boolean enabled,float y) {
         if(modules.containsKey(id)) throw new IllegalArgumentException("Duplicate module: "+id);
         modules.put(id,new Module(id,name,category,description,enabled,y));
+    }
+    public void applyVisual(String setting,Module source){
+        for(Module m:modules.values())if(m.category.equals("HUD")){
+            switch(setting){case "scale":m.scale=source.scale;break;case "opacity":m.opacity=source.opacity;break;case "textColor":m.textColor=source.textColor;break;case "backgroundColor":m.backgroundColor=source.backgroundColor;break;case "shadow":m.shadow=source.shadow;break;default:throw new IllegalArgumentException(setting);}
+        }
     }
     public Module get(String id) { return modules.get(id); }
     public boolean on(String id) { Module m=get(id); return m!=null && m.enabled; }

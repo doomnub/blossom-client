@@ -6,7 +6,8 @@ public final class BlossomControls {
     private static Object player;
     public static void updateContext() {
         ave mc=ave.A();
-        if(mc.h!=player||mc.h==null||mc.m!=null){sprint.reset();sneak.reset();}
+        sprint.context(mc.h==player&&mc.h!=null,mc.m!=null,true);
+        sneak.context(mc.h==player&&mc.h!=null,mc.m!=null,false);
         if(!BlossomHooks.modules.on("sprint"))sprint.reset();
         if(!BlossomHooks.modules.on("sneak"))sneak.reset();
         player=mc.h;
@@ -19,8 +20,8 @@ public final class BlossomControls {
     }
     public static boolean down(boolean original,avb binding) {
         updateContext();ave mc=ave.A();
+        if(binding==mc.t.ae&&BlossomHooks.modules.on("sprint"))return mc.h!=null&&sprint.requested(mc.m!=null);
         if(mc.m!=null||mc.h==null)return original;
-        if(binding==mc.t.ae&&BlossomHooks.modules.on("sprint"))return sprint.active();
         if(binding==mc.t.ad&&BlossomHooks.modules.on("sneak"))return sneak.active();
         return original;
     }

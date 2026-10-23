@@ -57,6 +57,32 @@ public final class CoreTest {
         check(FpsDisplay.format(165,s,false,false).equals("165 FPS"),"current FPS uses vanilla counter, not historical average");
         check(FpsDisplay.format(165,s,true,false).equals("96 FPS (average)"),"average FPS selection");
         check(FpsDisplay.format(165,s,false,true).contains("1% 20"),"slow-frame statistics optional");
+        ToggleLatch persistent=new ToggleLatch();persistent.press();persistent.context(true,true,true);
+        check(persistent.active()&&!persistent.requested(true),"sprint remembers toggle but pauses in menu");
+        persistent.context(true,false,true);check(persistent.requested(false),"sprint resumes after menu");persistent.context(false,false,true);check(!persistent.active(),"world change clears sprint");
+        SmoothZoom zoom=new SmoothZoom();check(zoom.update(true,4,0)==1,"zoom starts without a jump");
+        check(Math.abs(zoom.update(true,4,125000000)-.625)<.0001,"zoom FOV ratio lerps at halfway");
+        check(zoom.update(true,4,250000000)==.25,"zoom reaches target in quarter second");
+        zoom.scroll(1,250000000);check(zoom.value(250000000)==.25,"scroll starts continuously");
+        check(Math.abs(zoom.value(500000000)-.2)<.0001,"scroll target interpolates");
+        zoom.update(false,4,500000000);check(zoom.value(750000000)==1,"zoom release interpolates to normal");
+        zoom.update(true,4,750000000);check(zoom.factor()==4&&zoom.value(1000000000)==.25,"new hold resets scroll level");
+        zoom.reset();check(zoom.value(1000000000)==1,"world reset clears zoom");
+        FovSettings fov=new FovSettings();check(fov.calculate(true,2,true,true,1)==70,"constant FOV ignores all conditions");
+        fov.constant=false;check(fov.calculate(true,0,false,false,0)==80,"sprint FOV override");
+        check(fov.calculate(false,2,false,false,0)==90,"speed II override");
+        check(fov.calculate(false,2,true,false,0)==60,"slowness takes precedence over speed");
+        check(fov.calculate(false,0,false,true,0)==80,"flight override");
+        check(fov.calculate(false,0,false,false,1)==55,"fully drawn bow FOV");
+        Properties fovProperties=new Properties();fov.base=95;fov.save(fovProperties);FovSettings loadedFov=new FovSettings();loadedFov.load(fovProperties);check(loadedFov.base==95&&!loadedFov.constant,"FOV settings persist");
+        check(HudText.compact("ping","0 ms (server)").equals("0"),"compact ping");
+        check(HudText.compact("cps","0 | 0 CPS").equals("0 | 0"),"compact CPS");
+        check(HudText.potionLevel(0,true).isEmpty()&&HudText.potionLevel(1,true).equals(" 2")&&HudText.potionLevel(0,false).equals(" 1"),"optional level one without losing higher potion levels");
+        Modules all=new Modules();all.add("fps","FPS","HUD","",true,0);all.add("ping","Ping","HUD","",false,.3f);all.add("zoom","Zoom","Visual","",true,0);
+        Modules.Module source=new Modules.Module("style","Style","HUD","",true,0);source.scale=2;all.applyVisual("scale",source);
+        check(all.get("fps").scale==2&&all.get("ping").scale==2&&all.get("zoom").scale==1,"global visuals affect enabled and disabled HUDs only");
+        check(all.get("ping").y==.3f&&!all.get("ping").enabled,"global style preserves layout and enablement");
+        all.get("fps").extraText=false;Properties compactProfile=new Properties();all.get("fps").saveStyle(compactProfile);all.get("fps").extraText=true;all.get("fps").loadStyle(compactProfile);check(!all.get("fps").extraText,"compact text persists per module");
         System.out.println("Core tests passed: "+checks);
     }
 }

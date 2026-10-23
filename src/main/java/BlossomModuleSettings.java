@@ -5,21 +5,27 @@ public final class BlossomModuleSettings extends axu {
     private final axu previous;
     private final Modules.Module module;
     private boolean binding,visuals=true;
+    private final boolean global;
     private int page,rows;
-    public BlossomModuleSettings(axu previous,Modules.Module module){this.previous=previous;this.module=module;}
+    public BlossomModuleSettings(axu previous,Modules.Module module){this.previous=previous;this.module=module;this.global=false;}
+    public BlossomModuleSettings(axu previous){
+        this.previous=previous;this.global=true;this.module=new Modules.Module("all","All HUD visuals","HUD","",true,0);
+        Modules.Module source=BlossomHooks.modules.get("fps");module.scale=source.scale;module.opacity=source.opacity;module.textColor=source.textColor;module.backgroundColor=source.backgroundColor;module.shadow=source.shadow;
+    }
+    private void apply(String setting){if(global)BlossomHooks.modules.applyVisual(setting,module);}
     private int perPage(){return Math.max(1,(m-124)/22);}
-    private void add(int id,String label){int row=rows++;if(row/perPage()==page)n.add(new avs(id,l/2-140,72+(row%perPage())*22,280,20,label));}
+    private void add(int id,String label){int row=rows++;if(row/perPage()==page)n.add(new BlossomButton(id,l/2-140,72+(row%perPage())*22,280,20,label));}
     @Override public void b(){
         n.clear();rows=0;
-        avs visual=new avs(90,l/2-140,44,138,20,"Visuals"),functional=new avs(91,l/2+2,44,138,20,"Functionality");
-        visual.l=!visuals;functional.l=visuals;n.add(visual);n.add(functional);
+        avs visual=new BlossomButton(90,l/2-140,44,138,20,"Visuals"),functional=new BlossomButton(91,l/2+2,44,138,20,"Functionality");
+        visual.l=!visuals;functional.l=visuals;n.add(visual);if(!global)n.add(functional);
         if(visuals){
             if(module.category.equals("HUD")){
                 add(1,String.format(java.util.Locale.ROOT,"Text size: %.2fx",module.scale));
                 add(2,String.format(java.util.Locale.ROOT,"Opacity: %.0f%%",module.opacity*100));
                 add(3,"Text color: "+Integer.toHexString(module.textColor));
                 add(4,"Background color: "+Integer.toHexString(module.backgroundColor));
-                add(5,"Text shadow: "+module.shadow);add(7,"Lock position: "+module.locked);add(6,"Reset layout and style");
+                add(5,"Text shadow: "+module.shadow);if(!global){add(7,"Lock position: "+module.locked);add(6,"Reset layout and style");}
             }
             if(module.id.equals("crosshair")){
                 add(20,"Length: "+BlossomHooks.settings.crosshairLength);add(21,"Gap: "+BlossomHooks.settings.crosshairGap);
@@ -33,28 +39,36 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("zoom")){add(10,"Zoom factor: "+BlossomHooks.settings.zoomFactor);add(11,binding?"Press a key (Esc cancels)":"Zoom key: "+Keyboard.getKeyName(BlossomHooks.settings.zoomKey));}
             if(module.id.equals("coords"))add(30,"Privacy: "+BlossomHooks.settings.privacy);
             if(module.id.equals("cape"))add(40,"Animation playback / library");
+            if(HudText.supportsCompact(module.id))add(33,"Extra text / units: "+module.extraText);
+            if(module.id.equals("potions"))add(34,"Hide level 1: "+BlossomHooks.settings.hidePotionOne);
+            if(module.id.equals("fov")){
+                FovSettings f=BlossomHooks.settings.fov;
+                add(50,"Constant FOV: "+f.constant);add(51,"Base FOV: "+f.base);add(52,"Dynamic sprint: "+f.dynamicSprint);
+                add(53,"Sprint FOV: "+f.sprint);add(54,"Speed I FOV: "+f.speed);add(55,"Speed II+ FOV: "+f.speedTwo);
+                add(56,"Slowness FOV: "+f.slowness);add(57,"Flying FOV: "+f.flying);add(58,"Drawn bow FOV: "+f.bow);
+            }
         }
         if(rows>perPage()){
-            n.add(new avs(92,l/2-140,m-50,138,20,"Previous page"));n.add(new avs(93,l/2+2,m-50,138,20,"Next page"));
+            n.add(new BlossomButton(92,l/2-140,m-50,138,20,"Previous page"));n.add(new BlossomButton(93,l/2+2,m-50,138,20,"Next page"));
         }
-        n.add(new avs(99,l/2-140,m-26,280,20,"Back"));
+        n.add(new BlossomButton(99,l/2-140,m-26,280,20,"Back"));
     }
     private void color(boolean bg){
         int value=bg?module.backgroundColor:module.textColor;
         j.a(new BlossomTextInput(this,"Color: 8 hex digits AARRGGBB",String.format("%08x",value),text->{
             if(!text.matches("[0-9a-fA-F]{8}"))throw new IllegalArgumentException("Use 8 hex digits, e.g. ffff83b5");
-            int color=(int)Long.parseLong(text,16);if(bg)module.backgroundColor=color;else module.textColor=color;
+            int color=(int)Long.parseLong(text,16);if(bg)module.backgroundColor=color;else module.textColor=color;apply(bg?"backgroundColor":"textColor");
         }));
     }
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
         switch(button.k){
             case 0:module.enabled=!module.enabled;break;
-            case 1:module.scale=module.scale>=3?.5f:Math.min(3,module.scale+.25f);break;
-            case 2:module.opacity=module.opacity<=.11f?1:module.opacity-.1f;break;
+            case 1:module.scale=module.scale>=3?.5f:Math.min(3,module.scale+.25f);apply("scale");break;
+            case 2:module.opacity=module.opacity<=.11f?1:module.opacity-.1f;apply("opacity");break;
             case 3:color(false);return;
             case 4:color(true);return;
-            case 5:module.shadow=!module.shadow;break;
+            case 5:module.shadow=!module.shadow;apply("shadow");break;
             case 6:module.resetLayout();break;
             case 7:module.locked=!module.locked;break;
             case 10:s.zoomFactor=s.zoomFactor>=10?2:s.zoomFactor+1;break;
@@ -67,6 +81,18 @@ public final class BlossomModuleSettings extends axu {
             case 30:s.privacy=!s.privacy;break;
             case 31:s.fpsAverage=!s.fpsAverage;break;
             case 32:s.fpsLows=!s.fpsLows;break;
+            case 33:module.extraText=!module.extraText;break;
+            case 34:s.hidePotionOne=!s.hidePotionOne;break;
+            case 50:s.fov.constant=!s.fov.constant;break;
+            case 52:s.fov.dynamicSprint=!s.fov.dynamicSprint;break;
+            case 51:case 53:case 54:case 55:case 56:case 57:case 58:
+                final int id=button.k;final FovSettings f=s.fov;
+                float current=id==51?f.base:id==53?f.sprint:id==54?f.speed:id==55?f.speedTwo:id==56?f.slowness:id==57?f.flying:f.bow;
+                j.a(new BlossomTextInput(this,"FOV in degrees (30 to 110)",Float.toString(current),text->{
+                    float v;try{v=Float.parseFloat(text);}catch(NumberFormatException e){throw new IllegalArgumentException("Enter a number from 30 to 110");}
+                    if(!Float.isFinite(v)||v<30||v>110)throw new IllegalArgumentException("Enter a number from 30 to 110");
+                    switch(id){case 51:f.base=v;break;case 53:f.sprint=v;break;case 54:f.speed=v;break;case 55:f.speedTwo=v;break;case 56:f.slowness=v;break;case 57:f.flying=v;break;default:f.bow=v;}
+                }));return;
             case 40:j.a(new BlossomCapeMenu(this));return;
             case 90:visuals=true;page=0;binding=false;break;
             case 91:visuals=false;page=0;binding=false;break;
@@ -78,8 +104,8 @@ public final class BlossomModuleSettings extends axu {
         b();
     }
     @Override public void a(int x,int y,float delta){
-        c();q.a(module.name,l/2-140,12,BlossomHooks.accent);
-        q.a(visuals?"Appearance and HUD layout":"Module behavior and displayed information",l/2-140,28,0xffcccccc);
+        c();BlossomTheme.panel(l,m);q.a(module.name,l/2-140,12,BlossomHooks.accent);
+        q.a(global?"Applies to every HUD, including disabled ones":visuals?"Appearance and HUD layout":"Module behavior and displayed information",l/2-140,28,0xffcccccc);
         if(rows==0)q.a("No visual options for this module.",l/2-140,76,0xffcccccc);
         super.a(x,y,delta);
     }

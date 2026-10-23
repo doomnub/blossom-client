@@ -7,16 +7,16 @@ public final class BlossomCapeMenu extends axu {
     private List<String> entries=Collections.emptyList();
     private int page;
     public BlossomCapeMenu(axu previous){this.previous=previous;capes.refresh();}
-    private void action(int id,String label,int col,int row){n.add(new avs(id,l/2-140+col*94,m-111+row*24,90,20,label));}
+    private void action(int id,String label,int col,int row){n.add(new BlossomButton(id,l/2-140+col*94,m-111+row*24,90,20,label));}
     @Override public void b(){
         n.clear();entries=capes.entries;int count=Math.max(1,(m-180)/22);
         page=Math.min(page,Math.max(0,(entries.size()-1)/count));
         for(int i=page*count;i<Math.min(entries.size(),(page+1)*count);i++) {
             String name=entries.get(i);String label=(name.equals(capes.selected)?"> ":"")+name;
             if(label.length()>20)label=label.substring(0,17)+"...";
-            n.add(new avs(1000+i,l/2-140,43+(i-page*count)*22,136,20,label));
+            n.add(new BlossomButton(1000+i,l/2-140,43+(i-page*count)*22,136,20,label));
         }
-        if(entries.size()>count)n.add(new avs(120,l/2-140,43+count*22,136,20,"Next page"));
+        if(entries.size()>count)n.add(new BlossomButton(120,l/2-140,43+count*22,136,20,"Next page"));
         action(100,"Default cape",0,0);action(101,"No cape",1,0);action(102,"Import",2,0);
         action(103,capes.clock.paused()?"Resume":"Pause",0,1);action(104,"Loop: "+capes.loop,1,1);
         action(105,"Bounce: "+new String[]{"file","on","off"}[capes.pingPongMode],2,1);
@@ -45,8 +45,10 @@ public final class BlossomCapeMenu extends axu {
         b();
     }
     @Override public void a(int x,int y,float partial){
-        c();q.a("BLOSSOM / Local capes",l/2-140,12,BlossomHooks.accent);
+        c();BlossomTheme.panel(l,m);q.a("BLOSSOM / Local capes",l/2-140,12,BlossomHooks.accent);
         q.a("Mode: "+capes.mode+" | Override: "+BlossomHooks.modules.on("cape"),l/2-140,27,0xffcccccc);
+        avp.a(l/2+3,40,l/2+139,124,0xff392339);
+        avp.a(l/2+3,40,l/2+139,42,BlossomHooks.accent);
         jy preview=capes.preview();
         if(preview!=null){bfl.c(1,1,1,1);j.P().a(preview);avp.a(l/2+6,43,0f,0f,128,64,128f,64f);q.a("Frame "+(capes.frameIndex()+1)+"/"+capes.frameCount(),l/2+6,110,0xffcccccc);}
         else q.a("Select or import a PNG",l/2+6,50,0xffcccccc);

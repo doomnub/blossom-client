@@ -14,9 +14,9 @@ public final class BlossomHooks {
     public static int accent=0xffff83b5;
     public static boolean background=true;
     public static String message="";
-    private static boolean initialized,failed,shift,zooming,bright;
+    private static boolean initialized,failed,shift,bright;
     private static boolean profileWritable=true;
-    private static float savedFov,savedGamma;
+    private static float savedGamma;
     private static ProfileStore store;
     private static long lastFrame,refresh;
     private static double[] fpsStats=new double[6];
@@ -37,7 +37,8 @@ public final class BlossomHooks {
         modules.add("sprint","Toggle sprint","Controls","Press your vanilla sprint key to toggle; vanilla restrictions remain",false,0);
         modules.add("sneak","Toggle sneak","Controls","Press your vanilla sneak key to toggle; menus clear the latch",false,0);
         modules.add("crosshair","Custom crosshair","Visual","Original plus/dot crosshair with configurable dimensions",false,0);
-        modules.add("zoom","Zoom (hold C)","Visual","Hold C to divide FOV by four",true,0);
+        modules.add("zoom","Zoom (hold C)","Visual","Smooth hold-to-zoom; scroll adjusts this hold only",true,0);
+        modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
         modules.add("cape","Local cape","Cosmetics","Replace your cape with a local texture animation",true,0);
     }
@@ -82,9 +83,6 @@ public final class BlossomHooks {
             init();ave mc=ave.A();boolean down=Keyboard.isKeyDown(settings.menuKey);
             if(down&&!shift&&!(mc.m instanceof BlossomMenu)&&!(mc.m instanceof BlossomHudEditor)) mc.a(new BlossomMenu(mc.m));
             shift=down;
-            boolean zoom=modules.on("zoom")&&mc.m==null&&mc.h!=null&&Keyboard.isKeyDown(settings.zoomKey);
-            if(zoom&&!zooming){savedFov=mc.t.aI;mc.t.aI=savedFov/settings.zoomFactor;zooming=true;}
-            if(!zoom&&zooming){mc.t.aI=savedFov;zooming=false;}
             boolean wantBright=modules.on("bright")&&mc.h!=null;
             if(wantBright&&!bright){savedGamma=mc.t.aJ;mc.t.aJ=12f;bright=true;}
             if(!wantBright&&bright){mc.t.aJ=savedGamma;bright=false;}
@@ -94,11 +92,10 @@ public final class BlossomHooks {
     }
     private static void restoreSettings() {
         ave mc=ave.A();
-        if(zooming){mc.t.aI=savedFov;zooming=false;}
         if(bright){mc.t.aJ=savedGamma;bright=false;}
     }
     public static void mainMenuInit(axu screen,java.util.List<avs> buttons,int width,int height) {
-        try {init();buttons.add(new avs(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
+        try {init();buttons.add(new BlossomButton(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
         catch(Exception|LinkageError e){System.err.println("[Blossom] Main menu entry unavailable: "+e.getMessage());}
     }
     public static void mainMenuClick(axu screen,avs button) {
@@ -113,6 +110,8 @@ public final class BlossomHooks {
     public static void keyboardEvent(boolean available) {
         if(initialized&&!failed&&available&&Keyboard.getEventKeyState()&&!Keyboard.isRepeatEvent())BlossomControls.press(Keyboard.getEventKey());
     }
+    public static float cameraFov(float vanilla,boolean world){return !initialized||failed?vanilla:BlossomCamera.fov(vanilla,world);}
+    public static int mouseWheel(int delta){return !initialized||failed?delta:BlossomCamera.wheel(delta);}
     public static boolean keyDown(boolean original,avb binding) {
         return !initialized||failed?original:BlossomControls.down(original,binding);
     }

@@ -22,7 +22,7 @@ public final class BlossomHud {
             for(pf effect:effects) {
                 if(effect.a()<0||effect.a()>=pe.a.length||pe.a[effect.a()]==null)continue;
                 String warning=effect.b()<=200?"§c":"";
-                lines.add(warning+di.a(pe.a[effect.a()].a())+" "+(effect.c()+1)+"  "+pe.a(effect));
+                lines.add(warning+di.a(pe.a[effect.a()].a())+HudText.potionLevel(effect.c(),BlossomHooks.settings.hidePotionOne)+"  "+pe.a(effect));
             }
             cached.put("potions",lines.isEmpty()?new String[]{"No potion effects"}:lines.toArray(new String[0]));
         }
@@ -43,8 +43,9 @@ public final class BlossomHud {
     public static String[] lines(Modules.Module module) {
         if(module.id.equals("coords")&&BlossomHooks.settings.privacy)return new String[]{"Coordinates hidden"};
         String[] lines=cached.get(module.id);
-        if(lines!=null)return lines;
-        return new String[]{BlossomHooks.text(module)};
+        if(lines==null)lines=new String[]{BlossomHooks.text(module)};
+        if(!module.extraText){lines=lines.clone();for(int i=0;i<lines.length;i++)lines[i]=HudText.compact(module.id,lines[i]);}
+        return lines;
     }
     public static int width(Modules.Module module) {
         int w=0;for(String line:lines(module))w=Math.max(w,ave.A().k.a(line));
