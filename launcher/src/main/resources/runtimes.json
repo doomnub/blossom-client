@@ -1,0 +1,16 @@
+{
+  "linux": {
+    "name": "Azul Zulu 8u504, Linux x86_64",
+    "folder": "zulu8.96.0.205-ca-jre8.0.504-linux_x64",
+    "url": "https://cdn.azul.com/zulu/bin/zulu8.96.0.205-ca-jre8.0.504-linux_x64.zip",
+    "sha256": "fea28f937216909751399edf47656982957593fb60792e7e82a3521837209e52",
+    "executable": "bin/java"
+  },
+  "windows": {
+    "name": "Azul Zulu 8u504, Windows x86_64",
+    "folder": "zulu8.96.0.205-ca-jre8.0.504-win_x64",
+    "url": "https://cdn.azul.com/zulu/bin/zulu8.96.0.205-ca-jre8.0.504-win_x64.zip",
+    "sha256": "a4f32724c6d819c20372ac069fefa6e6c0319e1d79ba6ce4ee338d4c7e051a12",
+    "executable": "bin/java.exe"
+  }
+}

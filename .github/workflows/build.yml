@@ -18,6 +18,17 @@ jobs:
         with:
           python-version: '3.12'
       - run: python scripts/build.py
+      - run: python scripts/package_release.py
+      - name: Install and verify managed Java 8
+        run: python scripts/test_runtime.py
+      - name: Test Windows bootstrap without system Java
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION).Trim()
+          Expand-Archive "build/release/blossom-$version.zip" build/bootstrap-release
+          & build/bootstrap-release/Start-Blossom.ps1 --install-only
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: blossom-client-${{ matrix.os }}

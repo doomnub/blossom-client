@@ -15,10 +15,12 @@ public final class LaunchPlan {
     }
     public static void verifyJava8(Path executable)throws Exception {
         if(!Files.isRegularFile(executable))throw new IOException("Select the Java 8 java executable in Settings.");
-        Process p=new ProcessBuilder(executable.toString(),"-version").redirectErrorStream(true).start();
+        Process p=new ProcessBuilder(executable.toString(),"-XshowSettings:properties","-version").redirectErrorStream(true).start();
+        try {
         if(!p.waitFor(10,java.util.concurrent.TimeUnit.SECONDS)){p.destroyForcibly();throw new IOException("Java version check timed out");}
         String output=new String(Net.readLimited(p.getInputStream(),65536),java.nio.charset.StandardCharsets.UTF_8);
-        if(p.exitValue()!=0||!output.contains("\"1.8."))throw new IOException("Minecraft 1.8.9 requires a Java 8 runtime in this launcher.");
+        if(p.exitValue()!=0||!output.contains("\"1.8.")||!output.matches("(?s).*sun\\.arch\\.data\\.model\\s*=\\s*64.*"))throw new IOException("Minecraft 1.8.9 requires a 64-bit Java 8 runtime in this launcher.");
+        } finally {if(p.isAlive())p.destroyForcibly();}
     }
     public static Process start(List<String> command,Path game,MicrosoftLogin.Session session)throws IOException {
         Process process=new ProcessBuilder(command).directory(game.toFile()).redirectErrorStream(true).start();

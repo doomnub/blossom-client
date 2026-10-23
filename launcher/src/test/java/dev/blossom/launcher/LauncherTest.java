@@ -42,6 +42,18 @@ public final class LauncherTest {
             check(offlineCommand.get(offlineCommand.indexOf("--username")+1).equals("Notch"));
             check(LaunchPlan.redact("1000 blocks",offline).equals("1000 blocks"));
             Net.download("https://libraries.minecraft.net/not-requested",file,Net.hash(file,"SHA-256"),3);check(Files.size(file)==3);
+            JsonObject linux=JavaRuntime.specification("linux","amd64"),windows=JavaRuntime.specification("windows","x86_64");
+            check(linux.get("executable").getAsString().equals("bin/java"));check(windows.get("executable").getAsString().equals("bin/java.exe"));
+            check(linux.get("sha256").getAsString().matches("[a-f0-9]{64}"));
+            rejects(()->JavaRuntime.specification("linux","aarch64"));rejects(()->JavaRuntime.specification("unsupported","amd64"));
+            Path runtimeZip=root.resolve("runtime.zip"),stage=root.resolve("stage");Files.createDirectories(stage);
+            try(ZipOutputStream out=new ZipOutputStream(Files.newOutputStream(runtimeZip))){out.putNextEntry(new ZipEntry("runtime/../escape"));out.write(1);out.closeEntry();}
+            rejects(()->JavaRuntime.extract(runtimeZip,stage,"runtime"));check(!Files.exists(stage.resolve("escape")));
+            try(ZipOutputStream out=new ZipOutputStream(Files.newOutputStream(runtimeZip))){out.putNextEntry(new ZipEntry("wrong/bin/java"));out.write(1);out.closeEntry();}
+            rejects(()->JavaRuntime.extract(runtimeZip,stage,"runtime"));
+            try(ZipOutputStream out=new ZipOutputStream(Files.newOutputStream(runtimeZip))){out.putNextEntry(new ZipEntry("runtime/bin/java"));out.write(new byte[]{1,2,3});out.closeEntry();}
+            JavaRuntime.extract(runtimeZip,stage,"runtime");check(Files.size(stage.resolve("runtime/bin/java"))==3);
+            Thread.currentThread().interrupt();try{rejects(()->JavaRuntime.extract(runtimeZip,stage,"runtime"));}finally{Thread.interrupted();}
             System.out.println("Launcher tests passed: "+checks);
         }finally{try(java.util.stream.Stream<Path> paths=Files.walk(root)){for(Path p:(Iterable<Path>)paths.sorted(Comparator.reverseOrder())::iterator)Files.delete(p);}}
     }

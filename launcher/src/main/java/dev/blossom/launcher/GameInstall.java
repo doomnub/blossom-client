@@ -15,7 +15,7 @@ public final class GameInstall {
         public final List<Path> classpath;public final Path assets,natives,logging;public final String assetIndex;
         Installed(List<Path> cp,Path assets,Path natives,Path logging,String index){this.classpath=cp;this.assets=assets;this.natives=natives;this.logging=logging;assetIndex=index;}
     }
-    public static String os(){String value=System.getProperty("os.name").toLowerCase(Locale.ROOT);return value.contains("win")?"windows":value.contains("linux")?"linux":"unsupported";}
+    public static String os(){String value=System.getProperty("os.name").toLowerCase(Locale.ROOT);return value.startsWith("windows")?"windows":value.contains("linux")?"linux":"unsupported";}
     public static boolean allowed(JsonObject library,String os,String arch,String version) {
         if(!library.has("rules"))return true;boolean allowed=false;
         for(JsonElement item:library.getAsJsonArray("rules")) {

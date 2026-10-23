@@ -11,7 +11,7 @@ import java.util.*;
 /** HTTPS, bounded JSON, verified downloads; never logs HTTP bodies or credentials. */
 public final class Net {
     private static final Set<String> DOWNLOAD_HOSTS=new HashSet<String>(Arrays.asList(
-        "piston-meta.mojang.com","launchermeta.mojang.com","launcher.mojang.com",
+        "cdn.azul.com","piston-meta.mojang.com","launchermeta.mojang.com","launcher.mojang.com",
         "piston-data.mojang.com","libraries.minecraft.net","resources.download.minecraft.net","repo.maven.apache.org"));
     public static final class Failure extends IOException {
         public final int status;public final String code;

@@ -62,6 +62,7 @@ def build_launcher(agent,version):
     classes=ROOT/'build/launcher-classes';shutil.rmtree(classes,ignore_errors=True);classes.mkdir(parents=True)
     sources=sorted((ROOT/'launcher/src').rglob('*.java'))
     subprocess.run(['java','-jar',str(DEPS/'ecj.jar'),'-8','-encoding','UTF-8','-warn:none','-cp',str(DEPS/'gson.jar'),'-d',str(classes)]+list(map(str,sources)),check=True)
+    shutil.copyfile(ROOT/'launcher/src/main/resources/runtimes.json',classes/'runtimes.json')
     if (classes/'dev/blossom/launcher/LauncherTest.class').exists():
         subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+str(DEPS/'gson.jar'),'dev.blossom.launcher.LauncherTest'],check=True)
     entries={}
@@ -70,6 +71,7 @@ def build_launcher(agent,version):
             if not name.endswith('/') and (name.startswith('com/google/gson/') or name.startswith('META-INF/LICENSE')):entries[name]=gson.read(name)
     for file in classes.rglob('*.class'):
         if 'Test' not in file.name:entries[file.relative_to(classes).as_posix()]=file.read_bytes()
+    entries['runtimes.json']=(classes/'runtimes.json').read_bytes()
     entries['licenses/Apache-2.0.txt']=(ROOT/'licenses/Apache-2.0.txt').read_bytes()
     entries['client/blossom-agent.jar']=agent.read_bytes()
     entries['build.properties']=('version='+version+'\nagent.sha256='+hashlib.sha256(agent.read_bytes()).hexdigest()+'\n').encode()

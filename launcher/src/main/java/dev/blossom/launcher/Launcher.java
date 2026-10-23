@@ -23,6 +23,8 @@ public final class Launcher extends JPanel {
     private final JLabel status=new JLabel("Ready"),account=new JLabel("Not signed in"),authHint=new JLabel();
     private final JProgressBar progress=new JProgressBar();
     private final JButton signIn=new JButton("Sign in with Microsoft"),play=new JButton("PLAY  1.8.9"),install=new JButton("Install / repair"),cancel=new JButton("Cancel task"),signOut=new JButton("Sign out");
+    private final JCheckBox automaticJava=new JCheckBox("Install and select Java 8 automatically",true);
+    private final JButton installJava=new JButton("Install / check Java 8");
     private final JButton offlinePlay=new JButton("Play offline");
     private final JTextField offlineName=new JTextField("Player",16);
     private final JTextField javaPath=new JTextField(),gamePath=new JTextField(),clientId=new JTextField();
@@ -43,7 +45,7 @@ public final class Launcher extends JPanel {
         JTabbedPane tabs=new JTabbedPane();tabs.addTab("Play",playPanel());tabs.addTab("Settings",settingsPanel());tabs.addTab("Logs",logsPanel());add(tabs,BorderLayout.CENTER);
         JPanel footer=new JPanel(new BorderLayout(12,8));footer.setOpaque(false);status.setForeground(MUTED);footer.add(status,BorderLayout.NORTH);
         progress.setIndeterminate(false);progress.setPreferredSize(new Dimension(200,6));footer.add(progress,BorderLayout.CENTER);cancel.setEnabled(false);footer.add(cancel,BorderLayout.EAST);add(footer,BorderLayout.SOUTH);
-        offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
+        automaticJava.addActionListener(e->updateButtons());installJava.addActionListener(e->runTask(()->managedJava()));offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
         signOut.addActionListener(e->{session=null;account.setText("Not signed in");updateButtons();});
         theme(this);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));updateButtons();
     }
@@ -70,7 +72,7 @@ public final class Launcher extends JPanel {
         row(form,g,3,"Memory (MiB)",ram,null);row(form,g,4,"Window width",width,null);row(form,g,5,"Window height",height,null);
         JLabel note=new JLabel("Use Blossom's registered public-client ID; Microsoft may require Minecraft API approval.");g.gridx=0;g.gridy=6;g.gridwidth=3;form.add(note,g);
         JButton save=new JButton("Save settings");save.addActionListener(e->{try{saveConfig();authHint.setText(clientId.getText().trim().isEmpty()?"Microsoft sign-in needs an application ID. Offline play does not.":"Sign-in opens Microsoft's device-code page.");setStatus("Settings saved");}catch(Exception ex){error(ex);}});g.gridy=7;form.add(save,g);
-        g.gridy=8;g.weighty=1;form.add(new JPanel(),g);return form;
+        g.gridy=8;form.add(automaticJava,g);g.gridy=9;form.add(installJava,g);g.gridy=10;g.weighty=1;form.add(new JPanel(),g);return form;
     }
     private void row(JPanel panel,GridBagConstraints g,int row,String label,JComponent field,Runnable browse){
         g.gridy=row;g.gridwidth=1;g.gridx=0;g.weightx=0;panel.add(new JLabel(label),g);g.gridx=1;g.weightx=1;panel.add(field,g);g.gridx=2;g.weightx=0;
@@ -83,6 +85,7 @@ public final class Launcher extends JPanel {
     private void choose(JTextField field,boolean directory){JFileChooser chooser=new JFileChooser();chooser.setFileSelectionMode(directory?JFileChooser.DIRECTORIES_ONLY:JFileChooser.FILES_ONLY);if(chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION)field.setText(chooser.getSelectedFile().getAbsolutePath());}
     private void loadConfig()throws IOException {
         Path file=root.resolve("launcher.properties");if(Files.exists(file)){if(Files.size(file)>65536)throw new IOException("Launcher settings exceed size limit");try(Reader r=Files.newBufferedReader(file)){config.load(r);}}
+        automaticJava.setSelected(Boolean.parseBoolean(config.getProperty("java.auto","true")));
         String java8=System.getenv("JAVA8_HOME");String exe=GameInstall.os().equals("windows")?"java.exe":"java";
         javaPath.setText(config.getProperty("java",Paths.get(java8==null?System.getProperty("java.home"):java8,"bin",exe).toString()));
         gamePath.setText(config.getProperty("game",root.resolve("instances/default").toString()));
@@ -92,6 +95,7 @@ public final class Launcher extends JPanel {
     }
     private int number(String key,int fallback,int min,int max){try{return Math.max(min,Math.min(max,Integer.parseInt(config.getProperty(key))));}catch(RuntimeException e){return fallback;}}
     private void saveConfig()throws IOException {
+        config.setProperty("java.auto",Boolean.toString(automaticJava.isSelected()));
         config.setProperty("offlineName",offlineName.getText().trim());
         config.setProperty("java",javaPath.getText().trim());config.setProperty("game",gamePath.getText().trim());config.setProperty("clientId",clientId.getText().trim());
         config.setProperty("memory",ram.getValue().toString());config.setProperty("width",width.getValue().toString());config.setProperty("height",height.getValue().toString());
@@ -117,16 +121,22 @@ public final class Launcher extends JPanel {
         JButton open=new JButton("Open Microsoft login");open.addActionListener(e->{try{Desktop.getDesktop().browse(java.net.URI.create(code.url));}catch(Exception ex){setStatus("Open the displayed Microsoft URL in your browser.");}});p.add(open);
         JButton stop=new JButton("Cancel sign-in");stop.addActionListener(e->{cancelTask();deviceDialog.dispose();});p.add(stop);theme(p);deviceDialog.setContentPane(p);deviceDialog.pack();deviceDialog.setLocationRelativeTo(this);deviceDialog.setVisible(true);
     }
+    private Path managedJava()throws Exception {
+        Path executable=JavaRuntime.ensure(root,this::setStatus);
+        SwingUtilities.invokeAndWait(()->{javaPath.setText(executable.toString());try{saveConfig();}catch(IOException e){error(e);}});
+        return executable;
+    }
     private void prepare(){
-        final Path dir;
+        final Path dir;final boolean auto=automaticJava.isSelected();
         try{saveConfig();dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();}catch(Exception e){error(e);return;}
-        runTask(()->{GameInstall.install(root.resolve("cache"),dir,this::setStatus);agent();setStatus("Installation verified. Sign in and select Java 8 to play.");});
+        runTask(()->{if(auto)managedJava();GameInstall.install(root.resolve("cache"),dir,this::setStatus);agent();setStatus("Installation verified. Ready to play.");});
     }
     private void launch(boolean offline){
-        final MicrosoftLogin.Session signed;final Path java,dir;final int memory,w,h;
-        try{signed=offline?MicrosoftLogin.Session.offline(offlineName.getText().trim()):session;saveConfig();if(signed==null||!signed.valid())throw new IOException("Sign in with Microsoft first.");java=Paths.get(javaPath.getText().trim());dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();memory=(Integer)ram.getValue();w=(Integer)width.getValue();h=(Integer)height.getValue();}catch(Exception e){error(e);return;}
+        final boolean auto=automaticJava.isSelected();
+        final MicrosoftLogin.Session signed;final Path selectedJava,dir;final int memory,w,h;
+        try{signed=offline?MicrosoftLogin.Session.offline(offlineName.getText().trim()):session;saveConfig();if(signed==null||!signed.valid())throw new IOException("Sign in with Microsoft first.");selectedJava=Paths.get(javaPath.getText().trim());dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();memory=(Integer)ram.getValue();w=(Integer)width.getValue();h=(Integer)height.getValue();}catch(Exception e){error(e);return;}
         runTask(()->{
-            LaunchPlan.verifyJava8(java);GameInstall.Installed installed=GameInstall.install(root.resolve("cache"),dir,this::setStatus);Path agent=agent();
+            Path java=auto?managedJava():selectedJava;LaunchPlan.verifyJava8(java);GameInstall.Installed installed=GameInstall.install(root.resolve("cache"),dir,this::setStatus);Path agent=agent();
             List<String> command=LaunchPlan.command(java,agent,dir,installed,signed,memory,w,h);setStatus(signed.offline?"Launching offline as "+signed.username+"...":"Launching Minecraft...");
             synchronized(this){if(Thread.currentThread().isInterrupted())throw new InterruptedException();
             game=LaunchPlan.start(command,dir,signed);}SwingUtilities.invokeLater(()->cancel.setEnabled(false));
@@ -141,7 +151,7 @@ public final class Launcher extends JPanel {
             Path temp=Files.createTempFile(target.getParent(),"agent-",".tmp");try(InputStream in=Launcher.class.getResourceAsStream("/client/blossom-agent.jar")){if(in==null)throw new IOException("Missing bundled client");Files.copy(in,temp,StandardCopyOption.REPLACE_EXISTING);if(!Net.hash(temp,"SHA-256").equals(hash))throw new IOException("Bundled client checksum mismatch");Net.move(temp,target);}finally{Files.deleteIfExists(temp);}
         }return target;
     }
-    private void updateButtons(){offlinePlay.setEnabled(!busy&&(game==null||!game.isAlive()));offlineName.setEnabled(!busy);signIn.setEnabled(!busy);install.setEnabled(!busy);play.setEnabled(!busy&&(game==null||!game.isAlive())&&session!=null&&session.valid());signOut.setEnabled(!busy&&session!=null);}
+    private void updateButtons(){automaticJava.setEnabled(!busy);installJava.setEnabled(!busy);javaPath.setEditable(!automaticJava.isSelected()&&!busy);offlinePlay.setEnabled(!busy&&(game==null||!game.isAlive()));offlineName.setEnabled(!busy);signIn.setEnabled(!busy);install.setEnabled(!busy);play.setEnabled(!busy&&(game==null||!game.isAlive())&&session!=null&&session.valid());signOut.setEnabled(!busy&&session!=null);}
     private void setStatus(String text){SwingUtilities.invokeLater(()->status.setText(text));appendLog(text);}
     private void appendLog(String text){
         SwingUtilities.invokeLater(()->{if(log.getDocument().getLength()>150000)log.setText(log.getText().substring(75000));log.append(text+"\n");log.setCaretPosition(log.getDocument().getLength());});
@@ -158,6 +168,7 @@ public final class Launcher extends JPanel {
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         UIManager.put("Panel.background",CARD);UIManager.put("TextField.background",BG);UIManager.put("TextField.foreground",TEXT);UIManager.put("TextArea.background",BG);UIManager.put("TextArea.foreground",TEXT);
         Path root=Paths.get(System.getProperty("user.home"),".blossom");
+        if(args.length==2&&args[0].equals("--install-java")){System.out.println(JavaRuntime.ensure(Paths.get(args[1]).toAbsolutePath(),System.out::println));return;}
         if(args.length==2&&args[0].equals("--install-only")){Path dir=Paths.get(args[1]).toAbsolutePath();GameInstall.install(dir.resolve("cache"),dir.resolve("game"),System.out::println);return;}
         if(args.length==2&&args[0].equals("--render-preview")){
             Path temporary=Files.createTempDirectory("blossom-preview-");SwingUtilities.invokeAndWait(()->{try{Launcher panel=new Launcher(temporary);panel.setSize(980,680);layoutAll(panel);java.awt.image.BufferedImage image=new java.awt.image.BufferedImage(980,680,java.awt.image.BufferedImage.TYPE_INT_RGB);Graphics2D graphics=image.createGraphics();panel.printAll(graphics);graphics.dispose();javax.imageio.ImageIO.write(image,"png",Paths.get(args[1]).toFile());panel.worker.shutdownNow();}catch(Exception e){throw new RuntimeException(e);}});return;
@@ -166,7 +177,7 @@ public final class Launcher extends JPanel {
         Files.createDirectories(root);FileChannel channel=FileChannel.open(root.resolve("launcher.lock"),StandardOpenOption.CREATE,StandardOpenOption.WRITE);FileLock lock=channel.tryLock();
         if(lock==null){channel.close();JOptionPane.showMessageDialog(null,"Blossom Launcher is already open.");return;}
         SwingUtilities.invokeLater(()->{try{
-            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Launcher • 0.2.0 alpha");frame.setContentPane(panel);frame.setMinimumSize(new Dimension(880,640));frame.setSize(980,680);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Launcher • 0.2.1");frame.setContentPane(panel);frame.setMinimumSize(new Dimension(880,640));frame.setSize(980,680);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter(){public void windowClosing(WindowEvent event){synchronized(panel){if(panel.game!=null&&panel.game.isAlive()){JOptionPane.showMessageDialog(frame,"Close Minecraft before closing the launcher.");return;}if(panel.task!=null)panel.task.cancel(true);panel.worker.shutdownNow();try{lock.release();channel.close();}catch(IOException ignored){}frame.dispose();System.exit(0);}}});frame.setVisible(true);
         }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage(),"Blossom",JOptionPane.ERROR_MESSAGE);System.exit(1);}});
     }
