@@ -18,13 +18,13 @@ public final class BlossomMenu extends axu {
             n.add(new BlossomButton(200+index,l/2+91,52+(index-page*perPage)*24,54,20,"Settings"));
         }
         int y=m-100;
-        n.add(new BlossomButton(100,l/2-145,y,94,20,"Edit HUD"));
-        n.add(new BlossomButton(101,l/2-47,y,94,20,"Capes"));
-        n.add(new BlossomButton(102,l/2+51,y,94,20,"Cape folder"));
+        n.add(new BlossomButton(100,l/2-145,y,143,20,"Edit HUD"));
+        n.add(new BlossomButton(107,l/2+2,y,143,20,"HUD visuals"));
+
         n.add(new BlossomButton(103,l/2-145,y+24,94,20,"Save preset"));
         n.add(new BlossomButton(104,l/2-47,y+24,94,20,"Load preset"));
         n.add(new BlossomButton(105,l/2+51,y+24,94,20,"Background"));
-        n.add(new BlossomButton(107,l/2-145,y+48,94,20,"HUD visuals"));
+
         n.add(new BlossomButton(109,l/2-47,y+48,94,20,"Keybindings"));
         n.add(new BlossomButton(108,l/2+51,y+48,94,20,"Back"));
         if(visible.size()>perPage) n.add(new BlossomButton(106,l/2+95,28,50,20,"Next"));

@@ -42,6 +42,7 @@ public final class BlossomHud {
         } else lines.add(stack.q()+" x"+stack.b);
     }
     public static String[] lines(Modules.Module module) {
+        if(module.id.equals("network"))return BlossomNetwork.lines();
         if(module.id.equals("coords")&&BlossomHooks.settings.privacy)return new String[]{"Coordinates hidden"};
         String[] lines=cached.get(module.id);
         if(lines==null)lines=module.id.equals("potions")&&!BlossomHooks.settings.showEmptyPotions?new String[0]:new String[]{BlossomHooks.text(module)};
@@ -51,9 +52,9 @@ public final class BlossomHud {
     }
     public static int width(Modules.Module module) {
         int w=0;for(String line:lines(module))w=Math.max(w,ave.A().k.a(line));
-        return (int)Math.ceil((w+8)*module.scale);
+        return (int)Math.ceil((Math.max(w,module.id.equals("network")?200:0)+8)*module.scale);
     }
-    public static int height(Modules.Module module){return (int)Math.ceil((lines(module).length*11+5)*module.scale);}
+    public static int height(Modules.Module module){return (int)Math.ceil((lines(module).length*11+5+(module.id.equals("network")?30:0))*module.scale);}
     public static int x(Modules.Module module,int screen){return HudLayout.position(module.x,screen,width(module));}
     public static int y(Modules.Module module,int screen){return HudLayout.position(module.y,screen,height(module));}
     public static void draw() {
@@ -65,6 +66,7 @@ public final class BlossomHud {
                 bfl.b(x,y,0);bfl.a(module.scale,module.scale,1);
                 String[] lines=lines(module);int w=0;
                 for(String line:lines)w=Math.max(w,mc.k.a(line));
+                if(module.id.equals("network")){w=Math.max(w,200);BlossomNetwork.graph(lines.length*11+6,alpha(module.textColor,module.opacity));}
                 if(lines.length>0&&BlossomHooks.background)avp.a(0,0,w+8,lines.length*11+5,alpha(module.backgroundColor,module.opacity));
                 for(int i=0;i<lines.length;i++)mc.k.a(lines[i],4f,4f+i*11,alpha(module.textColor,module.opacity),module.shadow);
             }catch(RuntimeException e){module.enabled=false;BlossomHooks.message="Disabled failing HUD: "+module.name;}

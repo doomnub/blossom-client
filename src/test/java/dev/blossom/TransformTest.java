@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -18,7 +18,7 @@ public final class TransformTest {
                 java.util.Set<String> calls=new java.util.HashSet<String>();
                 int[] hooks={0};new ClassReader(patched).accept(new ClassVisitor(Opcodes.ASM9){
                     public MethodVisitor visitMethod(int a,String m,String d,String s,String[] e){return new MethodVisitor(Opcodes.ASM9){
-                        public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.equals("dev/blossom/integration/BlossomHooks")){hooks[0]++;calls.add(method);}}
+                        public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.startsWith("dev/blossom/integration/Blossom")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
                 if(name.equals("axp")&&!calls.contains("pauseMenuInit"))throw new AssertionError("Pause menu hook missing");

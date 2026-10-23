@@ -41,7 +41,11 @@ public final class BlossomHooks {
         modules.add("rawmouse","Raw mouse input","Controls","Unaccelerated Windows Raw Input / Linux XInput2 motion",false,0);
         modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
-        modules.add("cape","Local cape","Cosmetics","Replace your cape with a local texture animation",true,0);
+        modules.add("hitcolor","Hit Color","Visual","Custom damage tint, duration and fade",false,0);
+        modules.add("particles","Particle Changer","Visual","Per-category particle appearance and density",false,0);
+        modules.add("network","Network Graph","HUD","Passive throughput, packet activity and server latency history",false,.6f);
+        modules.add("capephysics","Cape Physics","Cosmetics","Simulated cloth with body and self collision",false,0);
+        modules.add("cape","Custom Cape","Cosmetics","Replace your cape with a local texture animation",true,0);
     }
     private static void init() throws Exception {
         if(initialized) return;
@@ -87,7 +91,7 @@ public final class BlossomHooks {
             boolean wantBright=modules.on("bright")&&mc.h!=null;
             if(wantBright&&!bright){savedGamma=mc.t.aJ;mc.t.aJ=12f;bright=true;}
             if(!wantBright&&bright){mc.t.aJ=savedGamma;bright=false;}
-            BlossomControls.updateContext();BlossomHud.tick();
+            BlossomNetwork.tick();BlossomControls.updateContext();BlossomHud.tick();
             capes.uploadReady();ticks.post(System.nanoTime());
         } catch(Exception|LinkageError e){failed=true;restoreSettings();System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
     }
@@ -132,6 +136,10 @@ public final class BlossomHooks {
         long now=System.nanoTime();
         if(lastFrame!=0)frames.record(now-lastFrame);
         lastFrame=now;
+    }
+    public static boolean cloth(bet player,bln renderer,float partial){
+        if(!initialized||failed)return false;
+        try{return BlossomCloth.render(player,renderer,partial);}catch(RuntimeException e){modules.get("capephysics").enabled=false;message="Cape Physics disabled: "+e.getClass().getSimpleName();return false;}
     }
     public static jy cape(jy original,bet player) {
         if(!initialized||failed||player!=ave.A().h||!modules.on("cape")) return original;

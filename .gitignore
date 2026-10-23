@@ -6,3 +6,6 @@ build/
 *.iml
 run/
 __pycache__/
+launcher-tauri/**/target/
+launcher-tauri/node_modules/
+launcher-tauri/dist/

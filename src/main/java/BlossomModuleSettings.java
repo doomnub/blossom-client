@@ -7,7 +7,7 @@ public final class BlossomModuleSettings extends axu {
     private boolean binding,visuals=true;
     private avb bindingTarget;
     private final boolean global;
-    private int page,rows;
+    private int page,rows,particleCategory;
     private boolean rebuildPending;
     public BlossomModuleSettings(axu previous,Modules.Module module){this.previous=previous;this.module=module;this.global=false;}
     public BlossomModuleSettings(axu previous){
@@ -22,6 +22,10 @@ public final class BlossomModuleSettings extends axu {
         avs visual=new BlossomButton(90,l/2-140,44,138,20,"Visuals"),functional=new BlossomButton(91,l/2+2,44,138,20,"Functionality");
         visual.l=!visuals;functional.l=visuals;n.add(visual);if(!global)n.add(functional);
         if(visuals){
+            VisualSettings v=BlossomHooks.settings.visual;
+            if(module.id.equals("hitcolor")){add(110,"Hit color: "+Integer.toHexString(v.hitColor));add(111,"Opacity: "+v.hitOpacity);add(112,"Duration (ticks): "+v.hitDuration);add(113,"Smooth fade: "+v.hitFade);add(114,"Players: "+v.hitPlayers);add(115,"Mobs: "+v.hitMobs);add(116,"Armor tint: "+v.hitArmor);}
+            if(module.id.equals("particles")){int c=particleCategory;add(120,"Category: "+VisualSettings.CATEGORIES[c]);add(121,"Show: "+v.enabled[c]);add(122,"Density / multiplier: "+v.density[c]);add(123,"Scale: "+v.scale[c]);add(124,"Opacity: "+v.opacity[c]);add(125,"Lifetime: "+v.lifetime[c]);add(126,"Color (white = original): "+Integer.toHexString(v.color[c]));add(127,"Reduce all particles to 50%");}
+
             if(module.category.equals("HUD")){
                 add(1,String.format(java.util.Locale.ROOT,"Text size: %.2fx",module.scale));
                 add(2,String.format(java.util.Locale.ROOT,"Opacity: %.0f%%",module.opacity*100));
@@ -46,6 +50,10 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("cape"))add(40,"Animation playback / library");
             if(HudText.supportsCompact(module.id))add(33,"Extra text / units: "+module.extraText);
             if(module.id.equals("potions")){add(34,"Hide level 1: "+BlossomHooks.settings.hidePotionOne);add(35,"Show when empty: "+BlossomHooks.settings.showEmptyPotions);}
+            if(module.id.equals("capephysics")){
+                dev.blossom.core.cloth.ClothSettings f=safeCloth();
+                add(60,"Subdivisions: "+f.subdivisions);add(61,"Gravity: "+f.gravity);add(62,"Stiffness: "+f.stiffness);add(63,"Damping: "+f.damping);add(64,"Physics iterations: "+f.iterations);add(65,"Self-collision: "+f.selfCollision);add(66,"Player collision: "+f.playerCollision);add(67,"Wind: "+f.wind);add(68,"Wind strength: "+f.windStrength);add(69,"Simulation distance: "+f.distance);
+            }
             if(module.id.equals("fov")){
                 FovSettings f=BlossomHooks.settings.fov;
                 add(50,"FOV mode: "+(f.constant?"Static":"Dynamic"));add(51,"Base FOV: "+f.base);
@@ -58,6 +66,7 @@ public final class BlossomModuleSettings extends axu {
         }
         n.add(new BlossomButton(99,l/2-140,m-26,280,20,"Back"));
     }
+    private dev.blossom.core.cloth.ClothSettings safeCloth(){return BlossomHooks.settings.cloth;}
     private void color(boolean bg){
         int value=bg?module.backgroundColor:module.textColor;
         j.a(new BlossomTextInput(this,"Color: 8 hex digits AARRGGBB",String.format("%08x",value),text->{
@@ -68,6 +77,17 @@ public final class BlossomModuleSettings extends axu {
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
         switch(button.k){
+            case 110:case 126:
+                final int colorId=button.k,category=particleCategory;final VisualSettings vs=s.visual;
+                j.a(new BlossomTextInput(this,"Color: AARRGGBB",String.format("%08x",colorId==110?vs.hitColor:vs.color[category]),text->{if(!text.matches("[0-9a-fA-F]{8}"))throw new IllegalArgumentException("Use 8 hex digits");int color=(int)Long.parseLong(text,16);if(colorId==110)vs.hitColor=color;else vs.color[category]=color;}));return;
+            case 111:case 112:case 122:case 123:case 124:case 125:{
+                final int setting=button.k,cat=particleCategory;final VisualSettings v=s.visual;
+                float current=setting==111?v.hitOpacity:setting==112?v.hitDuration:setting==122?v.density[cat]:setting==123?v.scale[cat]:setting==124?v.opacity[cat]:v.lifetime[cat];
+                float low=setting==112?1:setting==123?.1f:setting==125?.25f:0,high=setting==112?40:setting==122?4:setting==123||setting==125?3:1;
+                j.a(new BlossomSliderScreen(this,button.j,current,low,high,setting==112,value->{switch(setting){case 111:v.hitOpacity=value;break;case 112:v.hitDuration=Math.round(value);break;case 122:v.density[cat]=value;break;case 123:v.scale[cat]=value;break;case 124:v.opacity[cat]=value;break;case 125:v.lifetime[cat]=value;}}));return;
+            }
+            case 113:s.visual.hitFade=!s.visual.hitFade;break;case 114:s.visual.hitPlayers=!s.visual.hitPlayers;break;case 115:s.visual.hitMobs=!s.visual.hitMobs;break;case 116:s.visual.hitArmor=!s.visual.hitArmor;break;
+            case 120:particleCategory=(particleCategory+1)%VisualSettings.CATEGORIES.length;break;case 121:s.visual.enabled[particleCategory]=!s.visual.enabled[particleCategory];break;case 127:java.util.Arrays.fill(s.visual.density,.5f);break;
             case 0:module.enabled=!module.enabled;break;
             case 1:module.scale=module.scale>=3?.5f:Math.min(3,module.scale+.25f);apply("scale");break;
             case 2:module.opacity=module.opacity<=.11f?1:module.opacity-.1f;apply("opacity");break;
@@ -91,6 +111,14 @@ public final class BlossomModuleSettings extends axu {
             case 33:module.extraText=!module.extraText;break;
             case 34:s.hidePotionOne=!s.hidePotionOne;break;
             case 35:s.showEmptyPotions=!s.showEmptyPotions;BlossomHud.invalidate();break;
+            case 60:case 61:case 62:case 63:case 64:case 68:case 69:
+                final int clothId=button.k;final dev.blossom.core.cloth.ClothSettings c=s.cloth;
+                float val=clothId==60?c.subdivisions:clothId==61?c.gravity:clothId==62?c.stiffness:clothId==63?c.damping:clothId==64?c.iterations:clothId==68?c.windStrength:c.distance;
+                float min=clothId==60||clothId==69?4:clothId==64?2:0,max=clothId==60||clothId==69?64:clothId==61?30:clothId==62?1:clothId==63?.5f:clothId==64?12:3;
+                j.a(new BlossomSliderScreen(this,button.j,val,min,max,clothId==60||clothId==64,v->{switch(clothId){case 60:c.subdivisions=Math.round(v);break;case 61:c.gravity=v;break;case 62:c.stiffness=v;break;case 63:c.damping=v;break;case 64:c.iterations=Math.round(v);break;case 68:c.windStrength=v;break;case 69:c.distance=v;}}));return;
+            case 65:s.cloth.selfCollision=!s.cloth.selfCollision;break;
+            case 66:s.cloth.playerCollision=!s.cloth.playerCollision;break;
+            case 67:s.cloth.wind=!s.cloth.wind;break;
             case 50:s.fov.setConstant(!s.fov.constant);break;
 
             case 51:case 53:case 54:case 55:case 56:case 57:case 58:
