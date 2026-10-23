@@ -43,3 +43,12 @@ POSSIBILITY OF SUCH DAMAGE.
 
 Gson 2.11.0 is included only in the launcher JAR under Apache License 2.0.
 Copyright 2008 Google Inc. Full license: licenses/Apache-2.0.txt.
+
+The start scripts and launcher download Azul Zulu Community Java 8u504 directly
+from Azul's CDN. Java binaries are not embedded in the Blossom release. Original
+runtime license files remain in the installed runtime. Azul Zulu/OpenJDK licensing
+and source information: https://www.azul.com/downloads/?package=jre and
+https://www.azul.com/products/core/openjdk-terms-of-use/.
+The OS-specific URLs and vendor SHA-256 values are pinned in
+launcher/src/main/resources/runtimes.json, obtained from the official metadata API:
+https://docs.azul.com/core/install/metadata-api.

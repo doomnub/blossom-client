@@ -16,11 +16,16 @@ public final class LaunchPlan {
     public static void verifyJava8(Path executable)throws Exception {
         if(!Files.isRegularFile(executable))throw new IOException("Select the Java 8 java executable in Settings.");
         Process p=new ProcessBuilder(executable.toString(),"-XshowSettings:properties","-version").redirectErrorStream(true).start();
-        try {
-        if(!p.waitFor(10,java.util.concurrent.TimeUnit.SECONDS)){p.destroyForcibly();throw new IOException("Java version check timed out");}
-        String output=new String(Net.readLimited(p.getInputStream(),65536),java.nio.charset.StandardCharsets.UTF_8);
+        String output=versionOutput(p);
         if(p.exitValue()!=0||!output.contains("\"1.8.")||!output.matches("(?s).*sun\\.arch\\.data\\.model\\s*=\\s*64.*"))throw new IOException("Minecraft 1.8.9 requires a 64-bit Java 8 runtime in this launcher.");
-        } finally {if(p.isAlive())p.destroyForcibly();}
+    }
+    static String versionOutput(Process process)throws Exception {
+        java.util.concurrent.FutureTask<byte[]> reader=new java.util.concurrent.FutureTask<byte[]>(()->Net.readLimited(process.getInputStream(),65536));
+        Thread drain=new Thread(reader,"Blossom Java version output");drain.setDaemon(true);drain.start();
+        try {
+            if(!process.waitFor(30,java.util.concurrent.TimeUnit.SECONDS))throw new IOException("Java version check timed out");
+            return new String(reader.get(5,java.util.concurrent.TimeUnit.SECONDS),java.nio.charset.StandardCharsets.UTF_8);
+        } finally {if(process.isAlive())process.destroyForcibly();reader.cancel(true);process.getInputStream().close();}
     }
     public static Process start(List<String> command,Path game,MicrosoftLogin.Session session)throws IOException {
         Process process=new ProcessBuilder(command).directory(game.toFile()).redirectErrorStream(true).start();

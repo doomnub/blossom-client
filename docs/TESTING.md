@@ -75,3 +75,13 @@ A full installed cache was checked with HTTPS_PROXY pointing to an unreachable
 local port: all 734 assets and required game files verified without network.
 The updated Swing layout was rendered headlessly. Graphical game startup remains
 unverified in this environment.
+
+## 0.2.1 automatic Java installation
+
+43 core assertions and 43 launcher checks pass. Added runtime platform selection,
+archive traversal/root validation, extraction, cancellation and metadata checks.
+On Linux x86_64, both Java and Python installers downloaded and checksum-verified
+Azul Zulu 8u504; the installed executable reported Java 8 and 64-bit. Reuse with
+an unreachable HTTPS proxy succeeded. Launcher tests and a headless Swing render
+also ran using the downloaded Java 8. Windows CI checks the Java installer and
+the packaged PowerShell bootstrap. This does not establish graphical gameplay.

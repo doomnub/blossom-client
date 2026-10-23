@@ -21,6 +21,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python scripts/build.py
+      - run: python scripts/test_runtime.py
       - run: python scripts/package_release.py
       - name: Publish prerelease with tested artifacts
         env:

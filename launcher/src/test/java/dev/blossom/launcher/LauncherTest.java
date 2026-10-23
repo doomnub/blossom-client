@@ -10,6 +10,7 @@ public final class LauncherTest {
     interface Action{void run()throws Exception;}
     static void rejects(Action a)throws Exception{boolean failed=false;try{a.run();}catch(IOException|IllegalArgumentException e){failed=true;}check(failed);}
     public static void main(String[] args)throws Exception{
+        if(args.length==1&&args[0].equals("--version-fixture")){for(int i=0;i<20000;i++)System.out.print('x');System.out.println(" sun.arch.data.model = 64");System.out.println("openjdk version \"1.8.0_504\"");return;}
         Path root=Files.createTempDirectory("blossom-launcher-test-");
         try{
             check(Net.safeResolve(root,"libraries/a.jar").startsWith(root));
@@ -54,6 +55,9 @@ public final class LauncherTest {
             try(ZipOutputStream out=new ZipOutputStream(Files.newOutputStream(runtimeZip))){out.putNextEntry(new ZipEntry("runtime/bin/java"));out.write(new byte[]{1,2,3});out.closeEntry();}
             JavaRuntime.extract(runtimeZip,stage,"runtime");check(Files.size(stage.resolve("runtime/bin/java"))==3);
             Thread.currentThread().interrupt();try{rejects(()->JavaRuntime.extract(runtimeZip,stage,"runtime"));}finally{Thread.interrupted();}
+            Path hostJava=Paths.get(System.getProperty("java.home"),"bin",GameInstall.os().equals("windows")?"java.exe":"java");
+            Process verbose=new ProcessBuilder(hostJava.toString(),"-cp",System.getProperty("java.class.path"),LauncherTest.class.getName(),"--version-fixture").redirectErrorStream(true).start();
+            String versionOutput=LaunchPlan.versionOutput(verbose);check(versionOutput.length()>20000&&versionOutput.contains("1.8.0_504"));
             System.out.println("Launcher tests passed: "+checks);
         }finally{try(java.util.stream.Stream<Path> paths=Files.walk(root)){for(Path p:(Iterable<Path>)paths.sorted(Comparator.reverseOrder())::iterator)Files.delete(p);}}
     }

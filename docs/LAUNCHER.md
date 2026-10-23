@@ -1,64 +1,75 @@
-# Blossom Launcher — 0.2.0-alpha.2
+# Blossom Launcher — 0.2.1
 
 Standalone dark/pink launcher for the Forge-free Blossom Minecraft 1.8.9 client.
-Supported targets: Windows and Linux, x86_64. This is an early prerelease.
+Supported targets: Windows and Linux, x86_64. Gameplay remains experimental.
 
-## Start
+## Start — Java installs automatically
 
-1. Install Java 8 (64-bit) for Minecraft. The launcher itself runs on Java 8 or newer.
-2. Extract the release ZIP. On Windows run `Start-Blossom.bat`; on Linux run
-   `sh start-blossom.sh`. Alternatively: `java -jar blossom-launcher-0.2.0-alpha.2.jar`.
-3. In Settings select your Java 8 `bin/java` (`java.exe` on Windows), game folder,
-   memory allocation and window dimensions. Save settings.
-4. For offline play, enter an **Offline username** on the Play tab and press
-   **Play offline**. No account or Microsoft application ID is needed. Usernames
-   accept 1–16 ASCII letters, digits or underscores. The name determines a stable
-   local UUID; keep it unchanged to keep the same local player identity. This
-   identity differs from your authenticated account, so player data can differ.
-   Servers requiring account authentication (including Hypixel) need sign-in.
-5. For Microsoft sign-in only, configure Blossom's registered Microsoft public-client application ID. A
-   project-owned registration is **not supplied in this alpha**. The application
-   must allow personal Microsoft accounts and device-code/public-client sign-in;
-   Minecraft API access may require approval. `BLOSSOM_MICROSOFT_CLIENT_ID` can
-   provide the initial value. Do not reuse another launcher's client ID.
-6. Sign in with Microsoft. Open the displayed Microsoft URL and enter the code.
-   Passwords stay on Microsoft's site. A Minecraft Java entitlement is required.
-7. Press Play. The launcher checks/downloads vanilla 1.8.9, libraries, assets and
-   natives, extracts its bundled Blossom agent, and starts the game directly.
+1. Extract the release ZIP into a folder you can write to.
+2. On Fedora/openSUSE/Linux, run `bash start-blossom.sh` from a desktop terminal.
+   Python 3 is required; Java does not need to be preinstalled.
+   On Windows, run `Start-Blossom.bat` (uses built-in Windows PowerShell).
+3. The start script downloads Azul Zulu **Java 8u504**, verifies its SHA-256,
+   installs the matching 64-bit runtime, and opens Blossom with it. The first run
+   requires internet. Subsequent runs reuse the installed runtime offline.
+4. To play offline, enter an **Offline username** and press **Play offline**.
+   No Microsoft account or application ID is needed. Game files download on the
+   first launch. Keep the username unchanged to keep your local player identity.
+5. To sign in with Microsoft, configure your registered public-client application
+   ID in Settings. A project-owned registration is not supplied. It must support
+   personal Microsoft accounts and device-code sign-in; Minecraft service access
+   may require approval. Sign in, then press Play. Authenticated servers such as
+   Hypixel require this account sign-in.
 
-First installation needs internet. After all files are installed and intact,
-offline launch reuses the verified cache without downloading. Missing or damaged
-files require an internet connection to repair.
+## Where Java goes
 
-Install / repair works without signing in. Right Shift opens Blossom in-game.
-For existing authenticated launchers, use the separate agent JAR and the
-`-javaagent:/absolute/path/blossom-client-0.2.0-alpha.2.jar` JVM argument with
-vanilla 1.8.9 and Java 8. OptiFine and other mod loaders are unsupported.
+Blossom installs an app-private runtime. It does not change system Java, PATH,
+registry settings or package-manager installations, and needs no administrator.
 
-## Behavior
+| System | Managed executable |
+| --- | --- |
+| Linux | `~/.blossom/runtimes/zulu8.96.0.205-ca-jre8.0.504-linux_x64/bin/java` |
+| Windows | `%USERPROFILE%\.blossom\runtimes\zulu8.96.0.205-ca-jre8.0.504-win_x64\bin\java.exe` |
 
-- SHA checks on downloaded files and bundled agent; temporary download files.
+For example, with Linux user `Qaun`, the root is `/home/Qaun/.blossom/runtimes/`.
+The launcher checks that the executable reports **Java 8 and 64-bit**, displays
+its selected path in Settings/logs, and saves that path in
+`~/.blossom/launcher.properties`. Old launcher settings migrate to automatic Java
+management by default. **Install / check Java 8** checks or repairs the runtime.
+**Install / repair** also installs Java before checking game files.
+
+To use your own runtime for Minecraft, uncheck **Install and select Java 8
+automatically**, browse to its `bin/java` or `bin/java.exe`, and Save settings.
+It must be 64-bit Java 8. Running the launcher JAR directly still requires an
+existing Java runtime; the supplied start scripts handle installation beforehand.
+
+Linux needs a graphical desktop/XWayland and the native libraries used by Java
+AWT/LWJGL. If the launcher reports missing graphical support, run from a desktop
+terminal and use the supplied script rather than a headless system Java.
+macOS, ARM and 32-bit systems are not supported by this adapter.
+
+## Files and sessions
+
+- Downloaded game files and runtime archives are checksum-verified. Java installs
+  in a staging folder and is validated before becoming the active runtime.
+- Game data defaults to `~/.blossom/instances/default`; settings/cache live in
+  `~/.blossom`. Missing or damaged game files require internet to repair.
 - Modern Log4j 2.25.5 replaces the historical logging libraries.
-- Microsoft/Xbox/Minecraft session tokens remain in memory. Sign in again after
-  restarting. The game receives its token via stdin, not its command line.
-- Launcher settings/cache live in `~/.blossom`; game defaults to
-  `~/.blossom/instances/default`. No Minecraft binaries ship in this release.
-- Cancel stops installation/sign-in. Close Minecraft before closing the launcher.
-- HTTPS_PROXY is supported for HTTP CONNECT proxies without credentials.
-- No automatic update installer, bundled Java, native executable, code signing,
-  persisted account vault, macOS/ARM support or claimed performance gain yet.
+- Microsoft tokens remain in memory. The game receives the token through stdin,
+  not its command line. Sign in again after restarting Blossom.
+- Offline and authenticated profiles have different UUIDs and can have different
+  player data. Offline mode cannot join servers requiring account authentication.
+- Close Minecraft before closing Blossom. Cancel stops installation/sign-in.
+- The runtime archive includes its original vendor licenses. Game and Java
+  binaries are downloaded separately, not bundled in the release ZIP.
+- Right Shift opens the client menu in-game. OptiFine/mod loaders are unsupported.
+
+Existing authenticated launchers may use the separate agent JAR with
+`-javaagent:/absolute/path/blossom-client-0.2.1.jar` and vanilla 1.8.9 on Java 8.
 
 ## Verification limits
 
-Compilation, core tests, launcher tests and real vanilla bytecode verification
-are automated. A headless image checks launcher layout. Live Microsoft sign-in,
-Java 8 graphical gameplay, multiplayer and Windows desktop operation remain
-unverified. A configured application ID is necessary to complete sign-in.
-See the repository's docs/TESTING.md for the installer smoke-test result.
-
-## Fedora graphical runtime
-
-If Java reports no graphical support, install the full runtime with
-`sudo dnf install java-21-openjdk` and run
-`/usr/lib/jvm/jre-21-openjdk/bin/java -jar blossom-launcher-0.2.0-alpha.2.jar`
-from your desktop terminal. Select Java 8 for Minecraft inside Settings.
+Compilation, core/launcher tests, runtime installation, offline reuse and vanilla
+bytecode checks are automated. A headless render checks Swing layout. Graphical
+Minecraft gameplay and live Microsoft sign-in remain unverified. See the
+repository's docs/TESTING.md for the detailed record.
