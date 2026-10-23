@@ -44,7 +44,7 @@ public final class TransformTest {
                 new ClassReader(in).accept(new ClassVisitor(Opcodes.ASM9){
                     public MethodVisitor visitMethod(int a,String n,String d,String s,String[] e){return new MethodVisitor(Opcodes.ASM9){
                         public void visitFieldInsn(int op,String owner,String field,String desc){if(owner.equals("avh")){if(field.equals("ai"))throw new AssertionError("Toggle controls must not intercept attack binding");if(field.equals(binding[0]))sprintReads[0]++;}}
-                        public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.equals("bew")&&method.equals("d"))throw new AssertionError("Do not force player sprint state");}
+                        public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.equals("avb")&&method.equals("h"))throw new AssertionError("Controls must read remapped keys, not defaults");if(owner.equals("bew")&&method.equals("d"))throw new AssertionError("Do not force player sprint state");}
                     };}
                 },0);
             }

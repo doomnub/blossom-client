@@ -73,3 +73,12 @@ Minecraft's wheel read. Projection changes never write game FOV settings or
 player physics. Monotonic 250 ms interpolation composes after optional FOV
 normalization; consumed zoom wheel input never reaches vanilla hotbar selection.
 Sprint keeps a separate latch from the menu-suspended held-key output.
+
+
+0.2.4 patches fingerprinted `axp` (GuiIngameMenu) and `avf` (MouseHelper).
+The raw-input adapter replaces the mouse-helper delta pair after vanilla reads,
+without touching movement packets or player physics. Windows uses the existing
+JInput raw plugin; Linux reads XI_RawMotion raw_values on a separate X connection.
+Module and Controls key editors share the same vanilla KeyBinding instances.
+Launcher account storage is version-independent and owner-only; refresh tokens
+rotate on renewal, while Minecraft session tokens stay memory-only.

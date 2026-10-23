@@ -20,7 +20,7 @@ public final class FovSettings {
         slowness=ClientSettings.number(p,"fov.slowness",60,30,110);flying=ClientSettings.number(p,"fov.flying",80,30,110);bow=ClientSettings.number(p,"fov.bow",55,30,110);
     }
     public void save(Properties p){
-        p.setProperty("fov.constant",Boolean.toString(constant));p.setProperty("fov.dynamicSprint",Boolean.toString(dynamicSprint));
+        p.setProperty("fov.constant",Boolean.toString(constant));p.setProperty("fov.dynamicSprint",Boolean.toString(!constant));
         String[] keys={"base","sprint","speed","speedTwo","slowness","flying","bow"};float[] values={base,sprint,speed,speedTwo,slowness,flying,bow};
         for(int i=0;i<keys.length;i++)p.setProperty("fov."+keys[i],Float.toString(values[i]));
     }

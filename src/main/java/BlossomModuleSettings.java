@@ -90,7 +90,7 @@ public final class BlossomModuleSettings extends axu {
             case 33:module.extraText=!module.extraText;break;
             case 34:s.hidePotionOne=!s.hidePotionOne;break;
             case 50:s.fov.setConstant(!s.fov.constant);break;
-            
+
             case 51:case 53:case 54:case 55:case 56:case 57:case 58:
                 final int id=button.k;final FovSettings f=s.fov;
                 float current=id==51?f.base:id==53?f.sprint:id==54?f.speed:id==55?f.speedTwo:id==56?f.slowness:id==57?f.flying:f.bow;

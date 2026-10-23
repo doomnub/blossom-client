@@ -46,16 +46,16 @@ Escape from the Blossom module menu returns to the title screen.
 
 ## Camera and HUD controls (0.2.3)
 
-Zoom interpolates the camera FOV over 250 ms on press, release and scroll changes.
+Zoom interpolates the camera FOV over 80 ms on press, release and scroll changes.
 Scroll while holding the zoom key to adjust magnification between 2x and 20x;
 these events do not scroll the hotbar. Each hold starts from the configured zoom
 factor, and scroll adjustments are never saved to the profile.
 
-The optional FOV module defaults to Constant FOV. Turn Constant off for separate
+The optional FOV module defaults to Static FOV. Select Dynamic for separate
 base, sprint, Speed I, Speed II+, slowness, flying and bow values (30–110 degrees).
 Slowness takes precedence over speed; sprint and flight add their difference from
-the base value; bow draw interpolates toward its configured value. Dynamic sprint
-can be disabled independently. This changes camera projection only. Constant mode
+the base value; bow draw interpolates toward its configured value. Static and Dynamic are mutually exclusive modes. Existing conflicting settings
+are normalized to the saved Static choice. This changes camera projection only. Constant mode
 also normalizes vanilla underwater/death FOV changes. Zoom applies afterward.
 
 Extra text can be disabled per applicable HUD in Functionality: FPS, CPS, ping,
@@ -66,3 +66,25 @@ Potion effects have a Hide level 1 option, enabled by default; higher levels rem
 All HUD visuals on the module page edits text size, opacity, text/background
 colors and shadow across every HUD, including disabled HUDs. Only the property
 you change is copied; positions, locks and enabled states remain intact.
+
+
+## Controls and raw motion (0.2.4)
+
+Zoom and Blossom settings are registered in Minecraft Controls under Blossom.
+Sprint and sneak reuse the vanilla bindings. Module settings edit those same
+binding objects; changing either screen immediately updates the other. Mouse
+buttons work too, and Escape while binding unbinds an action. The Keystrokes HUD
+links to Minecraft Controls for its displayed movement/attack/use keys. The
+module page also includes Keybindings. Bindings persist in vanilla `options.txt`;
+old profile defaults are migrated only when those vanilla entries are absent.
+
+The pause menu has a Blossom settings button in the empty row above Options/LAN.
+
+Raw mouse input is optional and off by default. Windows uses JInput's Windows
+Raw Input backend; Linux x86_64 uses XInput 2.1 unaccelerated motion through X11
+or XWayland (libX11/libXi). It replaces camera deltas only, keeps Minecraft's
+sensitivity/invert settings, discards movement during menus/focus loss, and never
+changes OS pointer settings. No root privileges or input-device permissions are
+needed. The module settings show its status; unavailable raw input falls back to
+vanilla mouse handling. Native Wayland without XWayland is not supported by this
+Minecraft 1.8.9/LWJGL2 client. Physical device behavior needs desktop testing.

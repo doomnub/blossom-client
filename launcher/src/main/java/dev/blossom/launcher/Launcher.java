@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 public final class Launcher extends JPanel {
     private static final Color BG=new Color(25,17,29),CARD=new Color(39,25,40),PINK=new Color(255,131,181),TEXT=new Color(239,235,242),MUTED=new Color(170,163,182);
     private final Path root;
+    private final AccountStore accounts;
     private final Properties config=new Properties();
     private final ExecutorService worker=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom launcher worker");t.setDaemon(true);return t;});
     private final JTextArea log=new JTextArea();
@@ -31,13 +32,14 @@ public final class Launcher extends JPanel {
     private final JSpinner ram=new JSpinner(new SpinnerNumberModel(4096,1024,16384,512));
     private final JSpinner width=new JSpinner(new SpinnerNumberModel(1280,640,7680,160)),height=new JSpinner(new SpinnerNumberModel(720,360,4320,90));
     private volatile MicrosoftLogin.Session session;
+    private String sessionApplication="";
     private volatile Process game;
     private volatile Future<?> task;
     private JDialog deviceDialog;
     private boolean busy;
 
     public Launcher(Path root)throws IOException {
-        this.root=root;Files.createDirectories(root);loadConfig();
+        this.root=root;accounts=new AccountStore(root);Files.createDirectories(root);loadConfig();
         setLayout(new BorderLayout(0,20));setBorder(new EmptyBorder(28,32,24,32));setBackground(BG);
         JPanel header=new JPanel(new BorderLayout());header.setOpaque(false);
         JLabel title=new JLabel("BLOSSOM");title.setFont(new Font("SansSerif",Font.BOLD,36));title.setForeground(PINK);header.add(title,BorderLayout.NORTH);
@@ -46,8 +48,9 @@ public final class Launcher extends JPanel {
         JPanel footer=new JPanel(new BorderLayout(12,8));footer.setOpaque(false);status.setForeground(MUTED);footer.add(status,BorderLayout.NORTH);
         progress.setIndeterminate(false);progress.setPreferredSize(new Dimension(200,6));footer.add(progress,BorderLayout.CENTER);cancel.setEnabled(false);footer.add(cancel,BorderLayout.EAST);add(footer,BorderLayout.SOUTH);
         automaticJava.addActionListener(e->updateButtons());installJava.addActionListener(e->runTask(()->managedJava()));offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
-        signOut.addActionListener(e->{session=null;account.setText("Not signed in");updateButtons();});
-        theme(this);tabs.setBackground(new Color(63,31,52));tabs.setForeground(TEXT);tabs.setBorder(BorderFactory.createMatteBorder(2,0,0,0,PINK));progress.setForeground(PINK);progress.setBackground(BG);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));offlinePlay.setBackground(new Color(115,48,85));offlinePlay.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(PINK),new EmptyBorder(7,14,7,14)));updateButtons();
+        signOut.addActionListener(e->{try{accounts.clear();session=null;account.setText("Not signed in");setStatus("Signed out on this device");updateButtons();}catch(IOException ex){error(ex);}});
+        theme(this);LauncherTheme.tabs(tabs);tabs.setForeground(TEXT);progress.setForeground(PINK);progress.setBackground(BG);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));offlinePlay.setBackground(new Color(82,43,68));updateButtons();
+        if(hasSavedAccount())SwingUtilities.invokeLater(()->runTask(()->{session=restoreAccount(clientId.getText().trim());setStatus("Signed in. Ready to play.");}));
     }
     @Override protected void paintComponent(Graphics graphics){
         super.paintComponent(graphics);Graphics2D g=(Graphics2D)graphics.create();
@@ -57,28 +60,29 @@ public final class Launcher extends JPanel {
         g.setColor(PINK);g.fillOval(-5,-5,10,10);g.dispose();
     }
     private JPanel playPanel(){
-        JPanel panel=new JPanel(new BorderLayout(20,18));panel.setBorder(new EmptyBorder(24,24,24,24));
-        JPanel info=new JPanel();info.setOpaque(false);info.setLayout(new BoxLayout(info,BoxLayout.Y_AXIS));
-        JLabel label=new JLabel("A little pink. A lot of possibility.");label.setFont(new Font("SansSerif",Font.BOLD,24));label.setAlignmentX(0);info.add(label);info.add(Box.createVerticalStrut(18));
-        info.add(new JLabel("Forge-free PvP HUDs, editable layouts and animated local capes."));info.add(Box.createVerticalStrut(10));
-        info.add(new JLabel("Alpha build: gameplay and live Microsoft sign-in still need verification."));info.add(Box.createVerticalStrut(26));
-        account.setFont(new Font("SansSerif",Font.BOLD,16));info.add(account);info.add(Box.createVerticalStrut(10));
-        JPanel buttons=new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));buttons.setOpaque(false);buttons.add(signIn);buttons.add(Box.createHorizontalStrut(10));buttons.add(signOut);buttons.setMaximumSize(new Dimension(Integer.MAX_VALUE,36));info.add(buttons);
-        info.add(Box.createVerticalStrut(12));authHint.setForeground(MUTED);authHint.setText(clientId.getText().isEmpty()?"Microsoft sign-in needs an application ID. Offline play does not.":"Sign-in opens Microsoft's device-code page.");info.add(authHint);
-        info.add(Box.createVerticalStrut(18));
-        JPanel offlineRow=new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));offlineRow.setOpaque(false);offlineRow.add(new JLabel("Offline username  "));offlineRow.add(offlineName);offlineRow.add(Box.createHorizontalStrut(10));offlineRow.add(offlinePlay);offlineRow.setMaximumSize(new Dimension(Integer.MAX_VALUE,36));info.add(offlineRow);
-        info.add(Box.createVerticalStrut(8));info.add(new JLabel("Offline: local identity; authenticated servers require Microsoft sign-in."));
-        info.add(Box.createVerticalStrut(12));info.add(new JLabel("First installation needs internet. Installed files can be used offline."));
-        for(Component c:info.getComponents())if(c instanceof JComponent)((JComponent)c).setAlignmentX(0);
-        panel.add(info,BorderLayout.CENTER);
-        JPanel bottom=new JPanel(new BorderLayout(12,0));bottom.setOpaque(false);play.setPreferredSize(new Dimension(250,58));bottom.add(play,BorderLayout.CENTER);bottom.add(install,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
+        JPanel panel=new JPanel(new BorderLayout(18,18));panel.setOpaque(false);
+        JPanel welcome=new JPanel(new GridLayout(0,1,0,8));welcome.setOpaque(false);welcome.setBorder(new EmptyBorder(8,4,6,4));
+        JLabel title=new JLabel("Make yourself at home.");title.setFont(new Font("SansSerif",Font.BOLD,26));welcome.add(title);welcome.add(new JLabel("Your HUD. Your capes. Your Minecraft."));panel.add(welcome,BorderLayout.NORTH);
+        JPanel cards=new JPanel(new GridLayout(1,2,18,0));cards.setOpaque(false);
+        JPanel online=new LauncherTheme.Card(new BorderLayout(0,16));
+        JPanel accountInfo=new JPanel();accountInfo.setOpaque(false);accountInfo.setLayout(new BoxLayout(accountInfo,BoxLayout.Y_AXIS));
+        JLabel onlineTitle=new JLabel("MINECRAFT JAVA");onlineTitle.setFont(new Font("SansSerif",Font.BOLD,19));accountInfo.add(onlineTitle);accountInfo.add(Box.createVerticalStrut(22));account.setFont(new Font("SansSerif",Font.BOLD,16));accountInfo.add(account);accountInfo.add(Box.createVerticalStrut(14));
+        JPanel authButtons=new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));authButtons.setOpaque(false);authButtons.add(signIn);authButtons.add(Box.createHorizontalStrut(8));authButtons.add(signOut);authButtons.setMaximumSize(new Dimension(Integer.MAX_VALUE,44));accountInfo.add(authButtons);accountInfo.add(Box.createVerticalStrut(14));
+        authHint.setText("<html>Sign-in is remembered on this device.<br>Application ID is configured in Settings.</html>");accountInfo.add(authHint);
+        for(Component c:accountInfo.getComponents())if(c instanceof JComponent)((JComponent)c).setAlignmentX(0);
+        online.add(accountInfo,BorderLayout.CENTER);play.setPreferredSize(new Dimension(250,58));online.add(play,BorderLayout.SOUTH);cards.add(online);
+        JPanel offline=new LauncherTheme.Card(new BorderLayout(0,18));JPanel offlineInfo=new JPanel();offlineInfo.setOpaque(false);offlineInfo.setLayout(new BoxLayout(offlineInfo,BoxLayout.Y_AXIS));
+        JLabel offlineTitle=new JLabel("OFFLINE PLAY");offlineTitle.setFont(new Font("SansSerif",Font.BOLD,19));offlineInfo.add(offlineTitle);offlineInfo.add(Box.createVerticalStrut(20));offlineInfo.add(new JLabel("<html>A local username, no sign-in needed.<br>For singleplayer and offline servers.</html>"));offlineInfo.add(Box.createVerticalStrut(22));offlineInfo.add(new JLabel("Username"));offlineInfo.add(Box.createVerticalStrut(8));offlineName.setMaximumSize(new Dimension(Integer.MAX_VALUE,34));offlineInfo.add(offlineName);
+        for(Component c:offlineInfo.getComponents())if(c instanceof JComponent)((JComponent)c).setAlignmentX(0);
+        offline.add(offlineInfo,BorderLayout.CENTER);offlinePlay.setPreferredSize(new Dimension(250,58));offline.add(offlinePlay,BorderLayout.SOUTH);cards.add(offline);panel.add(cards,BorderLayout.CENTER);
+        JPanel bottom=new JPanel(new BorderLayout());bottom.setOpaque(false);bottom.add(new JLabel("1.8.9  •  Java 8 managed automatically"),BorderLayout.WEST);bottom.add(install,BorderLayout.EAST);panel.add(bottom,BorderLayout.SOUTH);return panel;
     }
     private JPanel settingsPanel(){
-        JPanel form=new JPanel(new GridBagLayout());form.setBorder(new EmptyBorder(18,20,18,20));GridBagConstraints g=new GridBagConstraints();g.insets=new Insets(6,6,6,6);g.fill=GridBagConstraints.HORIZONTAL;
+        JPanel form=new LauncherTheme.Card(new GridBagLayout());form.setBorder(new EmptyBorder(18,20,18,20));GridBagConstraints g=new GridBagConstraints();g.insets=new Insets(6,6,6,6);g.fill=GridBagConstraints.HORIZONTAL;
         row(form,g,0,"Java 8 executable",javaPath,()->choose(javaPath,false));row(form,g,1,"Game directory",gamePath,()->choose(gamePath,true));row(form,g,2,"Microsoft application ID",clientId,null);
         row(form,g,3,"Memory (MiB)",ram,null);row(form,g,4,"Window width",width,null);row(form,g,5,"Window height",height,null);
         JLabel note=new JLabel("Use Blossom's registered public-client ID; Microsoft may require Minecraft API approval.");g.gridx=0;g.gridy=6;g.gridwidth=3;form.add(note,g);
-        JButton save=new JButton("Save settings");save.addActionListener(e->{try{saveConfig();authHint.setText(clientId.getText().trim().isEmpty()?"Microsoft sign-in needs an application ID. Offline play does not.":"Sign-in opens Microsoft's device-code page.");setStatus("Settings saved");}catch(Exception ex){error(ex);}});g.gridy=7;form.add(save,g);
+        JButton save=new JButton("Save settings");save.addActionListener(e->{try{saveConfig();authHint.setText(clientId.getText().trim().isEmpty()?"Microsoft sign-in needs an application ID. Offline play does not.":"Sign-in opens Microsoft's device-code page.");updateButtons();setStatus("Settings saved");}catch(Exception ex){error(ex);}});g.gridy=7;form.add(save,g);
         g.gridy=8;form.add(automaticJava,g);g.gridy=9;form.add(installJava,g);g.gridy=10;g.weighty=1;form.add(new JPanel(),g);return form;
     }
     private void row(JPanel panel,GridBagConstraints g,int row,String label,JComponent field,Runnable browse){
@@ -86,7 +90,7 @@ public final class Launcher extends JPanel {
         if(browse!=null){JButton button=new JButton("Browse");button.addActionListener(e->browse.run());panel.add(button,g);}
     }
     private JPanel logsPanel(){
-        JPanel panel=new JPanel(new BorderLayout(8,8));panel.setBorder(new EmptyBorder(12,12,12,12));log.setEditable(false);log.setFont(new Font("Monospaced",Font.PLAIN,12));panel.add(new JScrollPane(log),BorderLayout.CENTER);
+        JPanel panel=new LauncherTheme.Card(new BorderLayout(8,8));panel.setBorder(new EmptyBorder(12,12,12,12));log.setEditable(false);log.setFont(new Font("Monospaced",Font.PLAIN,12));panel.add(new JScrollPane(log),BorderLayout.CENTER);
         JButton open=new JButton("Open launcher folder");open.addActionListener(e->{try{Desktop.getDesktop().open(root.toFile());}catch(Exception ex){error(ex);}});panel.add(open,BorderLayout.SOUTH);return panel;
     }
     private void choose(JTextField field,boolean directory){JFileChooser chooser=new JFileChooser();chooser.setFileSelectionMode(directory?JFileChooser.DIRECTORIES_ONLY:JFileChooser.FILES_ONLY);if(chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION)field.setText(chooser.getSelectedFile().getAbsolutePath());}
@@ -102,6 +106,7 @@ public final class Launcher extends JPanel {
     }
     private int number(String key,int fallback,int min,int max){try{return Math.max(min,Math.min(max,Integer.parseInt(config.getProperty(key))));}catch(RuntimeException e){return fallback;}}
     private void saveConfig()throws IOException {
+        if(session!=null&&!sessionApplication.equals(clientId.getText().trim())){session=null;account.setText("Not signed in");}
         config.setProperty("java.auto",Boolean.toString(automaticJava.isSelected()));
         config.setProperty("offlineName",offlineName.getText().trim());
         config.setProperty("java",javaPath.getText().trim());config.setProperty("game",gamePath.getText().trim());config.setProperty("clientId",clientId.getText().trim());
@@ -115,12 +120,19 @@ public final class Launcher extends JPanel {
             finally{finishTask();}return null;}){protected void done(){if(isCancelled())SwingUtilities.invokeLater(()->setStatus("Cancelled"));}};
         task=pending;worker.execute(()->{try{pending.run();}finally{if(pending.isCancelled())finishTask();}});
     }
-    private void finishTask(){SwingUtilities.invokeLater(()->{busy=false;progress.setIndeterminate(false);cancel.setEnabled(false);if(deviceDialog!=null){deviceDialog.dispose();deviceDialog=null;}updateButtons();});
+    private void finishTask(){SwingUtilities.invokeLater(()->{busy=false;progress.setIndeterminate(false);progress.setValue(0);cancel.setEnabled(false);if(deviceDialog!=null){deviceDialog.dispose();deviceDialog=null;}updateButtons();});
     }
     private synchronized void cancelTask(){if(game==null&&task!=null){task.cancel(true);setStatus("Cancelling...");}}
     private void login(){
         try{saveConfig();}catch(IOException e){error(e);return;}final String id=clientId.getText().trim();
-        runTask(()->{setStatus("Starting Microsoft sign-in...");MicrosoftLogin.Session signed=MicrosoftLogin.login(id,code->SwingUtilities.invokeLater(()->showDeviceCode(code)),this::setStatus);session=signed;SwingUtilities.invokeLater(()->account.setText("Signed in as "+signed.username));setStatus("Signed in. Ready to play.");});
+        runTask(()->{setStatus("Starting Microsoft sign-in...");MicrosoftLogin.Session signed=MicrosoftLogin.login(id,code->SwingUtilities.invokeLater(()->showDeviceCode(code)),this::setStatus,token->remember(id,token));session=signed;sessionApplication=id;SwingUtilities.invokeLater(()->account.setText("Signed in as "+signed.username));setStatus("Signed in. Ready to play.");});
+    }
+    private void remember(String id,String token){try{accounts.save(id,token);}catch(IOException e){throw new UncheckedIOException("Could not remember this sign-in",e);}}
+    private MicrosoftLogin.Session restoreAccount(String id)throws Exception {
+        sessionApplication=id;String token=accounts.read(id);if(token==null)throw new IOException("Sign in with Microsoft first.");
+        setStatus("Restoring saved sign-in...");
+        try{MicrosoftLogin.Session restored=MicrosoftLogin.refresh(id,token,this::setStatus,value->remember(id,value));SwingUtilities.invokeLater(()->account.setText("Signed in as "+restored.username));return restored;}
+        catch(Net.Failure e){if(e.code.equals("invalid_grant")||e.code.equals("interaction_required")){accounts.clear();throw new IOException("Saved sign-in expired or was revoked. Sign in again.");}throw e;}
     }
     private void showDeviceCode(MicrosoftLogin.DeviceCode code){
         deviceDialog=new JDialog((Frame)SwingUtilities.getWindowAncestor(this),"Microsoft sign-in",false);JPanel p=new JPanel(new GridLayout(0,1,8,10));p.setBorder(new EmptyBorder(18,18,18,18));p.add(new JLabel("Enter this code on Microsoft's sign-in page:"));
@@ -140,13 +152,14 @@ public final class Launcher extends JPanel {
     }
     private void launch(boolean offline){
         final boolean auto=automaticJava.isSelected();
-        final MicrosoftLogin.Session signed;final Path selectedJava,dir;final int memory,w,h;
-        try{signed=offline?MicrosoftLogin.Session.offline(offlineName.getText().trim()):session;saveConfig();if(signed==null||!signed.valid())throw new IOException("Sign in with Microsoft first.");selectedJava=Paths.get(javaPath.getText().trim());dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();memory=(Integer)ram.getValue();w=(Integer)width.getValue();h=(Integer)height.getValue();}catch(Exception e){error(e);return;}
+        final MicrosoftLogin.Session requested;final String appId=clientId.getText().trim();final Path selectedJava,dir;final int memory,w,h;
+        try{saveConfig();requested=offline?MicrosoftLogin.Session.offline(offlineName.getText().trim()):session;if(requested==null&&accounts.read(appId)==null)throw new IOException("Sign in with Microsoft first.");selectedJava=Paths.get(javaPath.getText().trim());dir=Paths.get(gamePath.getText().trim()).toAbsolutePath();memory=(Integer)ram.getValue();w=(Integer)width.getValue();h=(Integer)height.getValue();}catch(Exception e){error(e);return;}
         runTask(()->{
+            MicrosoftLogin.Session signed=requested;if(!offline&&(signed==null||!signed.valid())){signed=restoreAccount(appId);session=signed;}
             Path java=auto?managedJava():selectedJava;LaunchPlan.verifyJava8(java);GameInstall.Installed installed=GameInstall.install(root.resolve("cache"),dir,this::setStatus);Path agent=agent();
             List<String> command=LaunchPlan.command(java,agent,dir,installed,signed,memory,w,h);setStatus(signed.offline?"Launching offline as "+signed.username+"...":"Launching Minecraft...");
             synchronized(this){if(Thread.currentThread().isInterrupted())throw new InterruptedException();
-            game=LaunchPlan.start(command,dir,signed);}SwingUtilities.invokeLater(()->cancel.setEnabled(false));
+            game=LaunchPlan.start(command,dir,signed);}setStatus("Minecraft is running");SwingUtilities.invokeLater(()->{cancel.setEnabled(false);progress.setIndeterminate(false);progress.setValue(100);});
             try(BufferedReader reader=new BufferedReader(new InputStreamReader(game.getInputStream(),StandardCharsets.UTF_8))){String line;while((line=reader.readLine())!=null)appendLog(LaunchPlan.redact(line,signed));}
             int code=game.waitFor();game=null;setStatus("Minecraft exited with code "+code);
         });
@@ -158,7 +171,8 @@ public final class Launcher extends JPanel {
             Path temp=Files.createTempFile(target.getParent(),"agent-",".tmp");try(InputStream in=Launcher.class.getResourceAsStream("/client/blossom-agent.jar")){if(in==null)throw new IOException("Missing bundled client");Files.copy(in,temp,StandardCopyOption.REPLACE_EXISTING);if(!Net.hash(temp,"SHA-256").equals(hash))throw new IOException("Bundled client checksum mismatch");Net.move(temp,target);}finally{Files.deleteIfExists(temp);}
         }return target;
     }
-    private void updateButtons(){automaticJava.setEnabled(!busy);installJava.setEnabled(!busy);javaPath.setEditable(!automaticJava.isSelected()&&!busy);offlinePlay.setEnabled(!busy&&(game==null||!game.isAlive()));offlineName.setEnabled(!busy);signIn.setEnabled(!busy);install.setEnabled(!busy);play.setEnabled(!busy&&(game==null||!game.isAlive())&&session!=null&&session.valid());signOut.setEnabled(!busy&&session!=null);}
+    private boolean hasSavedAccount(){try{return accounts.read(clientId.getText().trim())!=null;}catch(IOException e){return false;}}
+    private void updateButtons(){automaticJava.setEnabled(!busy);installJava.setEnabled(!busy);javaPath.setEditable(!automaticJava.isSelected()&&!busy);offlinePlay.setEnabled(!busy&&(game==null||!game.isAlive()));offlineName.setEnabled(!busy);signIn.setEnabled(!busy);install.setEnabled(!busy);play.setEnabled(!busy&&(game==null||!game.isAlive())&&(session!=null||hasSavedAccount()));signOut.setEnabled(!busy&&(session!=null||hasSavedAccount()));}
     private void setStatus(String text){SwingUtilities.invokeLater(()->status.setText(text));appendLog(text);}
     private void appendLog(String text){
         SwingUtilities.invokeLater(()->{if(log.getDocument().getLength()>150000)log.setText(log.getText().substring(75000));log.append(text+"\n");log.setCaretPosition(log.getDocument().getLength());});
@@ -168,7 +182,7 @@ public final class Launcher extends JPanel {
     private static void theme(Component component){
         component.setForeground(TEXT);if(!(component instanceof JProgressBar))component.setBackground(component instanceof javax.swing.text.JTextComponent?BG:CARD);
         if(component instanceof JLabel&&((JLabel)component).getFont().getSize()<20)component.setFont(new Font("SansSerif",Font.PLAIN,13));
-        if(component instanceof JButton){((JButton)component).setFocusPainted(false);((JButton)component).setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(112,61,91)),new EmptyBorder(6,12,6,12)));component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));}
+        if(component instanceof JButton){((JButton)component).setFocusPainted(false);LauncherTheme.button((JButton)component);component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));}
         if(component instanceof Container)for(Component child:((Container)component).getComponents())theme(child);
     }
     public static void main(String[] args)throws Exception {
@@ -177,14 +191,14 @@ public final class Launcher extends JPanel {
         Path root=Paths.get(System.getProperty("user.home"),".blossom");
         if(args.length==2&&args[0].equals("--install-java")){System.out.println(JavaRuntime.ensure(Paths.get(args[1]).toAbsolutePath(),System.out::println));return;}
         if(args.length==2&&args[0].equals("--install-only")){Path dir=Paths.get(args[1]).toAbsolutePath();GameInstall.install(dir.resolve("cache"),dir.resolve("game"),System.out::println);return;}
-        if(args.length==2&&args[0].equals("--render-preview")){
-            Path temporary=Files.createTempDirectory("blossom-preview-");SwingUtilities.invokeAndWait(()->{try{Launcher panel=new Launcher(temporary);panel.setSize(980,680);layoutAll(panel);java.awt.image.BufferedImage image=new java.awt.image.BufferedImage(980,680,java.awt.image.BufferedImage.TYPE_INT_RGB);Graphics2D graphics=image.createGraphics();panel.printAll(graphics);graphics.dispose();javax.imageio.ImageIO.write(image,"png",Paths.get(args[1]).toFile());panel.worker.shutdownNow();}catch(Exception e){throw new RuntimeException(e);}});return;
+        if(args.length==2&&args[0].startsWith("--render-preview")){
+            Path temporary=Files.createTempDirectory("blossom-preview-");SwingUtilities.invokeAndWait(()->{try{Launcher panel=new Launcher(temporary);panel.setSize(1000,740);if(args[0].endsWith("settings"))for(Component c:panel.getComponents())if(c instanceof JTabbedPane)((JTabbedPane)c).setSelectedIndex(1);if(args[0].endsWith("logs"))for(Component c:panel.getComponents())if(c instanceof JTabbedPane)((JTabbedPane)c).setSelectedIndex(2);layoutAll(panel);java.awt.image.BufferedImage image=new java.awt.image.BufferedImage(1000,740,java.awt.image.BufferedImage.TYPE_INT_RGB);Graphics2D graphics=image.createGraphics();panel.printAll(graphics);graphics.dispose();javax.imageio.ImageIO.write(image,"png",Paths.get(args[1]).toFile());panel.worker.shutdownNow();}catch(Exception e){throw new RuntimeException(e);}});return;
         }
         if(GraphicsEnvironment.isHeadless()){System.err.println("Blossom Launcher cannot access Java graphical support. Use a non-headless Java runtime from a desktop terminal. On Fedora: install java-21-openjdk and launch with /usr/lib/jvm/jre-21-openjdk/bin/java.");return;}
         Files.createDirectories(root);FileChannel channel=FileChannel.open(root.resolve("launcher.lock"),StandardOpenOption.CREATE,StandardOpenOption.WRITE);FileLock lock=channel.tryLock();
         if(lock==null){channel.close();JOptionPane.showMessageDialog(null,"Blossom Launcher is already open.");return;}
         SwingUtilities.invokeLater(()->{try{
-            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Launcher • 0.2.3");frame.setContentPane(panel);frame.setMinimumSize(new Dimension(880,640));frame.setSize(980,680);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Launcher • 0.2.4");frame.setContentPane(panel);frame.setMinimumSize(new Dimension(960,720));frame.setSize(1000,740);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter(){public void windowClosing(WindowEvent event){synchronized(panel){if(panel.game!=null&&panel.game.isAlive()){JOptionPane.showMessageDialog(frame,"Close Minecraft before closing the launcher.");return;}if(panel.task!=null)panel.task.cancel(true);panel.worker.shutdownNow();try{lock.release();channel.close();}catch(IOException ignored){}frame.dispose();System.exit(0);}}});frame.setVisible(true);
         }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage(),"Blossom",JOptionPane.ERROR_MESSAGE);System.exit(1);}});
     }

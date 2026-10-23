@@ -8,13 +8,13 @@ installation and keep normal Minecraft available.
 2. Launch **vanilla Minecraft 1.8.9** once using your legitimate account.
 3. Make a separate 1.8.9 launcher installation and choose a separate game directory.
 4. Select a Java 8 runtime for the game (build tools use Java 17).
-5. Add `"-javaagent:/absolute/path/to/blossom-client-0.2.3.jar"` to the
+5. Add `"-javaagent:/absolute/path/to/blossom-client-0.2.4.jar"` to the
    installation's JVM arguments. Preserve its existing memory and security options.
-   On Windows, a valid example is `"-javaagent:C:\Games\Blossom\blossom-client-0.2.3.jar"`.
+   On Windows, a valid example is `"-javaagent:C:\Games\Blossom\blossom-client-0.2.4.jar"`.
 6. Launch through the launcher. Right Shift opens the module menu, including at
    the main menu. Type to filter modules. Escape returns to the preceding screen.
 
-Running `java -jar blossom-client-0.2.3.jar` opens copyable setup instructions;
+Running `java -jar blossom-client-0.2.4.jar` opens copyable setup instructions;
 it is **not** an automatic installer or an independent Minecraft launcher.
 
 Use Edit HUD to drag enabled widgets. Hold Left Shift for an 8-pixel grid. Positions

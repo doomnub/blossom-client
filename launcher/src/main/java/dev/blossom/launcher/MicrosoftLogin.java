@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
-/** Public-client device authorization. Passwords and tokens are never written to disk. */
+/** Public-client device authorization. Refresh credentials are returned to the owner-only account store. */
 public final class MicrosoftLogin {
     private static final String OAUTH="https://login.microsoftonline.com/consumers/oauth2/v2.0/";
     public static final class Session {
@@ -26,9 +26,10 @@ public final class MicrosoftLogin {
         public final String code,url;
         DeviceCode(String code,String url){this.code=code;this.url=url;}
     }
-    public static Session login(String clientId,Consumer<DeviceCode> display,Consumer<String> status)throws Exception {
+    public static Session login(String clientId,Consumer<DeviceCode> display,Consumer<String> status)throws Exception {return login(clientId,display,status,token->{});}
+    public static Session login(String clientId,Consumer<DeviceCode> display,Consumer<String> status,Consumer<String> remember)throws Exception {
         if(!clientId.matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"))throw new IOException("Set Blossom's registered Microsoft application ID in Settings first.");
-        JsonObject device=Net.form(OAUTH+"devicecode",map("client_id",clientId,"scope","XboxLive.signin"));
+        JsonObject device=Net.form(OAUTH+"devicecode",map("client_id",clientId,"scope","XboxLive.signin offline_access"));
         String url=device.get("verification_uri").getAsString();java.net.URI uri=java.net.URI.create(url);
         if(!"https".equals(uri.getScheme())||!("microsoft.com".equals(uri.getHost())||"www.microsoft.com".equals(uri.getHost())||"login.microsoftonline.com".equals(uri.getHost())))throw new IOException("Unexpected Microsoft verification URL");
         display.accept(new DeviceCode(device.get("user_code").getAsString(),url));
@@ -36,10 +37,18 @@ public final class MicrosoftLogin {
         int interval=Math.max(5,device.has("interval")?device.get("interval").getAsInt():5);String microsoft=null;
         while(System.nanoTime()<deadline){
             Thread.sleep(Math.min(interval,60)*1000L);
-            try{JsonObject reply=Net.form(OAUTH+"token",map("client_id",clientId,"grant_type","urn:ietf:params:oauth:grant-type:device_code","device_code",device.get("device_code").getAsString()));microsoft=reply.get("access_token").getAsString();break;}
+            try{JsonObject reply=Net.form(OAUTH+"token",map("client_id",clientId,"grant_type","urn:ietf:params:oauth:grant-type:device_code","device_code",device.get("device_code").getAsString()));microsoft=reply.get("access_token").getAsString();if(reply.has("refresh_token"))remember.accept(reply.get("refresh_token").getAsString());break;}
             catch(Net.Failure e){if(e.code.equals("authorization_pending"))continue;if(e.code.equals("slow_down")){interval+=5;continue;}throw new IOException("Microsoft sign-in ended: "+e.code);}
         }
         if(microsoft==null)throw new IOException("Sign-in code expired. Try again.");
+        return exchange(microsoft,status);
+    }
+    public static Session refresh(String clientId,String refreshToken,Consumer<String> status,Consumer<String> remember)throws Exception {
+        JsonObject reply=Net.form(OAUTH+"token",map("client_id",clientId,"grant_type","refresh_token","refresh_token",refreshToken,"scope","XboxLive.signin offline_access"));
+        if(reply.has("refresh_token"))remember.accept(reply.get("refresh_token").getAsString());
+        return exchange(reply.get("access_token").getAsString(),status);
+    }
+    private static Session exchange(String microsoft,Consumer<String> status)throws Exception {
         status.accept("Verifying Xbox account...");
         JsonObject props=new JsonObject();props.addProperty("AuthMethod","RPS");props.addProperty("SiteName","user.auth.xboxlive.com");props.addProperty("RpsTicket","d="+microsoft);
         JsonObject user=Net.post("https://user.auth.xboxlive.com/user/authenticate",ticket(props,"http://auth.xboxlive.com"));

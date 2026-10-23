@@ -1,4 +1,4 @@
-# Blossom Launcher — 0.2.3
+# Blossom Launcher — 0.2.4
 
 Standalone dark/pink launcher for the Forge-free Blossom Minecraft 1.8.9 client.
 Supported targets: Windows and Linux, x86_64. Gameplay remains experimental.
@@ -20,6 +20,19 @@ Supported targets: Windows and Linux, x86_64. Gameplay remains experimental.
    personal Microsoft accounts and device-code sign-in; Minecraft service access
    may require approval. Sign in, then press Play. Authenticated servers such as
    Hypixel require this account sign-in.
+
+## Clean release folder
+
+The top level contains only `README.md`, `Start-Blossom.bat` and
+`start-blossom.sh`, plus folders. Keep `app/`, `licenses/` and `checksums/`
+with those scripts. Java archives, launcher JARs and bootstrap helpers live
+under `app/`; runtime downloads still go into the shared `.blossom` directory.
+
+Updating does not move your game data or settings. Version 0.2.3 and older did
+not remember credentials, so sign in once on 0.2.4; future updates reuse that
+login. Refresh-token renewal needs internet. Offline Play has its own card.
+The progress bar becomes stationary and the status reads **Minecraft is running**
+after the game process starts; it reports the exit code when that process ends.
 
 ## Where Java goes
 
@@ -55,8 +68,12 @@ macOS, ARM and 32-bit systems are not supported by this adapter.
 - Game data defaults to `~/.blossom/instances/default`; settings/cache live in
   `~/.blossom`. Missing or damaged game files require internet to repair.
 - Modern Log4j 2.25.5 replaces the historical logging libraries.
-- Microsoft tokens remain in memory. The game receives the token through stdin,
-  not its command line. Sign in again after restarting Blossom.
+- Sign-in is remembered across updates using a Microsoft refresh token in
+  `~/.blossom/account.properties` (the same folder under `%USERPROFILE%` on Windows).
+  This sensitive file has owner-only permissions; it is not encrypted. Do not
+  share it. Game access tokens stay in memory and reach Minecraft through stdin,
+  not the command line. Sign out deletes the remembered credential. Microsoft
+  can still require sign-in again after expiry, revocation or an application-ID change.
 - Offline and authenticated profiles have different UUIDs and can have different
   player data. Offline mode cannot join servers requiring account authentication.
 - Close Minecraft before closing Blossom. Cancel stops installation/sign-in.
@@ -65,7 +82,7 @@ macOS, ARM and 32-bit systems are not supported by this adapter.
 - Right Shift opens the client menu in-game. OptiFine/mod loaders are unsupported.
 
 Existing authenticated launchers may use the separate agent JAR with
-`-javaagent:/absolute/path/blossom-client-0.2.3.jar` and vanilla 1.8.9 on Java 8.
+`-javaagent:/absolute/path/blossom-client-0.2.4.jar` and vanilla 1.8.9 on Java 8.
 
 ## Verification limits
 

@@ -118,3 +118,31 @@ under vanilla hunger, collision and item-use restrictions; zoom release/scroll
 and hotbar suppression; FOV under each effect/bow/flight/water condition; module
 and cape layouts at all GUI scales; compact labels and shared style persistence.
 No live gameplay, performance or multiplayer acceptance is claimed.
+
+
+## 0.2.4 responsiveness, controls and launcher — 2026-10-24
+
+74 core assertions and 49 launcher checks pass. Zoom tests verify an 80 ms
+transition, continuous scroll and reset. FOV modes exclude each other. The
+transform tests cover eight vanilla classes, including pause-menu init/action
+and mouse-helper output; remapped sprint/sneak keys must use current binding
+codes rather than defaults. All eight transformed classes and fifteen integration
+classes link under Java 8 and Java 17. Windows/Linux CI builds the same sources.
+
+Account tests cover persistence across store instances, application-ID matching,
+refresh replacement, owner-only permissions and sign-out deletion. No real
+credentials are used. Live refresh authorization remains an acceptance test.
+All three launcher tabs were rendered and inspected. The release ZIP has exactly
+three top-level files; internal checksums and the extracted Linux bootstrap were
+verified in a path containing spaces, using the installed runtime offline.
+Java 8 managed install/reuse and launcher tests pass. Windows CI tests its
+relocated PowerShell bootstrap.
+
+Linux JNA/X11/libXi loading and the no-display fallback were exercised on Java 8.
+Physical raw mouse input is NOT verified in this headless environment. Required
+manual checks: compare a fixed mouse travel at slow/fast speeds with OS
+acceleration enabled on Windows and Fedora XWayland; alt-tab/open menus without
+camera jumps; unplug/replug; toggle off to restore vanilla; verify scroll, attack
+and cursor input remain unchanged. Test all new bindings from both settings
+screens and restart the game. Inspect pause-button placement and rounded panels
+at multiple GUI scales. Test remembered login across launcher restarts/updates.

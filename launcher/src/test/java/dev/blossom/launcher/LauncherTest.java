@@ -58,6 +58,13 @@ public final class LauncherTest {
             Path hostJava=Paths.get(System.getProperty("java.home"),"bin",GameInstall.os().equals("windows")?"java.exe":"java");
             Process verbose=new ProcessBuilder(hostJava.toString(),"-cp",System.getProperty("java.class.path"),LauncherTest.class.getName(),"--version-fixture").redirectErrorStream(true).start();
             String versionOutput=LaunchPlan.versionOutput(verbose);check(versionOutput.length()>20000&&versionOutput.contains("1.8.0_504"));
+            AccountStore accountStore=new AccountStore(root);check(accountStore.read("app-a")==null);
+            accountStore.save("app-a","test-refresh-1");check(new AccountStore(root).read("app-a").equals("test-refresh-1"));check(accountStore.read("app-b")==null);
+            accountStore.save("app-a","test-refresh-2");check(accountStore.read("app-a").equals("test-refresh-2"));
+            Path credential=root.resolve("account.properties");
+            if(Files.getFileAttributeView(credential,java.nio.file.attribute.PosixFileAttributeView.class)!=null)check(Files.getPosixFilePermissions(credential).equals(java.nio.file.attribute.PosixFilePermissions.fromString("rw-------")));
+            else check(Files.getFileAttributeView(credential,java.nio.file.attribute.AclFileAttributeView.class).getAcl().size()==1);
+            accountStore.clear();check(accountStore.read("app-a")==null);
             System.out.println("Launcher tests passed: "+checks);
         }finally{try(java.util.stream.Stream<Path> paths=Files.walk(root)){for(Path p:(Iterable<Path>)paths.sorted(Comparator.reverseOrder())::iterator)Files.delete(p);}}
     }
