@@ -4,6 +4,7 @@ import java.util.*;
 public final class BlossomHud {
     private static final Map<String,String[]> cached=new HashMap<String,String[]>();
     private static int ticks;
+    public static void invalidate(){cached.clear();ticks=3;tick();}
     public static void tick() {
         if(++ticks%4!=0)return;
         ave mc=ave.A();
@@ -24,7 +25,7 @@ public final class BlossomHud {
                 String warning=effect.b()<=200?"§c":"";
                 lines.add(warning+di.a(pe.a[effect.a()].a())+HudText.potionLevel(effect.c(),BlossomHooks.settings.hidePotionOne)+"  "+pe.a(effect));
             }
-            cached.put("potions",lines.isEmpty()?new String[]{"No potion effects"}:lines.toArray(new String[0]));
+            cached.put("potions",lines.isEmpty()?(BlossomHooks.settings.showEmptyPotions?new String[]{"No potion effects"}:new String[0]):lines.toArray(new String[0]));
         }
         if(BlossomHooks.modules.on("resources")) {
             int[] ids={265,266,264,388},counts=new int[4];
@@ -43,7 +44,8 @@ public final class BlossomHud {
     public static String[] lines(Modules.Module module) {
         if(module.id.equals("coords")&&BlossomHooks.settings.privacy)return new String[]{"Coordinates hidden"};
         String[] lines=cached.get(module.id);
-        if(lines==null)lines=new String[]{BlossomHooks.text(module)};
+        if(lines==null)lines=module.id.equals("potions")&&!BlossomHooks.settings.showEmptyPotions?new String[0]:new String[]{BlossomHooks.text(module)};
+        if(lines.length==0 && ave.A().m instanceof BlossomHudEditor)lines=new String[]{"Potion effects (preview)"};
         if(!module.extraText){lines=lines.clone();for(int i=0;i<lines.length;i++)lines[i]=HudText.compact(module.id,lines[i]);}
         return lines;
     }
@@ -63,7 +65,7 @@ public final class BlossomHud {
                 bfl.b(x,y,0);bfl.a(module.scale,module.scale,1);
                 String[] lines=lines(module);int w=0;
                 for(String line:lines)w=Math.max(w,mc.k.a(line));
-                if(BlossomHooks.background)avp.a(0,0,w+8,lines.length*11+5,alpha(module.backgroundColor,module.opacity));
+                if(lines.length>0&&BlossomHooks.background)avp.a(0,0,w+8,lines.length*11+5,alpha(module.backgroundColor,module.opacity));
                 for(int i=0;i<lines.length;i++)mc.k.a(lines[i],4f,4f+i*11,alpha(module.textColor,module.opacity),module.shadow);
             }catch(RuntimeException e){module.enabled=false;BlossomHooks.message="Disabled failing HUD: "+module.name;}
             finally{bfl.F();bfl.c(1,1,1,1);}

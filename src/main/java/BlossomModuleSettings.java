@@ -8,6 +8,7 @@ public final class BlossomModuleSettings extends axu {
     private avb bindingTarget;
     private final boolean global;
     private int page,rows;
+    private boolean rebuildPending;
     public BlossomModuleSettings(axu previous,Modules.Module module){this.previous=previous;this.module=module;this.global=false;}
     public BlossomModuleSettings(axu previous){
         this.previous=previous;this.global=true;this.module=new Modules.Module("all","All HUD visuals","HUD","",true,0);
@@ -44,7 +45,7 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("coords"))add(30,"Privacy: "+BlossomHooks.settings.privacy);
             if(module.id.equals("cape"))add(40,"Animation playback / library");
             if(HudText.supportsCompact(module.id))add(33,"Extra text / units: "+module.extraText);
-            if(module.id.equals("potions"))add(34,"Hide level 1: "+BlossomHooks.settings.hidePotionOne);
+            if(module.id.equals("potions")){add(34,"Hide level 1: "+BlossomHooks.settings.hidePotionOne);add(35,"Show when empty: "+BlossomHooks.settings.showEmptyPotions);}
             if(module.id.equals("fov")){
                 FovSettings f=BlossomHooks.settings.fov;
                 add(50,"FOV mode: "+(f.constant?"Static":"Dynamic"));add(51,"Base FOV: "+f.base);
@@ -89,6 +90,7 @@ public final class BlossomModuleSettings extends axu {
             case 32:s.fpsLows=!s.fpsLows;break;
             case 33:module.extraText=!module.extraText;break;
             case 34:s.hidePotionOne=!s.hidePotionOne;break;
+            case 35:s.showEmptyPotions=!s.showEmptyPotions;BlossomHud.invalidate();break;
             case 50:s.fov.setConstant(!s.fov.constant);break;
 
             case 51:case 53:case 54:case 55:case 56:case 57:case 58:
@@ -102,12 +104,12 @@ public final class BlossomModuleSettings extends axu {
             case 40:j.a(new BlossomCapeMenu(this));return;
             case 90:visuals=true;page=0;binding=false;break;
             case 91:visuals=false;page=0;binding=false;break;
-            case 92:page=(page+(rows-1)/perPage())%((rows-1)/perPage()+1);break;
-            case 93:page=(page+1)%((rows-1)/perPage()+1);break;
+            case 92:page=SettingsPages.move(page,rows,perPage(),-1);break;
+            case 93:page=SettingsPages.move(page,rows,perPage(),1);break;
             case 99:j.a(previous);return;
             default:break;
         }
-        b();
+        rebuildPending=true;
     }
     @Override public void a(int x,int y,float delta){
         c();BlossomTheme.panel(l,m);q.a(module.name,l/2-140,12,BlossomHooks.accent);
@@ -119,7 +121,7 @@ public final class BlossomModuleSettings extends axu {
         if(binding){BlossomBindings.set(bindingTarget,key==Keyboard.KEY_ESCAPE?0:key);binding=false;b();return;}
         if(key==Keyboard.KEY_ESCAPE)j.a(previous);
     }
-    @Override protected void a(int x,int y,int button) {if(binding){BlossomBindings.set(bindingTarget,button-100);binding=false;b();return;}super.a(x,y,button);}
+    @Override protected void a(int x,int y,int button) {if(binding){BlossomBindings.set(bindingTarget,button-100);binding=false;b();return;}super.a(x,y,button);if(rebuildPending){rebuildPending=false;b();}}
     @Override public void m(){BlossomHooks.save("default");}
     @Override public boolean d(){return false;}
 }
