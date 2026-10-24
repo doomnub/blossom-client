@@ -16,6 +16,7 @@ public final class CoreTest {
         check(VisualSettings.category(39)==10&&VisualSettings.category(35)==11&&VisualSettings.category(6)==9,"particle mapping uses actual vanilla IDs");
         ClientSettings tilt=new ClientSettings();Properties tiltProps=new Properties();tilt.hitTilt=0;tilt.save(tiltProps);tilt=new ClientSettings();tilt.load(tiltProps);check(tilt.hitTilt==0,"zero hit tilt survives restart");
         LatencyState latency=new LatencyState();Object local=new Object(),server=new Object();latency.update(local,true,0);check(latency.value()==0,"local ping is zero");latency.update(server,false,0);check(latency.value()==-1,"server transition discards local zero");latency.update(server,false,179);check(latency.value()==179,"server latency updates without toggle");latency.update(new Object(),false,0);check(latency.value()==-1,"reconnect resets latency");latency.clear();check(latency.value()==-1,"disabled latency released");
+        Class.forName("dev.blossom.integration.BlossomDisabledModulesTest").getMethod("run").invoke(null);
         ClothTest.run();
         ClickWindow clicks=new ClickWindow();clicks.click(100);clicks.click(200);
         check(clicks.count(1099,1000)==2,"rolling timestamps");check(clicks.count(1100,1000)==1,"boundary expiration");

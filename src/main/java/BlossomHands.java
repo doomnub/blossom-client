@@ -32,7 +32,9 @@ public final class BlossomHands {
     }
     public static void attach(bbj model,float scale){
         if(!third){model.a(scale);return;}
-        model.i.c(scale);GL11.glScalef(-1,1,1);int winding=GL11.glGetInteger(GL11.GL_FRONT_FACE);GL11.glFrontFace(winding==GL11.GL_CCW?GL11.GL_CW:GL11.GL_CCW);
+        float x=model.i.c;
+        try{if("slim".equals(ave.A().h.l()))model.i.c-=1;model.i.c(scale);}finally{model.i.c=x;}
+        GL11.glScalef(-1,1,1);int winding=GL11.glGetInteger(GL11.GL_FRONT_FACE);GL11.glFrontFace(winding==GL11.GL_CCW?GL11.GL_CW:GL11.GL_CCW);
     }
     public static void endThird(){if(third){GL11.glPopAttrib();GL11.glPopMatrix();third=false;}}
 }

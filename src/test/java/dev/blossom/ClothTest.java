@@ -25,7 +25,7 @@ public final class ClothTest {
         }
         for(int resolution:new int[]{4,16,64}){
             Cloth fast=new Cloth(resolution);ClothSettings cfg=new ClothSettings();cfg.selfCollision=false;cfg.playerCollision=false;
-            for(int frame=0;frame<90;frame++){fast.moveFrame(.08*Math.sin(frame*.1),-.025,.08,.015);fast.advance(1./60,cfg);if(fast.maxAttachmentStretch()>1.005001)throw new AssertionError("Fast movement stretches cape "+resolution);}
+            for(int frame=0;frame<90;frame++){fast.moveFrame(.08*Math.sin(frame*.1),-.025,.08,.015);fast.advance(1./60,cfg);if(fast.maxAttachmentStretch()>1.005001)throw new AssertionError("Fast movement stretches cape "+resolution);fast.moveFrame(.015,0,.015,0);fast.advance(1./165,cfg);fast.prepareRender();for(int row=1;row<=fast.rows;row++)for(int col=0;col<=fast.cols;col++){int i=3*(row*(fast.cols+1)+col);double x=fast.renderPosition[i]-(.3125-col*.625/fast.cols),y=fast.renderPosition[i+1],z=fast.renderPosition[i+2]-Cloth.ANCHOR_Z;if(Math.sqrt(x*x+y*y+z*z)>row/(double)fast.rows*1.005001)throw new AssertionError("Render interpolation stretches cape");}}
         }
         {Cloth jacket=new Cloth(16);jacket.torsoCollision=true;jacket.torso[1]=.375;jacket.torso[3]=.265625;jacket.torso[4]=.390625;jacket.torso[5]=.140625;
         int i=(jacket.cols+2)*3;jacket.position[i]=.25;jacket.position[i+1]=.5;jacket.position[i+2]=.14;

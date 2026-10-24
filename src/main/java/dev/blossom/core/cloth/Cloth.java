@@ -2,7 +2,7 @@ package dev.blossom.core.cloth;
 import java.util.Arrays;
 /** Fixed 120 Hz position-based cloth. Coordinates are metres in the player model frame, Y down. */
 public final class Cloth {
-    public static final double STEP=1.0/120,THICKNESS=.008,RENDER_HALF_THICKNESS=.015625,ANCHOR_Z=.19;
+    public static final double STEP=1.0/120,THICKNESS=.008,RENDER_HALF_THICKNESS=.015625,SELF_SEPARATION=.03325,ANCHOR_Z=.19;
     public final int cols,rows,count;
     public final double[] position,previous,renderPrevious,renderPosition,renderNormal;
     public final int[] triangles;
@@ -54,6 +54,7 @@ public final class Cloth {
     /** Reused interpolated mesh and area-weighted normals, once per rendered frame. */
     public void prepareRender(){
         for(int i=0;i<position.length;i++)renderPosition[i]=rendered(i);
+        limitStretch(renderPosition);
         Arrays.fill(renderNormal,0);
         for(int t=0;t<triangles.length;t+=3){
             int a=triangles[t]*3,b=triangles[t+1]*3,c=triangles[t+2]*3;
@@ -87,12 +88,13 @@ public final class Cloth {
         limitStretch();if(s.playerCollision)body();limitStretch();pin();
         for(double v:position)if(!Double.isFinite(v)||Math.abs(v)>8){reset();break;}
     }
-    private void limitStretch(){
+    private void limitStretch(){limitStretch(position);}
+    private void limitStretch(double[] surface){
         for(int row=1;row<=rows;row++)for(int col=0;col<=cols;col++){
             int i=3*(row*(cols+1)+col);double ax=.3125-col*.625/cols;
-            double x=position[i]-ax,y=position[i+1],z=position[i+2]-ANCHOR_Z;
+            double x=surface[i]-ax,y=surface[i+1],z=surface[i+2]-ANCHOR_Z;
             double length=Math.sqrt(x*x+y*y+z*z),max=row/(double)rows*1.005;
-            if(length>max){double f=max/length;position[i]=ax+x*f;position[i+1]=y*f;position[i+2]=ANCHOR_Z+z*f;}
+            if(length>max){double f=max/length;surface[i]=ax+x*f;surface[i+1]=y*f;surface[i+2]=ANCHOR_Z+z*f;}
         }
     }
     public double maxAttachmentStretch(){double max=1;for(int row=1;row<=rows;row++)for(int col=0;col<=cols;col++){int i=3*(row*(cols+1)+col);double x=position[i]-(.3125-col*.625/cols),y=position[i+1],z=position[i+2]-ANCHOR_Z;max=Math.max(max,Math.sqrt(x*x+y*y+z*z)/(row/(double)rows));}return max;}
@@ -123,9 +125,9 @@ public final class Cloth {
         Arrays.fill(buckets,-1);entries=0;
         for(int t=0;t<triangles.length/3;t++){
             int i=triangles[t*3]*3,j=triangles[t*3+1]*3,k=triangles[t*3+2]*3;
-            int x0=cell(Math.min(position[i],Math.min(position[j],position[k]))-THICKNESS),x1=cell(Math.max(position[i],Math.max(position[j],position[k]))+THICKNESS);
-            int y0=cell(Math.min(position[i+1],Math.min(position[j+1],position[k+1]))-THICKNESS),y1=cell(Math.max(position[i+1],Math.max(position[j+1],position[k+1]))+THICKNESS);
-            int z0=cell(Math.min(position[i+2],Math.min(position[j+2],position[k+2]))-THICKNESS),z1=cell(Math.max(position[i+2],Math.max(position[j+2],position[k+2]))+THICKNESS);
+            int x0=cell(Math.min(position[i],Math.min(position[j],position[k]))-SELF_SEPARATION),x1=cell(Math.max(position[i],Math.max(position[j],position[k]))+SELF_SEPARATION);
+            int y0=cell(Math.min(position[i+1],Math.min(position[j+1],position[k+1]))-SELF_SEPARATION),y1=cell(Math.max(position[i+1],Math.max(position[j+1],position[k+1]))+SELF_SEPARATION);
+            int z0=cell(Math.min(position[i+2],Math.min(position[j+2],position[k+2]))-SELF_SEPARATION),z1=cell(Math.max(position[i+2],Math.max(position[j+2],position[k+2]))+SELF_SEPARATION);
             if((long)(x1-x0+1)*(y1-y0+1)*(z1-z0+1)>256)continue;
             for(int x=x0;x<=x1;x++)for(int y=y0;y<=y1;y++)for(int z=z0;z<=z1;z++){
                 if(entries==next.length)return;int h=hash(x,y,z);next[entries]=buckets[h];buckets[h]=entries;triangle[entries]=t;cx[entries]=x;cy[entries]=y;cz[entries++]=z;
@@ -149,11 +151,11 @@ public final class Cloth {
         double nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,n=Math.sqrt(nx*nx+ny*ny+nz*nz);if(n<1e-10)return;nx/=n;ny/=n;nz/=n;
         double px=position[i]-position[j],py=position[i+1]-position[j+1],pz=position[i+2]-position[j+2],d=px*nx+py*ny+pz*nz;
         double old=(previous[i]-previous[j])*nx+(previous[i+1]-previous[j+1])*ny+(previous[i+2]-previous[j+2])*nz;
-        if(Math.abs(d)>=THICKNESS && (d*old>=0||Math.abs(d)>.04))return;
+        if(Math.abs(d)>=SELF_SEPARATION && (d*old>=0||Math.abs(d)>.04))return;
         double uu=ux*ux+uy*uy+uz*uz,vv=vx*vx+vy*vy+vz*vz,uv=ux*vx+uy*vy+uz*vz,pu=px*ux+py*uy+pz*uz,pv=px*vx+py*vy+pz*vz,den=uu*vv-uv*uv;if(den<1e-14)return;
         double wb=(pu*vv-pv*uv)/den,wc=(pv*uu-pu*uv)/den,wa=1-wb-wc;if(wa<0||wb<0||wc<0)return;
         double mass=1+(a>cols?wa*wa:0)+(b>cols?wb*wb:0)+(c>cols?wc*wc:0);
-        double correction=Math.max(-.025,Math.min(.025,((old>=0?1:-1)*THICKNESS-d)/mass));
+        double correction=Math.max(-.025,Math.min(.025,((old>=0?1:-1)*SELF_SEPARATION-d)/mass));
         position[i]+=nx*correction;position[i+1]+=ny*correction;position[i+2]+=nz*correction;
         displace(a,-wa*correction,nx,ny,nz);displace(b,-wb*correction,nx,ny,nz);displace(c,-wc*correction,nx,ny,nz);
     }

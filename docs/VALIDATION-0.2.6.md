@@ -22,7 +22,7 @@
 - Hit Tilt scales the vanilla 14-degree hurt amplitude from 0–200%; death rotation,
   camera bob, damage and knockback are untouched. Settings persist through restart.
 
-Local Java checks: 86 core checks, cloth tests, 14 real vanilla transformer targets,
+Local Java checks: 86 core checks, disabled hooks exercised without Minecraft/GL, cloth tests, 14 real vanilla transformer targets,
 full JVM verification/linkage and 49 legacy launcher checks pass. Native build and
 real desktop smoke results are checked in CI before publication.
 
