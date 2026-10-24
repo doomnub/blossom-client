@@ -65,6 +65,7 @@ public final class BlossomCloth {
     }
     private static void capsule(Cloth c,double x,double y,double z,double ex,double ey,double ez,double r){int o=c.capsuleCount++*7;c.capsules[o]=x;c.capsules[o+1]=y;c.capsules[o+2]=z;c.capsules[o+3]=ex;c.capsules[o+4]=ey;c.capsules[o+5]=ez;c.capsules[o+6]=r;}
     private static void draw(Cloth c){
+        c.prepareRender();
         GL11.glBegin(GL11.GL_TRIANGLES);
         try{for(int t=0;t<c.triangles.length;t+=3){face(c,c.triangles[t],c.triangles[t+1],c.triangles[t+2],true);face(c,c.triangles[t+2],c.triangles[t+1],c.triangles[t],false);}}finally{GL11.glEnd();}
         GL11.glBegin(GL11.GL_QUADS);
@@ -77,7 +78,11 @@ public final class BlossomCloth {
         double nx=ay*bz-az*by,ny=az*bx-ax*bz,nz=ax*by-ay*bx,n=Math.sqrt(nx*nx+ny*ny+nz*nz);if(n<1e-10)return;
         GL11.glNormal3d(nx/n,ny/n,nz/n);vertex(c,a,front);vertex(c,b,front);vertex(c,d,front);
     }
-    private static void vertex(Cloth c,int v,boolean front){double u=(v%(c.cols+1))/(double)c.cols,w=(v/(c.cols+1))/(double)c.rows;GL11.glTexCoord2d((front?1+u*10:22-u*10)/64.,(1+w*16)/32.);GL11.glVertex3d(c.rendered(v*3),c.rendered(v*3+1),c.rendered(v*3+2)+(front?-.001:.001));}
-    private static void edge(Cloth c,int a,int b,double u0,double u1,double v0,double v1){GL11.glNormal3f(0,0,1);point(c,a,u0,(v0==0&&v1==0)?0:1+v0*16,-.001);point(c,b,u1,(v0==0&&v1==0)?0:1+v1*16,-.001);point(c,b,u1,(v0==0&&v1==0)?1:1+v1*16,.001);point(c,a,u0,(v0==0&&v1==0)?1:1+v0*16,.001);}
-    private static void point(Cloth c,int v,double u,double w,double z){GL11.glTexCoord2d(u/64.,w/32.);GL11.glVertex3d(c.rendered(v*3),c.rendered(v*3+1),c.rendered(v*3+2)+z);}
+    private static void vertex(Cloth c,int v,boolean front){double u=(v%(c.cols+1))/(double)c.cols,w=(v/(c.cols+1))/(double)c.rows;point(c,v,front?1+u*10:22-u*10,1+w*16,front?.001:-.001);}
+    private static void edge(Cloth c,int a,int b,double u0,double u1,double v0,double v1){
+        GL11.glNormal3f(0,0,1);
+        if(v0==0&&v1==0){point(c,a,u0,0,.001);point(c,b,u1,0,.001);point(c,b,u1,1,-.001);point(c,a,u0,1,-.001);}
+        else{point(c,a,u0,1+v0*16,.001);point(c,b,u0,1+v1*16,.001);point(c,b,u1,1+v1*16,-.001);point(c,a,u1,1+v0*16,-.001);}
+    }
+    private static void point(Cloth c,int v,double u,double w,double offset){int i=v*3;GL11.glTexCoord2d(u/64.,w/32.);GL11.glVertex3d(c.renderPosition[i]+c.renderNormal[i]*offset,c.renderPosition[i+1]+c.renderNormal[i+1]*offset,c.renderPosition[i+2]+c.renderNormal[i+2]*offset);}
 }

@@ -8,7 +8,11 @@ concurrency:
   group: blossom-release
   cancel-in-progress: false
 jobs:
+  native:
+    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    uses: ./.github/workflows/native-launcher.yml
   release:
+    needs: native
     if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +27,12 @@ jobs:
       - run: python scripts/build.py
       - run: python scripts/test_runtime.py
       - run: python scripts/package_release.py
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: blossom-native-*
+          path: build/native-artifacts
+      - name: Assemble native and legacy packages
+        run: python scripts/assemble_release.py
       - name: Publish prerelease with tested artifacts
         env:
           GH_TOKEN: ${{ github.token }}

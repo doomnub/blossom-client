@@ -11,8 +11,8 @@ Implementation checkpoints; desktop acceptance remains outstanding. Do not treat
   archive traversal rejection, library rule selection and secret-free launch arguments.
 - Strict TypeScript compilation and production frontend build.
 
-Rust backend: ten tests pass, including internal archive link materialization and
-log-token redaction across read boundaries. Fresh Java extraction from a verified
+Rust backend: eleven tests cover, including internal archive link materialization and
+log-token redaction across read boundaries and Unicode settings round trips. Fresh Java extraction from a verified
 cached ZIP also passes; this caught and fixed Linux archive aliases during CI.
 
 Rust installer reused the prior launcher cache and managed Java with unreachable
@@ -67,3 +67,12 @@ flashes; they never trigger attacks or modify damage.
 Initial headless CPU timings (120 stationary/moving steps, not gameplay FPS):
 4 subdivisions / 20 vertices ~41 ms; 16 / 187 ~43 ms; 64 / 2665 ~544 ms.
 These are single-run environment measurements, not performance guarantees.
+
+## CI and visual review
+
+Windows and Ubuntu native builds, fresh installer checks, and the frontend checks
+passed for checkpoint `6e7f684`. Browser screenshots were reviewed for the Play and
+minimum-width Settings screens. The browser uses controlled IPC fixtures; this does
+not verify native WebView behavior, Microsoft login, or graphical Minecraft play.
+The release workflow now builds both native packages and verifies their outer and
+internal checksums before collecting them alongside an explicitly named legacy ZIP.

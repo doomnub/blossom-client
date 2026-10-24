@@ -1,7 +1,7 @@
 use crate::*;
 use crate::{auth::Session, config::Config, install::Installed};
 use std::io::{BufRead, BufReader};
-use std::process::{Command, Stdio};
+use std::process::Stdio;
 pub fn arguments(
     java: &Path,
     agent: &Path,
@@ -50,7 +50,7 @@ pub fn arguments(
 }
 pub fn run(t: &Task, args: &[String], game: &Path, session: Session) -> Result<i32> {
     t.check()?;
-    let mut child = Command::new(&args[0])
+    let mut child = crate::command(&args[0])
         .args(&args[1..])
         .current_dir(game)
         .stdin(Stdio::piped())

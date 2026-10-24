@@ -292,11 +292,11 @@ pub fn java(t: &Task, root: &Path) -> Result<PathBuf> {
     Ok(exe)
 }
 pub fn verify_java(exe: &Path) -> Result<()> {
-    use std::process::{Command, Stdio};
+    use std::process::Stdio;
     if !exe.is_file() {
         return Err("Java executable does not exist".into());
     }
-    let mut child = Command::new(exe)
+    let mut child = crate::command(exe)
         .args(["-XshowSettings:properties", "-version"])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

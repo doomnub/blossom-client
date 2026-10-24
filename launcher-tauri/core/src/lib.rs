@@ -170,3 +170,15 @@ mod tests {
         assert!(t.check().is_err());
     }
 }
+
+/// Suppress helper console windows while preserving piped game output.
+pub(crate) fn command(program: impl AsRef<std::ffi::OsStr>) -> std::process::Command {
+    let mut command = std::process::Command::new(program);
+    #[cfg(windows)] {
+        use std::os::windows::process::CommandExt;
+        command.creation_flags(0x08000000);
+    }
+    #[cfg(not(windows))]
+    let _ = &mut command;
+    command
+}

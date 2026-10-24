@@ -9,6 +9,8 @@ public final class ClothTest {
             for(int frame=0;frame<120;frame++){c.moveFrame(.001*Math.sin(frame*.1),0,0,.002);c.advance(1./120,s);}
             for(double v:c.position)if(!Double.isFinite(v)||Math.abs(v)>2)throw new AssertionError("Unstable cloth "+resolution);
             for(int x=0;x<=c.cols;x++)if(c.position[x*3+1]!=0)throw new AssertionError("Unpinned anchor");
+            c.prepareRender();
+            for(int i=0;i<c.renderNormal.length;i+=3){double n=0;for(int k=0;k<3;k++)n+=c.renderNormal[i+k]*c.renderNormal[i+k];if(!Double.isFinite(n)||Math.abs(n-1)>1e-8)throw new AssertionError("Invalid folded-cloth render normal");}
             c.moveFrame(100,0,0,0);if(Math.abs(c.position[c.position.length-2]-1)>1e-9)throw new AssertionError("Teleport reset");
             System.out.println("Cloth "+resolution+" subdivisions, "+c.count+" vertices: "+(System.nanoTime()-start)/1000000+" ms for 120 steps (headless CPU benchmark)");
         }

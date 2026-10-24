@@ -4,7 +4,7 @@ import java.util.Arrays;
 public final class Cloth {
     public static final double STEP=1.0/120,THICKNESS=.008;
     public final int cols,rows,count;
-    public final double[] position,previous,renderPrevious;
+    public final double[] position,previous,renderPrevious,renderPosition,renderNormal;
     public final int[] triangles;
     private final int[] a,b;
     private final double[] rest,weight;
@@ -17,7 +17,7 @@ public final class Cloth {
     public int capsuleCount;
     public Cloth(int subdivisions){
         rows=Math.max(4,Math.min(64,subdivisions));cols=Math.max(3,(int)Math.round(rows*.625));count=(rows+1)*(cols+1);
-        position=new double[count*3];previous=new double[count*3];renderPrevious=new double[count*3];
+        position=new double[count*3];previous=new double[count*3];renderPrevious=new double[count*3];renderPosition=new double[count*3];renderNormal=new double[count*3];
         a=new int[count*6];b=new int[a.length];rest=new double[a.length];weight=new double[a.length];
         triangles=new int[rows*cols*6];int t=0;
         reset();
@@ -48,6 +48,19 @@ public final class Cloth {
         int steps=0;while(accumulator>=STEP&&steps++<8){System.arraycopy(position,0,renderPrevious,0,position.length);step(settings);accumulator-=STEP;}
     }
     public double rendered(int i){double f=accumulator/STEP;return renderPrevious[i]*(1-f)+position[i]*f;}
+    /** Reused interpolated mesh and area-weighted normals, once per rendered frame. */
+    public void prepareRender(){
+        for(int i=0;i<position.length;i++)renderPosition[i]=rendered(i);
+        Arrays.fill(renderNormal,0);
+        for(int t=0;t<triangles.length;t+=3){
+            int a=triangles[t]*3,b=triangles[t+1]*3,c=triangles[t+2]*3;
+            double ax=renderPosition[b]-renderPosition[a],ay=renderPosition[b+1]-renderPosition[a+1],az=renderPosition[b+2]-renderPosition[a+2];
+            double bx=renderPosition[c]-renderPosition[a],by=renderPosition[c+1]-renderPosition[a+1],bz=renderPosition[c+2]-renderPosition[a+2];
+            double nx=ay*bz-az*by,ny=az*bx-ax*bz,nz=ax*by-ay*bx;
+            for(int k=0;k<3;k++){int v=triangles[t+k]*3;renderNormal[v]+=nx;renderNormal[v+1]+=ny;renderNormal[v+2]+=nz;}
+        }
+        for(int i=0;i<renderNormal.length;i+=3){double n=Math.sqrt(renderNormal[i]*renderNormal[i]+renderNormal[i+1]*renderNormal[i+1]+renderNormal[i+2]*renderNormal[i+2]);if(n<1e-10){renderNormal[i+2]=1;}else for(int k=0;k<3;k++)renderNormal[i+k]/=n;}
+    }
     private void step(ClothSettings s){
         time+=STEP;
         double wind=s.wind?s.windStrength*(Math.sin(time*.73)+.4*Math.sin(time*1.39)):.0;

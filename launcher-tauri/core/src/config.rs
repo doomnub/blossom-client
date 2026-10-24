@@ -20,36 +20,31 @@ pub fn properties(path: &Path) -> Result<HashMap<String, String>> {
     if path.metadata()?.len() > 65536 {
         return Err("Settings file exceeds size limit".into());
     }
-    // Swing writes Properties through a UTF-8 Writer; java-properties supports Java escaping.
-    let text = std::fs::read_to_string(path)?;
-    let escaped: String = text
-        .chars()
-        .flat_map(|c| {
-            if c as u32 > 127 {
-                c.encode_utf16(&mut [0; 2])
-                    .iter()
-                    .map(|v| format!("\\u{v:04x}"))
-                    .collect::<String>()
-                    .chars()
-                    .collect::<Vec<_>>()
-            } else {
-                vec![c]
-            }
-        })
-        .collect();
-    Ok(java_properties::read(escaped.as_bytes())?)
+    // Match the existing Swing UTF-8 Reader/Writer contract.
+    let raw = std::fs::read(path)?;
+    let text = match String::from_utf8(raw.clone()) {
+        Ok(text) => text,
+        Err(_) => encoding_rs::WINDOWS_1252.decode(&raw).0.into_owned(),
+    };
+    let mut values = HashMap::new();
+    java_properties::PropertiesIter::new_with_encoding(text.as_bytes(), encoding_rs::UTF_8)
+        .read_into(|key, value| { values.insert(key, value); })?;
+    Ok(values)
 }
 pub fn write_properties(path: &Path, p: &HashMap<String, String>, private: bool) -> Result<()> {
     std::fs::create_dir_all(path.parent().ok_or("No settings folder")?)?;
     let mut file = tempfile::NamedTempFile::new_in(path.parent().unwrap())?;
-    if private {
-        private_file(file.path())?;
+    if private { private_file(file.path())?; }
+    {
+        let mut writer = java_properties::PropertiesWriter::new_with_encoding(&mut file, encoding_rs::UTF_8);
+        for (key, value) in p { writer.write(key, value)?; }
+        writer.finish()?;
     }
-    java_properties::write(&mut file, p)?;
     file.as_file().sync_all()?;
     file.persist(path)?;
     Ok(())
 }
+
 fn private_file(path: &Path) -> Result<()> {
     #[cfg(unix)]
     {
@@ -58,8 +53,7 @@ fn private_file(path: &Path) -> Result<()> {
     }
     #[cfg(windows)]
     {
-        use std::process::Command;
-        let out = Command::new("powershell.exe")
+        let out = crate::command("powershell.exe")
             .args([
                 "-NoProfile",
                 "-NonInteractive",
@@ -71,7 +65,7 @@ fn private_file(path: &Path) -> Result<()> {
         if !out.status.success() || !regex::Regex::new(r"^S-1-[0-9-]+$")?.is_match(&sid) {
             return Err("Cannot identify credential owner".into());
         }
-        if !Command::new("icacls.exe")
+        if !crate::command("icacls.exe")
             .arg(path)
             .args(["/inheritance:r", "/grant:r", &format!("*{sid}:(F)")])
             .output()?
@@ -147,6 +141,18 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn unicode_paths_survive_native_and_java_properties() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("launcher.properties");
+        std::fs::write(&path, "game=Jadé-花-🌸\n").unwrap();
+        let config = Config::load(dir.path()).unwrap();
+        assert_eq!(config.game, "Jadé-花-🌸");
+        config.save(dir.path()).unwrap();
+        assert_eq!(Config::load(dir.path()).unwrap().game, config.game);
+        let bytes = std::fs::read(path).unwrap();
+        assert!(String::from_utf8(bytes).unwrap().contains("Jadé-花-🌸"));
+    }
     #[test]
     fn migration_roundtrip() {
         let dir = tempfile::tempdir().unwrap();
