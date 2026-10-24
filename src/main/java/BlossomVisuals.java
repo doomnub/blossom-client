@@ -19,7 +19,7 @@ public final class BlossomVisuals {
     private static int particleId=-1;private static boolean extra;
     private static final Random random=new Random();
     private static java.lang.reflect.Field size,age;
-    public static boolean begin(int id){particleId=id;if(!BlossomHooks.modules.on("particles"))return true;VisualSettings s=BlossomHooks.settings.visual;int c=VisualSettings.category(id);return s.enabled[c]&&(extra||random.nextFloat()<s.density[c]);}
+    public static boolean begin(int id){particleId=id;if(!BlossomHooks.modules.on("particles"))return true;VisualSettings s=BlossomHooks.settings.visual;int c=VisualSettings.category(id);boolean allowed=s.enabled[c]&&(extra||random.nextFloat()<s.density[c]);if(!allowed)particleId=-1;return allowed;}
     public static void added(beb p){
         if(p==null||!BlossomHooks.modules.on("particles"))return;
         try{

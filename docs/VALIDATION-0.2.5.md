@@ -1,6 +1,6 @@
 # 0.2.5 validation
 
-Work in progress. Do not treat this document as a completed graphical acceptance test.
+Implementation checkpoints; desktop acceptance remains outstanding. Do not treat this document as a completed graphical acceptance test.
 
 ## Automated checks
 
@@ -10,6 +10,12 @@ Work in progress. Do not treat this document as a completed graphical acceptance
 - Rust settings migration, private account storage, offline UUID, cancellation,
   archive traversal rejection, library rule selection and secret-free launch arguments.
 - Strict TypeScript compilation and production frontend build.
+
+Rust installer reused the prior launcher cache and managed Java with unreachable
+HTTP/HTTPS proxies: all 734 assets and 32 classpath entries verified successfully.
+
+Other-player cloth uses at most 16 subdivisions (8 beyond eight blocks), at most
+32 cached simulations, and no strong world references in the simulation cache.
 
 ## Desktop acceptance procedure (Windows 11 and Fedora)
 

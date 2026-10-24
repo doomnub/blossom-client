@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 public final class BlossomCloth {
     private static final Map<bet,State> states=new WeakHashMap<bet,State>();
     private static jy white;
-    private static final class State {Cloth mesh;Object world;long last;double x,y,z,yaw;State(int n){mesh=new Cloth(n);}}
+    private static final class State {Cloth mesh;java.lang.ref.WeakReference<Object> world;long last;double x,y,z,yaw,anchorY,anchorZ;State(int n){mesh=new Cloth(n);}}
     public static boolean render(bet player,bln renderer,float partial){
         if(!BlossomHooks.modules.on("capephysics")){states.clear();return false;}
         ave mc=ave.A();ClothSettings settings=BlossomHooks.settings.cloth;
@@ -20,25 +20,29 @@ public final class BlossomCloth {
             if(white==null){java.awt.image.BufferedImage image=new java.awt.image.BufferedImage(64,32,java.awt.image.BufferedImage.TYPE_INT_ARGB);for(int y=0;y<32;y++)for(int x=0;x<64;x++)image.setRGB(x,y,0xffffffff);white=mc.P().a("blossom/white_cape",new blz(image));}
             texture=white;
         }
+        int resolution=player==mc.h?settings.subdivisions:Math.min(settings.subdivisions,dx*dx+dy*dy+dz*dz>64?8:16);
         long now=System.nanoTime();State state=states.get(player);
-        if(state==null||state.mesh.rows!=settings.subdivisions){state=new State(settings.subdivisions);states.put(player,state);}
+        if(state==null||state.mesh.rows!=resolution){if(states.size()>=32){bet oldest=null;long last=Long.MAX_VALUE;for(Map.Entry<bet,State> e:states.entrySet())if(e.getValue().last<last){oldest=e.getKey();last=e.getValue().last;}states.remove(oldest);}state=new State(resolution);states.put(player,state);}
         double x=player.p+(player.s-player.p)*partial,y=player.q+(player.t-player.q)*partial,z=player.r+(player.u-player.r)*partial;
         double yaw=(player.aJ+wrap(player.aI-player.aJ)*partial)*Math.PI/180;
+        bbr model=renderer.g();double anchorY=model.g.d/16.-Math.sin(model.g.f)*.145,anchorZ=model.g.e/16.+Math.cos(model.g.f)*.145-.145;
         double dt=(now-state.last)*1e-9;
-        if(state.last==0||dt>.5||state.world!=mc.f)state.mesh.reset();
+        if(state.last==0||dt>.5||(state.world==null||state.world.get()!=mc.f))state.mesh.reset();
         else {
             double wx=state.x-x,wz=state.z-z,c=Math.cos(state.yaw),s=Math.sin(state.yaw);
-            state.mesh.moveFrame(-wx*c-wz*s,y-state.y,wx*s-wz*c,wrapRadians(state.yaw-yaw));
+            state.mesh.moveFrame(-wx*c-wz*s,y-state.y+state.anchorY-anchorY,wx*s-wz*c+state.anchorZ-anchorZ,wrapRadians(state.yaw-yaw));
         }
-        state.x=x;state.y=y;state.z=z;state.yaw=yaw;state.world=mc.f;state.last=now;
-        body(state.mesh,renderer.g());
+        state.x=x;state.y=y;state.z=z;state.yaw=yaw;if(state.world==null||state.world.get()!=mc.f)state.world=new java.lang.ref.WeakReference<Object>(mc.f);state.last=now;state.anchorY=anchorY;state.anchorZ=anchorZ;
+        body(state.mesh,model);
+        for(int n=0;n<state.mesh.capsuleCount;n++){int o=n*7;state.mesh.capsules[o+1]-=anchorY;state.mesh.capsules[o+2]-=anchorZ;state.mesh.capsules[o+4]-=anchorY;state.mesh.capsules[o+5]-=anchorZ;}
         state.mesh.advance(dt>.5?0:dt,settings);
         mc.P().a(texture);
+        GL11.glPushMatrix();GL11.glTranslated(0,anchorY,anchorZ);
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT|GL11.GL_COLOR_BUFFER_BIT|GL11.GL_CURRENT_BIT|GL11.GL_POLYGON_BIT);
         try{
             GL11.glDisable(GL11.GL_CULL_FACE);GL11.glColor4f(1,1,1,1);
             draw(state.mesh);
-        }finally{GL11.glPopAttrib();}
+        }finally{GL11.glPopAttrib();GL11.glPopMatrix();}
         return true;
     }
     private static float wrap(float a){while(a>180)a-=360;while(a< -180)a+=360;return a;}
