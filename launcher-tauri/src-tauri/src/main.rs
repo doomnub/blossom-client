@@ -1,4 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// A release binary must serve embedded assets, never the development server.
+#[cfg(all(not(debug_assertions), not(feature = "custom-protocol")))]
+compile_error!("Release builds require --features custom-protocol (embedded frontend)");
 use blossom_launcher_core::{self as core, config::Config, Task};
 use std::{
     path::PathBuf,

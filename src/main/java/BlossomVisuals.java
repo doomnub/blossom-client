@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 public final class BlossomVisuals {
     private static final Map<pr,Hit> hits=new WeakHashMap<pr,Hit>();
     private static final class Hit{int last;long start;}
+    public static void idle(){if(!BlossomHooks.modules.on("hitcolor")&&!BlossomHooks.modules.on("particles")&&!hits.isEmpty())hits.clear();}
     private static int forcedCategory=-1;
     private static final int[] NO_ARGS=new int[0];
     private static int category(int id){return forcedCategory>=0?forcedCategory:VisualSettings.category(id);}

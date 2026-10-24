@@ -4,11 +4,16 @@ import org.lwjgl.input.Keyboard;
 public final class BlossomCamera {
     private static final SmoothZoom zoom=new SmoothZoom();
     private static Object player;
+    private static boolean zoomActive;
     private static boolean held(){ave mc=ave.A();return mc.h!=null&&mc.m==null&&BlossomHooks.modules.on("zoom")&&BlossomBindings.held(BlossomBindings.zoom);}
     public static float fov(float vanilla,boolean worldProjection){
+        boolean enabled=BlossomHooks.modules.on("zoom");
+        if(!enabled&&zoomActive){zoom.reset();zoomActive=false;}
+        if(!enabled&&!BlossomHooks.modules.on("fov"))return vanilla;
+        zoomActive=enabled;
         ave mc=ave.A();if(mc.h!=player){zoom.reset();player=mc.h;}
         if(!worldProjection||mc.h==null)return vanilla;
-        long now=System.nanoTime();double ratio=zoom.update(held(),BlossomHooks.settings.zoomFactor,now);
+        long now=System.nanoTime();double ratio=enabled?zoom.update(held(),BlossomHooks.settings.zoomFactor,now):1;
         float value=vanilla;
         if(BlossomHooks.modules.on("fov")){
             int speed=0;for(Object o:mc.h.bl()){pf effect=(pf)o;if(effect.a()==1)speed=effect.c()+1;}

@@ -7,6 +7,7 @@ public final class BlossomHud {
     public static void invalidate(){cached.clear();ticks=3;tick();}
     public static void tick() {
         if(++ticks%4!=0)return;
+        cached.keySet().removeIf(id->!BlossomHooks.modules.on(id));
         ave mc=ave.A();
         if(mc.h==null){cached.clear();return;}
         if(BlossomHooks.modules.on("armor")) {

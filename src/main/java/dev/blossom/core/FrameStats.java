@@ -8,6 +8,7 @@ public final class FrameStats {
         if (capacity < 1000 || capacity > 100000) throw new IllegalArgumentException("capacity");
         samples = new long[capacity];
     }
+    public void clear(){cursor=size=0;}
     public void record(long nanos) {
         if (nanos <= 0) return;
         samples[cursor] = nanos; cursor = (cursor + 1) % samples.length;

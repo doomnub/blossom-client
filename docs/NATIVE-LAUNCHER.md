@@ -1,4 +1,4 @@
-# Blossom native launcher 0.2.5
+# Blossom native launcher 0.2.6
 
 Use the ZIP matching your platform: Windows x64 or Linux x64. Extract the whole ZIP.
 On Windows, run `Start-Blossom.bat`; on Linux, run `bash start-blossom.sh`.
@@ -31,7 +31,7 @@ the frontend; the game token is delivered through stdin, not process arguments.
 
 ## Validation
 
-See `docs/VALIDATION-0.2.5.md` and `docs/LAUNCHER-MIGRATION.md` in the source repository.
+See `docs/VALIDATION-0.2.6.md` and `docs/LAUNCHER-MIGRATION.md` in the source repository.
 The legacy Swing source and build remain available until desktop acceptance is complete.
 The native ZIP does not launch Swing in the background.
 
@@ -47,6 +47,6 @@ cd launcher-tauri
 npm ci
 npm run build
 cd ..
-cargo build --locked --release --manifest-path launcher-tauri/src-tauri/Cargo.toml
+cargo build --locked --release --features custom-protocol --manifest-path launcher-tauri/src-tauri/Cargo.toml
 python scripts/package_native.py
 ```

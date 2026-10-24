@@ -8,12 +8,12 @@ The full requested scope is preserved in [SPECIFICATION](docs/SPECIFICATION.md).
 Most advanced features are still planned. No graphical game launch, multiplayer,
 OptiFine compatibility or performance improvement is claimed yet.
 
-## Native launcher migration (0.2.5)
+## Native launcher migration (0.2.6)
 
 The new launcher uses **Tauri 2, Rust and TypeScript**, with the existing settings,
 account file, cache and Java runtime locations preserved. Minecraft stays Java.
 See [native setup](docs/NATIVE-LAUNCHER.md), [parity audit](docs/LAUNCHER-MIGRATION.md)
-and [validation status](docs/VALIDATION-0.2.5.md). The Swing source remains available
+and [validation status](docs/VALIDATION-0.2.6.md). The Swing source remains available
 while desktop acceptance is completed.
 
 New client paths include Custom Cape / Cape Physics, damage tint controls, per-category

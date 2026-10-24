@@ -2,7 +2,7 @@ package dev.blossom.core.cloth;
 import java.util.Arrays;
 /** Fixed 120 Hz position-based cloth. Coordinates are metres in the player model frame, Y down. */
 public final class Cloth {
-    public static final double STEP=1.0/120,THICKNESS=.008;
+    public static final double STEP=1.0/120,THICKNESS=.008,RENDER_HALF_THICKNESS=.015625,ANCHOR_Z=.19;
     public final int cols,rows,count;
     public final double[] position,previous,renderPrevious,renderPosition,renderNormal;
     public final int[] triangles;
@@ -15,6 +15,9 @@ public final class Cloth {
     private final double cell;
     public final double[] capsules=new double[7*7];
     public int capsuleCount;
+    // Center, half extents and X rotation; padded torso includes the jacket layer.
+    public final double[] torso=new double[7];
+    public boolean torsoCollision;
     public Cloth(int subdivisions){
         rows=Math.max(4,Math.min(64,subdivisions));cols=Math.max(3,(int)Math.round(rows*.625));count=(rows+1)*(cols+1);
         position=new double[count*3];previous=new double[count*3];renderPrevious=new double[count*3];renderPosition=new double[count*3];renderNormal=new double[count*3];
@@ -31,7 +34,7 @@ public final class Cloth {
         next=new int[capacity];triangle=new int[capacity];cx=new int[capacity];cy=new int[capacity];cz=new int[capacity];seen=new int[triangles.length/3];
     }
     public void reset(){
-        for(int y=0;y<=rows;y++)for(int x=0;x<=cols;x++){int i=3*(y*(cols+1)+x);position[i]=.3125-x*.625/cols;position[i+1]=y/(double)rows;position[i+2]=.145;}
+        for(int y=0;y<=rows;y++)for(int x=0;x<=cols;x++){int i=3*(y*(cols+1)+x);position[i]=.3125-x*.625/cols;position[i+1]=y/(double)rows;position[i+2]=ANCHOR_Z;}
         System.arraycopy(position,0,previous,0,position.length);System.arraycopy(position,0,renderPrevious,0,position.length);accumulator=0;
     }
     private void link(int i,int j,double strength){a[constraints]=i;b[constraints]=j;double sum=0;for(int k=0;k<3;k++){double d=position[3*i+k]-position[3*j+k];sum+=d*d;}rest[constraints]=Math.sqrt(sum);weight[constraints++]=strength;}
@@ -41,7 +44,7 @@ public final class Cloth {
         transform(position,dx,dy,dz,c,s);transform(previous,dx,dy,dz,c,s);transform(renderPrevious,dx,dy,dz,c,s);pin();
     }
     private void transform(double[] v,double dx,double dy,double dz,double c,double s){for(int i=0;i<v.length;i+=3){double x=v[i]+dx,z=v[i+2]+dz;v[i]=c*x-s*z;v[i+1]+=dy;v[i+2]=s*x+c*z;}}
-    private void pin(){for(int x=0;x<=cols;x++){int i=x*3;position[i]=.3125-x*.625/cols;position[i+1]=0;position[i+2]=.145;System.arraycopy(position,i,previous,i,3);System.arraycopy(position,i,renderPrevious,i,3);}}
+    private void pin(){for(int x=0;x<=cols;x++){int i=x*3;position[i]=.3125-x*.625/cols;position[i+1]=0;position[i+2]=ANCHOR_Z;System.arraycopy(position,i,previous,i,3);System.arraycopy(position,i,renderPrevious,i,3);}}
     public void advance(double seconds,ClothSettings settings){
         if(!Double.isFinite(seconds)||seconds<0||seconds>.5){reset();return;}
         accumulator=Math.min(accumulator+seconds,STEP*8);
@@ -79,15 +82,38 @@ public final class Cloth {
             }
             if(s.playerCollision)body();pin();
         }
-        if(s.selfCollision)selfCollide();if(s.playerCollision)body();pin();
+        if(s.selfCollision)selfCollide();
+        // Long-range attachment constraints remove accumulated stretch at every resolution.
+        limitStretch();if(s.playerCollision)body();limitStretch();pin();
         for(double v:position)if(!Double.isFinite(v)||Math.abs(v)>8){reset();break;}
     }
+    private void limitStretch(){
+        for(int row=1;row<=rows;row++)for(int col=0;col<=cols;col++){
+            int i=3*(row*(cols+1)+col);double ax=.3125-col*.625/cols;
+            double x=position[i]-ax,y=position[i+1],z=position[i+2]-ANCHOR_Z;
+            double length=Math.sqrt(x*x+y*y+z*z),max=row/(double)rows*1.005;
+            if(length>max){double f=max/length;position[i]=ax+x*f;position[i+1]=y*f;position[i+2]=ANCHOR_Z+z*f;}
+        }
+    }
+    public double maxAttachmentStretch(){double max=1;for(int row=1;row<=rows;row++)for(int col=0;col<=cols;col++){int i=3*(row*(cols+1)+col);double x=position[i]-(.3125-col*.625/cols),y=position[i+1],z=position[i+2]-ANCHOR_Z;max=Math.max(max,Math.sqrt(x*x+y*y+z*z)/(row/(double)rows));}return max;}
     private void body(){
+        if(torsoCollision){
+            double sin=Math.sin(torso[6]),cos=Math.cos(torso[6]);
+            double hx=torso[3]+RENDER_HALF_THICKNESS+THICKNESS,hy=torso[4]+RENDER_HALF_THICKNESS+THICKNESS,hz=torso[5]+RENDER_HALF_THICKNESS+THICKNESS;
+            for(int i=(cols+1)*3;i<position.length;i+=3){
+                double x=position[i]-torso[0],dy=position[i+1]-torso[1],dz=position[i+2]-torso[2],y=dy*cos+dz*sin,z=-dy*sin+dz*cos;
+                if(Math.abs(x)<hx&&Math.abs(y)<hy&&Math.abs(z)<hz){
+                    double px=hx-Math.abs(x),py=hy-Math.abs(y),pz=hz-Math.abs(z);
+                    if(px<py&&px<pz)x=Math.copySign(hx,x);else if(py<pz)y=Math.copySign(hy,y);else z=Math.copySign(hz,z);
+                    position[i]=x+torso[0];position[i+1]=y*cos-z*sin+torso[1];position[i+2]=y*sin+z*cos+torso[2];
+                }
+            }
+        }
         for(int i=(cols+1)*3;i<position.length;i+=3)for(int n=0;n<capsuleCount;n++){
             int o=n*7;double ax=capsules[o],ay=capsules[o+1],az=capsules[o+2],dx=capsules[o+3]-ax,dy=capsules[o+4]-ay,dz=capsules[o+5]-az;
             double len=dx*dx+dy*dy+dz*dz,t=len<1e-8?0:Math.max(0,Math.min(1,((position[i]-ax)*dx+(position[i+1]-ay)*dy+(position[i+2]-az)*dz)/len));
-            double x=position[i]-ax-t*dx,y=position[i+1]-ay-t*dy,z=position[i+2]-az-t*dz,r=capsules[o+6]+THICKNESS,d=Math.sqrt(x*x+y*y+z*z);
-            if(d<r){if(d<1e-8){z=1;d=1;}double f=(r-d)/d;position[i]+=x*f;position[i+1]+=y*f;position[i+2]+=z*f;}
+            double x=position[i]-ax-t*dx,y=position[i+1]-ay-t*dy,z=position[i+2]-az-t*dz,r=capsules[o+6]+THICKNESS+RENDER_HALF_THICKNESS,d=Math.sqrt(x*x+y*y+z*z);
+            if(d<r){if(d<1e-8){position[i+2]+=r;continue;}double f=(r-d)/d;position[i]+=x*f;position[i+1]+=y*f;position[i+2]+=z*f;}
         }
     }
     private int hash(int x,int y,int z){return ((x*73856093)^(y*19349663)^(z*83492791))&16383;}

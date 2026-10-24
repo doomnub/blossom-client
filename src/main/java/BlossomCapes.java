@@ -6,8 +6,14 @@ import javax.swing.*;
 /** Decode/import off-thread; stage GL uploads and swap atomically when all frames are ready. */
 public final class BlossomCapes {
     public final CapeLibrary library;
-    private final ExecutorService worker=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom cape worker");t.setDaemon(true);return t;});
+    private final ExecutorService worker=new ThreadPoolExecutor(0,1,5,TimeUnit.SECONDS,new LinkedBlockingQueue<Runnable>(),r->{Thread t=new Thread(r,"Blossom cape worker");t.setDaemon(true);return t;});
     private final ConcurrentLinkedQueue<Runnable> completions=new ConcurrentLinkedQueue<Runnable>();
+    private boolean active;
+    public void setActive(boolean wanted){
+        if(active==wanted)return;active=wanted;
+        if(!active){if(pending!=null){pending.cancel(true);pending=null;}discardStaging();release();}
+        else{String savedMode=mode;select(selected);mode=savedMode;}
+    }
     private Future<CapeFrames> pending;
     private CapeFrames frames,staged;
     private jy[] textures=new jy[0], stagedTextures=new jy[0];
@@ -27,7 +33,7 @@ public final class BlossomCapes {
         if(name.isEmpty()){selected="";mode="default";release();status="Default Minecraft cape";return;}
         final Path file;
         try{file=library.entry(name);}catch(IllegalArgumentException e){status=e.getMessage();return;}
-        selected=name;mode="custom";pending=worker.submit(()->CapeFrames.load(file));status="Decoding "+name;
+        selected=name;mode="custom";if(!active){status="Cape paused while module is disabled";return;}pending=worker.submit(()->CapeFrames.load(file));status="Decoding "+name;
     }
     public void cycle(){int i=entries.indexOf(selected)+1;select(i>=entries.size()?"":entries.get(i));}
     public void uploadReady() {

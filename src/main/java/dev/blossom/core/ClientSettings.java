@@ -8,12 +8,13 @@ public final class ClientSettings {
     public final VisualSettings visual=new VisualSettings();
     public final FovSettings fov=new FovSettings();
     public boolean hidePotionOne=true, showEmptyPotions=false;
-    public float zoomFactor=4;
+    public float zoomFactor=4,hitTilt=1;
     public boolean crosshairDot=false, privacy=false, fpsAverage=false, fpsLows=false;
     public void load(Properties p) {
         visual.load(p);cloth.load(p);fov.load(p);showEmptyPotions=Boolean.parseBoolean(p.getProperty("potions.showEmpty","false"));hidePotionOne=Boolean.parseBoolean(p.getProperty("potions.hideOne","true"));
         zoomKey=integer(p,"zoom.key",46,1,255);
         menuKey=integer(p,"menu.key",54,1,255);
+        hitTilt=number(p,"hitTilt.amount",1,0,2);
         zoomFactor=number(p,"zoom.factor",4,2,10);
         crosshairLength=integer(p,"crosshair.length",5,1,20);
         crosshairGap=integer(p,"crosshair.gap",3,0,16);
@@ -28,6 +29,7 @@ public final class ClientSettings {
         visual.save(p);cloth.save(p);fov.save(p);p.setProperty("potions.showEmpty",Boolean.toString(showEmptyPotions));p.setProperty("potions.hideOne",Boolean.toString(hidePotionOne));
         p.setProperty("fps.average",Boolean.toString(fpsAverage));p.setProperty("fps.lows",Boolean.toString(fpsLows));
         p.setProperty("zoom.key",Integer.toString(zoomKey));p.setProperty("menu.key",Integer.toString(menuKey));
+        p.setProperty("hitTilt.amount",Float.toString(hitTilt));
         p.setProperty("zoom.factor",Float.toString(zoomFactor));
         p.setProperty("crosshair.length",Integer.toString(crosshairLength));
         p.setProperty("crosshair.gap",Integer.toString(crosshairGap));

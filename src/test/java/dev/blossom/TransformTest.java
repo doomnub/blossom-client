@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -21,6 +21,10 @@ public final class TransformTest {
                         public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.startsWith("dev/blossom/integration/Blossom")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
+                if(name.equals("bfn")&&!(calls.contains("begin")&&calls.contains("end")&&calls.contains("arm")))throw new AssertionError("First-person left hand hooks missing");
+                if(name.equals("bbj")&&!calls.contains("pose"))throw new AssertionError("Left arm pose hook missing");
+                if(name.equals("bky")&&!(calls.contains("attach")&&calls.contains("endThird")))throw new AssertionError("Third-person left hand hook missing");
+                if(name.equals("bfk")&&!calls.contains("hitTilt"))throw new AssertionError("Hit tilt amplitude hook missing");
                 if(name.equals("axp")&&!calls.contains("pauseMenuInit"))throw new AssertionError("Pause menu hook missing");
                 if(name.equals("avf")&&!calls.contains("rawMouse"))throw new AssertionError("Raw mouse hook missing");
                 if(name.equals("bfk")&&!calls.contains("cameraFov"))throw new AssertionError("Camera FOV hook missing");
@@ -52,6 +56,6 @@ public final class TransformTest {
             if(transformer.transform(null,"bew",null,null,new byte[0])!=null)throw new AssertionError("Vanilla player mechanics must remain unmodified");
         }
         System.out.println("Sprint binding and vanilla player-mechanics regression checks passed");
-        System.out.println("Real 1.8.9 bytecode transform checks passed: 8 classes");
+        System.out.println("Real 1.8.9 bytecode transform checks passed: 14 classes");
     }
 }

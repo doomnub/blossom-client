@@ -1,6 +1,6 @@
 [package]
 name = "blossom-launcher-core"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 [dependencies]
 encoding_rs = "0.8"

@@ -41,6 +41,8 @@ public final class BlossomHooks {
         modules.add("rawmouse","Raw mouse input","Controls","Unaccelerated Windows Raw Input / Linux XInput2 motion",false,0);
         modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
+        modules.add("lefthand","Left Hand","Visual","Render your local main hand and held item on the left",false,0);
+        modules.add("hittilt","Hit Tilt","Visual","Adjust damage camera tilt; zero disables the tilt",false,0);
         modules.add("hitcolor","Hit Color","Visual","Custom damage tint, duration and fade",false,0);
         modules.add("particles","Particle Changer","Visual","Per-category particle appearance and density",false,0);
         modules.add("network","Network Graph","HUD","Passive throughput, packet activity and server latency history",false,.6f);
@@ -91,8 +93,12 @@ public final class BlossomHooks {
             boolean wantBright=modules.on("bright")&&mc.h!=null;
             if(wantBright&&!bright){savedGamma=mc.t.aJ;mc.t.aJ=12f;bright=true;}
             if(!wantBright&&bright){mc.t.aJ=savedGamma;bright=false;}
-            BlossomNetwork.tick();BlossomControls.updateContext();BlossomHud.tick();
-            capes.uploadReady();ticks.post(System.nanoTime());
+            BlossomPing.tick();BlossomNetwork.tick();BlossomControls.updateContext();BlossomHud.tick();
+            capes.setActive(modules.on("cape")||mc.m instanceof BlossomCapeMenu);
+            if(modules.on("cape")||mc.m instanceof BlossomCapeMenu)capes.uploadReady();
+            if(!modules.on("capephysics")||mc.h==null)BlossomCloth.clear();
+            BlossomVisuals.idle();
+            ticks.post(System.nanoTime());
         } catch(Exception|LinkageError e){failed=true;restoreSettings();System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
     }
     private static void restoreSettings() {
@@ -115,12 +121,13 @@ public final class BlossomHooks {
     public static void mouseEvent(boolean available) {
         if(!available||!Mouse.getEventButtonState()) return;
         if(initialized&&!failed)BlossomControls.press(Mouse.getEventButton()-100);
-        if(Mouse.getEventButton()==0) left.click(System.nanoTime());
-        if(Mouse.getEventButton()==1) right.click(System.nanoTime());
+        if(modules.on("cps")&&Mouse.getEventButton()==0) left.click(System.nanoTime());
+        if(modules.on("cps")&&Mouse.getEventButton()==1) right.click(System.nanoTime());
     }
     public static void keyboardEvent(boolean available) {
         if(initialized&&!failed&&available&&Keyboard.getEventKeyState()&&!Keyboard.isRepeatEvent())BlossomControls.press(Keyboard.getEventKey());
     }
+    public static float hitTilt(float vanilla){return !initialized||failed||!modules.on("hittilt")?vanilla:vanilla*settings.hitTilt;}
     public static float cameraFov(float vanilla,boolean world){return !initialized||failed?vanilla:BlossomCamera.fov(vanilla,world);}
     public static int mouseWheel(int delta){return !initialized||failed?delta:BlossomCamera.wheel(delta);}
     public static boolean keyDown(boolean original,avb binding) {
@@ -133,12 +140,13 @@ public final class BlossomHooks {
     public static void frame() {
         if(!initialized||failed)return;
         BlossomMouse.idle();
+        if(!modules.on("fps")||(!settings.fpsAverage&&!settings.fpsLows)){if(lastFrame!=0){lastFrame=0;frames.clear();}return;}
         long now=System.nanoTime();
         if(lastFrame!=0)frames.record(now-lastFrame);
         lastFrame=now;
     }
     public static boolean cloth(bet player,bln renderer,float partial){
-        if(!initialized||failed)return false;
+        if(!initialized||failed||!modules.on("capephysics"))return false;
         try{return BlossomCloth.render(player,renderer,partial);}catch(RuntimeException e){modules.get("capephysics").enabled=false;message="Cape Physics disabled: "+e.getClass().getSimpleName();return false;}
     }
     public static jy cape(jy original,bet player) {
@@ -160,7 +168,7 @@ public final class BlossomHooks {
             case "direction":return mc.h==null?"Direction —":"Heading "+Math.round(((mc.h.y%360)+360)%360)+"°";
             case "memory":Runtime r=Runtime.getRuntime();return "Heap "+((r.totalMemory()-r.freeMemory())/1048576)+" / "+r.maxMemory()/1048576+" MiB";
             case "clock":return java.time.LocalTime.now().withNano(0).toString();
-            case "ping":bdc info=mc.h==null||mc.u()==null?null:mc.u().a(mc.h.aK());return info==null?"Ping unknown":info.c()+" ms (server)";
+            case "ping":return BlossomPing.text();
             default:return m.name;
         }
     }
@@ -169,7 +177,7 @@ public final class BlossomHooks {
     public static void hud() {
         if(!initialized||failed) return;
         long now=System.nanoTime();
-        if(now-refresh>1000000000L){fpsStats=frames.snapshot();refresh=now;}
+        if(modules.on("fps")&&(settings.fpsAverage||settings.fpsLows)&&now-refresh>1000000000L){fpsStats=frames.snapshot();refresh=now;}
         if(ave.A().m instanceof BlossomHudEditor) return;
         drawHud();
     }
