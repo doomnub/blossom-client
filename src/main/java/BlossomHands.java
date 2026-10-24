@@ -4,9 +4,9 @@ public final class BlossomHands {
     private static boolean first,third;
     private static int firstWinding;
     public static boolean enabled(){return BlossomHooks.modules.on("lefthand");}
-    public static void begin(){
+    public static void begin(zx held){
         first=false;if(!enabled()||ave.A().h==null)return;
-        zx held=ave.A().h.bA();if(held!=null&&held.b()==zy.bd)return;
+        if(held!=null&&held.b()==zy.bd)return;
         first=true;GL11.glPushMatrix();GL11.glPushAttrib(GL11.GL_POLYGON_BIT);firstWinding=GL11.glGetInteger(GL11.GL_FRONT_FACE);
         GL11.glScalef(-1,1,1);GL11.glFrontFace(firstWinding==GL11.GL_CCW?GL11.GL_CW:GL11.GL_CCW);
     }

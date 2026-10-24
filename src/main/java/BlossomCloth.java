@@ -55,7 +55,7 @@ public final class BlossomCloth {
         mesh.torso[3]=.265625;mesh.torso[4]=.390625;mesh.torso[5]=.140625;mesh.torso[6]=angle;
         // Two torso capsules preserve its rectangular width; limbs follow the actual model rotations.
         torso(mesh,model.g,-.13,.12,-.045,-.13,.62,-.045,.165);torso(mesh,model.g,.13,.12,-.045,.13,.62,-.045,.165);
-        limb(mesh,model.h,.65,.15);limb(mesh,model.i,.65,.15);limb(mesh,model.j,.7,.12);limb(mesh,model.k,.7,.12);
+        limb(mesh,model.h,.65,.19);limb(mesh,model.i,.65,.19);limb(mesh,model.j,.7,.18);limb(mesh,model.k,.7,.18);
         torso(mesh,model.g,-.24,.08,-.02,.24,.08,-.02,.105);
     }
     private static void torso(Cloth mesh,bct part,double x,double y,double z,double ex,double ey,double ez,double radius){

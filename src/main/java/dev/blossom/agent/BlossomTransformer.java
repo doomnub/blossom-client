@@ -36,7 +36,7 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 return new MethodVisitor(Opcodes.ASM9,base){
                     @Override public void visitCode(){
                         super.visitCode();
-                        if(hand)super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHands","begin","()V",false);
+                        if(hand){super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfn","d","Lzx;");super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHands","begin","(Lzx;)V",false);}
                         if(held){super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHands","beginThird","(Lpr;)V",false);}
                         if(added){super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomVisuals","added","(Lbeb;)V",false);}
                         if(particles){super.visitVarInsn(Opcodes.ILOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomVisuals","begin","(I)Z",false);Label yes=new Label();super.visitJumpInsn(Opcodes.IFNE,yes);super.visitInsn(Opcodes.ACONST_NULL);super.visitInsn(Opcodes.ARETURN);super.visitLabel(yes);super.visitFrame(Opcodes.F_SAME,0,null,0,null);}

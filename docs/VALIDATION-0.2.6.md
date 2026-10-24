@@ -24,7 +24,9 @@
 
 Local Java checks: 86 core checks, disabled hooks exercised without Minecraft/GL, cloth tests, 14 real vanilla transformer targets,
 full JVM verification/linkage and 49 legacy launcher checks pass. Native build and
-real desktop smoke results are checked in CI before publication.
+real desktop smoke passed on Ubuntu 22.04 for checkpoint `1dac370`; the Windows native
+build and both platforms’ installer checks also passed. The release workflow repeats
+these gates for the final source before publication.
 
 ## Disabled-module work
 

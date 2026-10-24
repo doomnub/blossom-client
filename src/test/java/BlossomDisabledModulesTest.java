@@ -8,8 +8,8 @@ public final class BlossomDisabledModulesTest {
             if(BlossomHooks.cloth(null,null,0))throw new AssertionError("Disabled cloth claimed rendering");
             if(BlossomCamera.fov(73,true)!=73)throw new AssertionError("Disabled FOV changed projection");
             if(!BlossomControls.down(true,null))throw new AssertionError("Disabled controls changed input");
-            BlossomHands.begin();BlossomHands.end();BlossomHands.pose(null,null);BlossomHands.beginThird(null);BlossomHands.endThird();
-            BlossomNetwork.tick();BlossomPing.tick();BlossomVisuals.idle();BlossomVisuals.added(null);
+            BlossomHands.begin(null);BlossomHands.end();BlossomHands.pose(null,null);BlossomHands.beginThird(null);BlossomHands.endThird();
+            BlossomHud.tick();BlossomNetwork.tick();BlossomPing.tick();BlossomVisuals.idle();BlossomVisuals.added(null);
             BlossomHooks.frames.record(1000);BlossomHooks.frame();
             BlossomHooks.modules.get("hittilt").enabled=true;BlossomHooks.settings.hitTilt=0;
             if(BlossomHooks.hitTilt(14)!=0)throw new AssertionError("Zero tilt changed");
