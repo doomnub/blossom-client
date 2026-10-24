@@ -13,6 +13,7 @@ public final class CoreTest {
         check(SettingsPages.move(0,9,5,-1)==1,"first settings page wraps backward");
         ClientSettings emptyPotions=new ClientSettings();check(!emptyPotions.showEmptyPotions,"empty potion HUD hidden by default");
         Properties potionConfig=new Properties();emptyPotions.showEmptyPotions=true;emptyPotions.save(potionConfig);emptyPotions=new ClientSettings();emptyPotions.load(potionConfig);check(emptyPotions.showEmptyPotions,"empty potion preference persists");
+        check(VisualSettings.category(39)==10&&VisualSettings.category(35)==11&&VisualSettings.category(6)==9,"particle mapping uses actual vanilla IDs");
         ClothTest.run();
         ClickWindow clicks=new ClickWindow();clicks.click(100);clicks.click(200);
         check(clicks.count(1099,1000)==2,"rolling timestamps");check(clicks.count(1100,1000)==1,"boundary expiration");

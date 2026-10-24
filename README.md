@@ -8,7 +8,18 @@ The full requested scope is preserved in [SPECIFICATION](docs/SPECIFICATION.md).
 Most advanced features are still planned. No graphical game launch, multiplayer,
 OptiFine compatibility or performance improvement is claimed yet.
 
-## Try 0.2.4
+## Native launcher migration (0.2.5)
+
+The new launcher uses **Tauri 2, Rust and TypeScript**, with the existing settings,
+account file, cache and Java runtime locations preserved. Minecraft stays Java.
+See [native setup](docs/NATIVE-LAUNCHER.md), [parity audit](docs/LAUNCHER-MIGRATION.md)
+and [validation status](docs/VALIDATION-0.2.5.md). The Swing source remains available
+while desktop acceptance is completed.
+
+New client paths include Custom Cape / Cape Physics, damage tint controls, per-category
+particles and a passive network graph. These need graphical gameplay acceptance.
+
+## Legacy launcher
 
 The custom launcher installs vanilla 1.8.9, embeds the Blossom agent, and offers
 Microsoft device-code sign-in or offline play with a local username. Download the ZIP from [Releases](https://github.com/doomnub/blossom-client/releases)
@@ -28,8 +39,8 @@ Implemented paths, pending graphical acceptance:
 - Local static PNG, horizontal/vertical spritesheet and PNG-sequence cape selection; worker
   decoding, cached textures, per-frame durations and ping-pong animation.
 
-Validated here: compilation, 74 core assertions and 49 launcher checks, transformation of real 1.8.9
-classes, and full JVM verification/linking. See [test record](docs/TESTING.md).
+Validated here: compilation, 80 core assertions and 49 launcher checks, transformation of real 1.8.9
+classes, and full JVM verification/linking. The Rust backend also has ten automated checks. See [test record](docs/TESTING.md).
 Unsupported class fingerprints disable Blossom cleanly. OptiFine is not supported
 by this initial adapter; it needs a separately tested integration.
 

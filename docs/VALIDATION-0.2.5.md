@@ -11,6 +11,10 @@ Implementation checkpoints; desktop acceptance remains outstanding. Do not treat
   archive traversal rejection, library rule selection and secret-free launch arguments.
 - Strict TypeScript compilation and production frontend build.
 
+Rust backend: ten tests pass, including internal archive link materialization and
+log-token redaction across read boundaries. Fresh Java extraction from a verified
+cached ZIP also passes; this caught and fixed Linux archive aliases during CI.
+
 Rust installer reused the prior launcher cache and managed Java with unreachable
 HTTP/HTTPS proxies: all 734 assets and 32 classpath entries verified successfully.
 
@@ -54,6 +58,11 @@ Self-collision has a 250,000-candidate budget and bounded hash storage; exhausti
 budget trades collision coverage for a bounded frame cost. This must be evaluated
 in gameplay, particularly at 64 subdivisions. Eight catch-up steps maximum; large
 stalls, world changes and teleports reset the cloth.
+
+Headless collision tests also check actual non-neighbor vertex/triangle separation
+and capsule push-out, not just finite coordinates. Particle IDs are checked against
+the vanilla enum. Normal-hit particles are optional cosmetic puffs on observed hurt
+flashes; they never trigger attacks or modify damage.
 
 Initial headless CPU timings (120 stationary/moving steps, not gameplay FPS):
 4 subdivisions / 20 vertices ~41 ms; 16 / 187 ~43 ms; 64 / 2665 ~544 ms.

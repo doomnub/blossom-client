@@ -30,7 +30,7 @@ public final class BlossomCloth {
         if(state.last==0||dt>.5||(state.world==null||state.world.get()!=mc.f))state.mesh.reset();
         else {
             double wx=state.x-x,wz=state.z-z,c=Math.cos(state.yaw),s=Math.sin(state.yaw);
-            state.mesh.moveFrame(-wx*c-wz*s,y-state.y+state.anchorY-anchorY,wx*s-wz*c+state.anchorZ-anchorZ,wrapRadians(state.yaw-yaw));
+            state.mesh.moveFrame(wx*c+wz*s,y-state.y+state.anchorY-anchorY,wx*s-wz*c+state.anchorZ-anchorZ,wrapRadians(state.yaw-yaw));
         }
         state.x=x;state.y=y;state.z=z;state.yaw=yaw;if(state.world==null||state.world.get()!=mc.f)state.world=new java.lang.ref.WeakReference<Object>(mc.f);state.last=now;state.anchorY=anchorY;state.anchorZ=anchorZ;
         body(state.mesh,model);
@@ -50,9 +50,13 @@ public final class BlossomCloth {
     private static void body(Cloth mesh,bbr model){
         mesh.capsuleCount=0;
         // Two torso capsules preserve its rectangular width; limbs follow the actual model rotations.
-        capsule(mesh,-.13,.12,-.045,-.13,.62,-.045,.165);capsule(mesh,.13,.12,-.045,.13,.62,-.045,.165);
+        torso(mesh,model.g,-.13,.12,-.045,-.13,.62,-.045,.165);torso(mesh,model.g,.13,.12,-.045,.13,.62,-.045,.165);
         limb(mesh,model.h,.65,.115);limb(mesh,model.i,.65,.115);limb(mesh,model.j,.7,.12);limb(mesh,model.k,.7,.12);
-        capsule(mesh,-.24,.08,-.02,.24,.08,-.02,.105);
+        torso(mesh,model.g,-.24,.08,-.02,.24,.08,-.02,.105);
+    }
+    private static void torso(Cloth mesh,bct part,double x,double y,double z,double ex,double ey,double ez,double radius){
+        double sin=Math.sin(part.f),cos=Math.cos(part.f),px=part.c/16.,py=part.d/16.,pz=part.e/16.;
+        capsule(mesh,px+x,py+y*cos-z*sin,pz+y*sin+z*cos,px+ex,py+ey*cos-ez*sin,pz+ey*sin+ez*cos,radius);
     }
     private static void limb(Cloth mesh,bct part,double length,double radius){
         double sx=Math.sin(part.f),cx=Math.cos(part.f),sy=Math.sin(part.g),cy=Math.cos(part.g),sz=Math.sin(part.h),cz=Math.cos(part.h);

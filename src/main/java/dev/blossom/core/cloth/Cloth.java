@@ -41,7 +41,7 @@ public final class Cloth {
         transform(position,dx,dy,dz,c,s);transform(previous,dx,dy,dz,c,s);transform(renderPrevious,dx,dy,dz,c,s);pin();
     }
     private void transform(double[] v,double dx,double dy,double dz,double c,double s){for(int i=0;i<v.length;i+=3){double x=v[i]+dx,z=v[i+2]+dz;v[i]=c*x-s*z;v[i+1]+=dy;v[i+2]=s*x+c*z;}}
-    private void pin(){for(int x=0;x<=cols;x++){int i=x*3;position[i]=.3125-x*.625/cols;position[i+1]=0;position[i+2]=.145;}}
+    private void pin(){for(int x=0;x<=cols;x++){int i=x*3;position[i]=.3125-x*.625/cols;position[i+1]=0;position[i+2]=.145;System.arraycopy(position,i,previous,i,3);System.arraycopy(position,i,renderPrevious,i,3);}}
     public void advance(double seconds,ClothSettings settings){
         if(!Double.isFinite(seconds)||seconds<0||seconds>.5){reset();return;}
         accumulator=Math.min(accumulator+seconds,STEP*8);

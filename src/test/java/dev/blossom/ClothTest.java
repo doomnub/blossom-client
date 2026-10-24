@@ -1,7 +1,7 @@
 package dev.blossom;
 import dev.blossom.core.cloth.*;
 public final class ClothTest {
-    public static void run(){
+    public static void run()throws Exception{
         ClothSettings s=new ClothSettings();
         for(int resolution:new int[]{4,16,64}){
             Cloth c=new Cloth(resolution);long start=System.nanoTime();
@@ -11,6 +11,15 @@ public final class ClothTest {
             for(int x=0;x<=c.cols;x++)if(c.position[x*3+1]!=0)throw new AssertionError("Unpinned anchor");
             c.moveFrame(100,0,0,0);if(Math.abs(c.position[c.position.length-2]-1)>1e-9)throw new AssertionError("Teleport reset");
             System.out.println("Cloth "+resolution+" subdivisions, "+c.count+" vertices: "+(System.nanoTime()-start)/1000000+" ms for 120 steps (headless CPU benchmark)");
+        }
+        {Cloth collision=new Cloth(16);int moving=collision.count-1,i=moving*3,triangle=2*(collision.cols+1)+1,j=triangle*3;
+        collision.position[i]=collision.position[j]-.01;collision.position[i+1]=collision.position[j+1]+.01;collision.position[i+2]=.147;
+        collision.previous[i]=collision.position[i];collision.previous[i+1]=collision.position[i+1];collision.previous[i+2]=.16;
+        java.lang.reflect.Method self=Cloth.class.getDeclaredMethod("selfCollide");self.setAccessible(true);self.invoke(collision);
+        if(collision.position[i+2]<=.147)throw new AssertionError("Self collision failed to separate a non-neighbor vertex from a triangle");
+        collision.capsuleCount=1;collision.capsules[1]=.3;collision.capsules[4]=.7;collision.capsules[6]=.2;collision.position[i]=.001;collision.position[i+1]=.5;collision.position[i+2]=0;
+        java.lang.reflect.Method body=Cloth.class.getDeclaredMethod("body");body.setAccessible(true);body.invoke(collision);
+        if(collision.position[i]<.207)throw new AssertionError("Body capsule failed to separate cloth");
         }
         Cloth a=new Cloth(12),b=new Cloth(12);s.wind=true;
         for(int i=0;i<120;i++)a.advance(1./120,s);for(int i=0;i<60;i++)b.advance(1./60,s);
