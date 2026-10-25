@@ -32,6 +32,13 @@ public final class ClothTest {
         java.lang.reflect.Method body=Cloth.class.getDeclaredMethod("body");body.setAccessible(true);body.invoke(jacket);
         if(jacket.position[i+2]<.140625+Cloth.RENDER_HALF_THICKNESS+Cloth.THICKNESS-1e-8)throw new AssertionError("Jacket corner lacks thickness clearance");
         }
+        for(double angle:new double[]{0,.7,1.5}){
+            double c=Math.cos(angle),sn=Math.sin(angle);double[] box={0,-.25,0,.28125,.28125,.28125,c,0,sn,0,1,0,-sn,0,c};
+            double[] point={.1*c,-.2,-.1*sn};Cloth.projectBox(point,box,0);
+            double x=point[0]*c-point[2]*sn,z=point[0]*sn+point[2]*c;
+            double extent=.28125+Cloth.RENDER_HALF_THICKNESS+Cloth.THICKNESS;
+            if(Math.max(Math.max(Math.abs(x),Math.abs(point[1]+.25)),Math.abs(z))<extent-1e-9)throw new AssertionError("Rotated head/hat failed to separate cape");
+        }
         Cloth a=new Cloth(12),b=new Cloth(12);s.wind=true;
         for(int i=0;i<120;i++)a.advance(1./120,s);for(int i=0;i<60;i++)b.advance(1./60,s);
         for(int i=0;i<a.position.length;i++)if(Math.abs(a.position[i]-b.position[i])>1e-8)throw new AssertionError("Frame-dependent physics");

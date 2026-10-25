@@ -1,9 +1,339 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Blossom</title></head><body>
-<div class="shell"><aside><a class="brand" href="#" aria-label="Blossom home"><span class="flower">✿</span> blossom<span class="brand-dot">.</span></a><div class="eyebrow sidebar-label">YOUR SPACE</div><nav aria-label="Main navigation"><button class="nav active" data-tab="play"><span>◈</span> Play</button><button class="nav" data-tab="settings"><span>⚙</span> Settings</button><button class="nav" data-tab="logs"><span>≡</span> Logs <i id="error-dot" hidden></i></button></nav><div class="sidebar-bottom"><span class="edition">JAVA EDITION</span><p>Minecraft 1.8.9</p><small>Blossom 0.2.6</small><div class="sidebar-flower" aria-hidden="true">✿</div></div></aside>
-<main><header><div><span class="eyebrow" id="section-label">LET'S PLAY</span><h1 id="section-title">Welcome home.</h1></div><div class="account-chip"><span class="avatar">✿</span><span id="account-label">Not signed in</span></div></header>
-<section id="play" class="page"><div class="hero"><div class="hero-copy"><span class="pill">MINECRAFT · 1.8.9</span><h2>Your game.<br><span>In full bloom.</span></h2><p>Make every session yours.<br>Your HUD, your capes, your way to play.</p><div class="hero-actions"><button id="play-online" class="primary" data-action="online">Launch Minecraft <span>↗</span></button><button class="quiet" data-action="repair">Install / repair</button></div></div><div class="bloom" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b></b></div><div class="hero-foot"><span><i class="dot"></i> Forge-free client</span><span id="runtime-label">Managed Java 8</span></div></div>
-<div class="cards"><article class="card"><span class="eyebrow">MICROSOFT ACCOUNT</span><h3 id="account-title">Pick up where you left off.</h3><p id="account-description">Sign in to play on authenticated servers. Your account stays remembered on this device.</p><div class="row"><button data-action="signin" class="secondary">Sign in with Microsoft</button><button data-action="signout" class="quiet" id="signout" hidden>Sign out</button></div></article><article class="card offline"><span class="eyebrow">A LITTLE TIME OFFLINE</span><h3>Just you and your world.</h3><p>Singleplayer and offline servers, with a local name.</p><label for="offline-name">Offline username</label><div class="row"><input id="offline-name" maxlength="16" autocomplete="off" value="Player"><button data-action="offline" class="secondary">Play offline <span>→</span></button></div></article></div></section>
-<section id="settings" class="page" hidden><form id="settings-form"><div class="card"><div class="section-heading"><div><span class="eyebrow">PERFORMANCE</span><h3>A setup that fits you.</h3></div><span class="pill subtle">Applies next launch</span></div><label class="toggle-line"><span><strong>Manage Java automatically</strong><small>Install and verify the correct 64-bit Java 8.</small></span><input type="checkbox" id="java-auto" role="switch"></label><label for="java-path">Java executable</label><div class="row"><input id="java-path" placeholder="Selected automatically"><button type="button" class="secondary" data-browse="java-path">Browse</button><button type="button" class="quiet" data-action="java">Install / check</button></div><div class="form-grid"><div><label for="memory">Memory allocation <output id="memory-value"></output></label><input id="memory" type="range" min="1024" max="16384" step="512"><small>Leave memory available for your system.</small></div><div class="resolution"><label for="width">Window resolution</label><div class="row"><input id="width" type="number" min="640" max="7680" aria-label="Window width"><span>×</span><input id="height" type="number" min="360" max="4320" aria-label="Window height"></div></div></div></div><div class="card"><span class="eyebrow">FILES & ACCOUNT</span><h3>Everything in its place.</h3><label for="game-path">Minecraft directory</label><div class="row"><input id="game-path"><button type="button" class="secondary" data-browse="game-path">Browse</button></div><label for="client-id">Microsoft application ID</label><input id="client-id" placeholder="Your registered public-client application ID" spellcheck="false"><small>Used for Microsoft device-code sign-in. Offline play does not need an application ID.</small></div><div class="form-footer"><p>Your existing Blossom settings and worlds are preserved.</p><button type="submit" class="primary">Save settings</button></div></form></section>
-<section id="logs" class="page" hidden><div class="card logs-card"><div class="section-heading"><div><span class="eyebrow">UNDER THE HOOD</span><h3>The session log.</h3></div><div class="row"><button class="quiet" id="clear-log">Clear</button><button class="secondary" id="open-folder">Open Blossom folder</button></div></div><pre id="log" role="log" aria-live="off">Ready when you are.</pre><small>Session-only output. Login credentials are never included in launcher messages.</small></div></section>
-<footer><div class="status-row"><span class="status-light" id="status-light"></span><span id="status" role="status">Ready when you are.</span><button class="quiet" id="cancel" hidden>Cancel task</button></div><div class="progress" id="progress" hidden><span></span></div></footer></main></div>
-<dialog id="device"><div class="dialog-flower">✿</div><span class="eyebrow">MICROSOFT SIGN-IN</span><h2>One quick hello.</h2><p>Enter this code on Microsoft's sign-in page.</p><strong id="device-code"></strong><p id="device-url"></p><button id="open-login" class="primary">Open Microsoft sign-in ↗</button><button id="cancel-login" class="quiet">Cancel sign-in</button></dialog><script type="module" src="/src/main.ts"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Blossom</title>
+    <link rel="icon" type="image/svg+xml" href="/blossom.svg" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside>
+        <a class="brand" href="#" aria-label="Blossom home"
+          ><img class="flower" src="/blossom.svg" alt="" /> blossom<span
+            class="brand-dot"
+            >.</span
+          ></a
+        >
+        <div class="eyebrow sidebar-label">YOUR SPACE</div>
+        <nav aria-label="Main navigation">
+          <button class="nav active" data-tab="play"><span>◈</span> Play</button
+          ><button class="nav" data-tab="settings">
+            <span>⚙</span> Settings</button
+          ><button class="nav" data-tab="wardrobe">
+            <span>♧</span> Skins &amp; capes</button
+          ><button class="nav" data-tab="logs">
+            <span>≡</span> Logs <i id="error-dot" hidden></i>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <span class="edition">JAVA EDITION</span>
+          <p>Minecraft 1.8.9</p>
+          <small>Blossom 0.2.7</small
+          ><img class="sidebar-flower" src="/blossom.svg" alt="" />
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div>
+            <span class="eyebrow" id="section-label">LET'S PLAY</span>
+            <h1 id="section-title">Welcome home.</h1>
+          </div>
+          <div class="account-chip">
+            <span class="avatar"
+              ><img id="account-flower" src="/blossom.svg" alt="" /><canvas
+                id="account-head"
+                width="32"
+                height="32"
+                aria-label="Current Minecraft skin head"
+                hidden
+              ></canvas></span
+            ><span id="account-label">Not signed in</span>
+          </div>
+        </header>
+        <section id="play" class="page">
+          <div class="hero">
+            <div class="hero-copy">
+              <span class="pill">MINECRAFT · 1.8.9</span>
+              <h2>Your game.<br /><span>In full bloom.</span></h2>
+              <p>
+                Make every session yours.<br />Your HUD, your capes, your way to
+                play.
+              </p>
+              <div class="hero-actions">
+                <button id="play-online" class="primary" data-action="online">
+                  Launch Minecraft <span>↗</span></button
+                ><button class="quiet" data-action="repair">
+                  Install / repair
+                </button>
+              </div>
+            </div>
+            <img class="bloom" src="/blossom.svg" alt="" />
+            <div class="hero-foot">
+              <span><i class="dot"></i> Forge-free client</span
+              ><span id="runtime-label">Managed Java 8</span>
+            </div>
+          </div>
+          <div class="cards">
+            <article class="card">
+              <span class="eyebrow">MICROSOFT ACCOUNT</span>
+              <h3 id="account-title">Pick up where you left off.</h3>
+              <p id="account-description">
+                Sign in to play on authenticated servers. Your account stays
+                remembered on this device.
+              </p>
+              <div class="row">
+                <button data-action="signin" class="secondary">
+                  Sign in with Microsoft</button
+                ><button
+                  data-action="signout"
+                  class="quiet"
+                  id="signout"
+                  hidden
+                >
+                  Sign out
+                </button>
+              </div>
+            </article>
+            <article class="card offline">
+              <span class="eyebrow">A LITTLE TIME OFFLINE</span>
+              <h3>Just you and your world.</h3>
+              <p>Singleplayer and offline servers, with a local name.</p>
+              <label for="offline-name">Offline username</label>
+              <div class="row">
+                <input
+                  id="offline-name"
+                  maxlength="16"
+                  autocomplete="off"
+                  value="Player"
+                /><button data-action="offline" class="secondary">
+                  Play offline <span>→</span>
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+        <section id="settings" class="page" hidden>
+          <form id="settings-form">
+            <div class="card">
+              <div class="section-heading">
+                <div>
+                  <span class="eyebrow">PERFORMANCE</span>
+                  <h3>A setup that fits you.</h3>
+                </div>
+                <span class="pill subtle">Applies next launch</span>
+              </div>
+              <label class="toggle-line"
+                ><span
+                  ><strong>Manage Java automatically</strong
+                  ><small
+                    >Install and verify the correct 64-bit Java 8.</small
+                  ></span
+                ><input type="checkbox" id="java-auto" role="switch" /></label
+              ><label class="toggle-line"
+                ><span
+                  ><strong>Verify game files before launch</strong
+                  ><small
+                    >Check existing files for corruption. Install / repair
+                    always verifies.</small
+                  ></span
+                ><input type="checkbox" id="verify-game" role="switch"
+              /></label>
+              <label class="toggle-line"
+                ><span
+                  ><strong>Verify Java before launch</strong
+                  ><small
+                    >Check that the installed runtime is 64-bit Java 8.</small
+                  ></span
+                ><input type="checkbox" id="verify-java" role="switch"
+              /></label>
+              <label for="java-path">Java executable</label>
+              <div class="row">
+                <input
+                  id="java-path"
+                  placeholder="Selected automatically"
+                /><button
+                  type="button"
+                  class="secondary"
+                  data-browse="java-path"
+                >
+                  Browse</button
+                ><button type="button" class="quiet" data-action="java">
+                  Install / check
+                </button>
+              </div>
+              <div class="form-grid">
+                <div>
+                  <label for="memory"
+                    >Memory allocation
+                    <output id="memory-value"></output></label
+                  ><input
+                    id="memory"
+                    type="range"
+                    min="1024"
+                    max="16384"
+                    step="512"
+                  /><small>Leave memory available for your system.</small>
+                </div>
+                <div class="resolution">
+                  <label for="width">Window resolution</label>
+                  <div class="row">
+                    <input
+                      id="width"
+                      type="number"
+                      min="640"
+                      max="7680"
+                      aria-label="Window width"
+                    /><span>×</span
+                    ><input
+                      id="height"
+                      type="number"
+                      min="360"
+                      max="4320"
+                      aria-label="Window height"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <span class="eyebrow">FILES & ACCOUNT</span>
+              <h3>Everything in its place.</h3>
+              <label for="game-path">Minecraft directory</label>
+              <div class="row">
+                <input id="game-path" /><button
+                  type="button"
+                  class="secondary"
+                  data-browse="game-path"
+                >
+                  Browse
+                </button>
+              </div>
+              <label for="client-id">Microsoft application ID</label
+              ><input
+                id="client-id"
+                placeholder="Your registered public-client application ID"
+                spellcheck="false"
+              /><small
+                >Used for Microsoft device-code sign-in. Offline play does not
+                need an application ID.</small
+              >
+            </div>
+            <div class="form-footer">
+              <p>Your existing Blossom settings and worlds are preserved.</p>
+              <button type="submit" class="primary">Save settings</button>
+            </div>
+          </form>
+        </section>
+        <section id="wardrobe" class="page" hidden>
+          <div class="wardrobe-layout">
+            <article class="card preview-card">
+              <span class="eyebrow">YOUR LOOK</span>
+              <h3 id="preview-name">Choose a skin</h3>
+              <p id="preview-model">Import a PNG to start your collection</p>
+              <canvas
+                id="skin-preview"
+                width="280"
+                height="340"
+                aria-label="Rotatable Minecraft skin and cape preview"
+              ></canvas>
+              <small id="preview-help"
+                >Drag to rotate. Previewing does not change your account.</small
+              >
+              <button class="primary" id="use-skin" disabled>Use skin</button>
+              <button class="secondary" id="use-cape" disabled>Use cape</button>
+            </article>
+            <div class="wardrobe-collections">
+              <article class="card">
+                <div class="section-heading">
+                  <div>
+                    <span class="eyebrow">KEEP EVERY LOOK</span>
+                    <h3>Your skin collection.</h3>
+                  </div>
+                  <button class="quiet" id="refresh-wardrobe">Refresh</button>
+                </div>
+                <p id="wardrobe-account">
+                  Sign in to apply skins or owned capes.
+                </p>
+                <div class="row import-row">
+                  <label for="skin-model">New skin arms</label
+                  ><select id="skin-model">
+                    <option value="classic">Classic</option>
+                    <option value="slim">Slim</option></select
+                  ><button class="secondary" id="add-skin">
+                    + Add skin PNG
+                  </button>
+                </div>
+                <div
+                  class="texture-grid"
+                  id="skin-list"
+                  aria-label="Saved skins"
+                ></div>
+                <p id="skin-empty">
+                  Add a skin PNG. Every skin you add stays in this collection.
+                </p>
+              </article>
+              <article class="card">
+                <span class="eyebrow">YOURS TO WEAR</span>
+                <h3>Account capes.</h3>
+                <p>Only capes owned by your Minecraft account appear here.</p>
+                <div
+                  class="texture-grid cape-grid"
+                  id="cape-list"
+                  aria-label="Owned capes"
+                ></div>
+                <p id="cape-empty">Sign in to see your capes.</p>
+                <small
+                  >A custom cape selected in Blossom's in-game modules can
+                  override the account cape locally.</small
+                >
+              </article>
+            </div>
+          </div>
+        </section>
+        <section id="logs" class="page" hidden>
+          <div class="card logs-card">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">UNDER THE HOOD</span>
+                <h3>The session log.</h3>
+              </div>
+              <div class="row">
+                <button class="quiet" id="clear-log">Clear</button
+                ><button class="secondary" id="open-folder">
+                  Open Blossom folder
+                </button>
+              </div>
+            </div>
+            <pre id="log" role="log" aria-live="off">Ready when you are.</pre>
+            <small
+              >Session-only output. Login credentials are never included in
+              launcher messages.</small
+            >
+          </div>
+        </section>
+        <footer>
+          <div class="status-row">
+            <span class="status-light" id="status-light"></span
+            ><span id="status" role="status">Ready when you are.</span
+            ><button class="quiet" id="cancel" hidden>Cancel task</button>
+          </div>
+          <div class="progress" id="progress" hidden><span></span></div>
+        </footer>
+      </main>
+    </div>
+    <dialog id="device">
+      <img class="dialog-flower" src="/blossom.svg" alt="" /><span
+        class="eyebrow"
+        >MICROSOFT SIGN-IN</span
+      >
+      <h2>One quick hello.</h2>
+      <p>Enter this code on Microsoft's sign-in page.</p>
+      <strong id="device-code"></strong>
+      <p id="device-url"></p>
+      <button id="open-login" class="primary">Open Microsoft sign-in ↗</button
+      ><button id="cancel-login" class="quiet">Cancel sign-in</button>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,4 +1,6 @@
 pub mod auth;
+pub mod wardrobe;
+pub mod desktop;
 pub mod config;
 pub mod install;
 pub mod launch;
@@ -15,18 +17,20 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + S
 #[derive(Clone)]
 pub struct Task {
     pub cancel: Arc<AtomicBool>,
+    pub verify_existing: bool,
     pub notify: Arc<dyn Fn(&str, &str) + Send + Sync>,
     pub http: reqwest::blocking::Client,
 }
 impl Task {
     pub fn new(notify: impl Fn(&str, &str) + Send + Sync + 'static) -> Result<Self> {
         Ok(Self {
+            verify_existing: true,
             cancel: Arc::new(AtomicBool::new(false)),
             notify: Arc::new(notify),
             http: reqwest::blocking::Client::builder()
                 .connect_timeout(std::time::Duration::from_secs(15))
                 .timeout(std::time::Duration::from_secs(120))
-                .user_agent("Blossom/0.2.6")
+                .user_agent("Blossom/0.2.7")
                 .build()?,
         })
     }
@@ -51,7 +55,7 @@ impl Task {
         self.check()?;
         if path.is_file()
             && (size == 0 || path.metadata()?.len() == size)
-            && digest(path, hash.len())? == hash
+            && (!self.verify_existing || digest(path, hash.len())? == hash)
         {
             return Ok(());
         }
@@ -162,6 +166,14 @@ mod tests {
             assert!(safe(d.path(), s).is_err());
         }
         assert!(safe(d.path(), "a/b.jar").is_ok());
+    }
+    #[test]
+    fn optional_existing_checks_never_skip_new_downloads() {
+        let d=tempfile::tempdir().unwrap();let file=d.path().join("cached");std::fs::write(&file,b"old").unwrap();
+        let mut t=Task::new(|_,_|{}).unwrap();t.verify_existing=false;
+        assert!(t.download("invalid",&file,&"0".repeat(64),3).is_ok());
+        assert!(t.download("invalid",&d.path().join("missing"),&"0".repeat(64),3).is_err());
+        t.verify_existing=true;assert!(t.download("invalid",&file,&"0".repeat(64),3).is_err());
     }
     #[test]
     fn cancelled() {

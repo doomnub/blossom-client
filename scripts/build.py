@@ -47,6 +47,7 @@ def main():
         name=file.relative_to(classes).as_posix()
         if name.startswith('dev/blossom/') and ('Test' in name or 'RelocateIntegration' in name): continue
         entries[name]=file.read_bytes()
+    entries['blossom.png']=(ROOT/'assets/blossom.png').read_bytes()
     entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\r\nPremain-Class: dev.blossom.agent.BlossomAgent\r\nMain-Class: dev.blossom.agent.InstallHelp\r\n\r\n'
     for name in ['LICENSE','LICENSES.md']: entries[name]=(ROOT/name).read_bytes()
     with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as jar:
@@ -75,6 +76,7 @@ def build_launcher(agent,version):
     entries['licenses/Apache-2.0.txt']=(ROOT/'licenses/Apache-2.0.txt').read_bytes()
     entries['client/blossom-agent.jar']=agent.read_bytes()
     entries['build.properties']=('version='+version+'\nagent.sha256='+hashlib.sha256(agent.read_bytes()).hexdigest()+'\n').encode()
+    entries['blossom.png']=(ROOT/'assets/blossom.png').read_bytes()
     entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\r\nMain-Class: dev.blossom.launcher.Launcher\r\n\r\n'
     for name in ['LICENSE','LICENSES.md']:entries[name]=(ROOT/name).read_bytes()
     output=ROOT/('build/libs/blossom-launcher-'+version+'.jar')

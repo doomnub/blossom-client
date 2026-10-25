@@ -18,6 +18,8 @@ public final class Cloth {
     // Center, half extents and X rotation; padded torso includes the jacket layer.
     public final double[] torso=new double[7];
     public boolean torsoCollision;
+    public final double[] head=new double[15]; // center, half extents, local-to-world 3x3
+    public boolean headCollision;
     public Cloth(int subdivisions){
         rows=Math.max(4,Math.min(64,subdivisions));cols=Math.max(3,(int)Math.round(rows*.625));count=(rows+1)*(cols+1);
         position=new double[count*3];previous=new double[count*3];renderPrevious=new double[count*3];renderPosition=new double[count*3];renderNormal=new double[count*3];
@@ -99,6 +101,8 @@ public final class Cloth {
     }
     public double maxAttachmentStretch(){double max=1;for(int row=1;row<=rows;row++)for(int col=0;col<=cols;col++){int i=3*(row*(cols+1)+col);double x=position[i]-(.3125-col*.625/cols),y=position[i+1],z=position[i+2]-ANCHOR_Z;max=Math.max(max,Math.sqrt(x*x+y*y+z*z)/(row/(double)rows));}return max;}
     private void body(){
+        if(headCollision)projectBox(position,head,cols+1);
+
         if(torsoCollision){
             double sin=Math.sin(torso[6]),cos=Math.cos(torso[6]);
             double hx=torso[3]+RENDER_HALF_THICKNESS+THICKNESS,hy=torso[4]+RENDER_HALF_THICKNESS+THICKNESS,hz=torso[5]+RENDER_HALF_THICKNESS+THICKNESS;
@@ -116,6 +120,20 @@ public final class Cloth {
             double len=dx*dx+dy*dy+dz*dz,t=len<1e-8?0:Math.max(0,Math.min(1,((position[i]-ax)*dx+(position[i+1]-ay)*dy+(position[i+2]-az)*dz)/len));
             double x=position[i]-ax-t*dx,y=position[i+1]-ay-t*dy,z=position[i+2]-az-t*dz,r=capsules[o+6]+THICKNESS+RENDER_HALF_THICKNESS,d=Math.sqrt(x*x+y*y+z*z);
             if(d<r){if(d<1e-8){position[i+2]+=r;continue;}double f=(r-d)/d;position[i]+=x*f;position[i+1]+=y*f;position[i+2]+=z*f;}
+        }
+    }
+    public static void projectBox(double[] vertices,double[] box,int firstVertex){
+        double hx=box[3]+RENDER_HALF_THICKNESS+THICKNESS,hy=box[4]+RENDER_HALF_THICKNESS+THICKNESS,hz=box[5]+RENDER_HALF_THICKNESS+THICKNESS;
+        for(int i=firstVertex*3;i<vertices.length;i+=3){
+            double dx=vertices[i]-box[0],dy=vertices[i+1]-box[1],dz=vertices[i+2]-box[2];
+            double x=dx*box[6]+dy*box[9]+dz*box[12],y=dx*box[7]+dy*box[10]+dz*box[13],z=dx*box[8]+dy*box[11]+dz*box[14];
+            if(Math.abs(x)<hx&&Math.abs(y)<hy&&Math.abs(z)<hz){
+                double px=hx-Math.abs(x),py=hy-Math.abs(y),pz=hz-Math.abs(z);
+                if(px<py&&px<pz)x=Math.copySign(hx,x);else if(py<pz)y=Math.copySign(hy,y);else z=Math.copySign(hz,z);
+                vertices[i]=box[0]+box[6]*x+box[7]*y+box[8]*z;
+                vertices[i+1]=box[1]+box[9]*x+box[10]*y+box[11]*z;
+                vertices[i+2]=box[2]+box[12]*x+box[13]*y+box[14]*z;
+            }
         }
     }
     private int hash(int x,int y,int z){return ((x*73856093)^(y*19349663)^(z*83492791))&16383;}

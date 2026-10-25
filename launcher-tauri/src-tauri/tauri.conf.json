@@ -1,7 +1,42 @@
 {
-  "$schema":"https://schema.tauri.app/config/2",
-  "productName":"Blossom","version":"0.2.6","identifier":"dev.blossom.launcher",
-  "build":{"beforeDevCommand":"npm run dev","devUrl":"http://localhost:1420","beforeBuildCommand":"npm run build","frontendDist":"../dist"},
-  "app":{"windows":[{"title":"Blossom","width":1120,"height":760,"minWidth":800,"minHeight":620,"backgroundColor":"#110f17"}],"security":{"csp":"default-src 'self'; connect-src ipc: http://ipc.localhost; style-src 'self'; img-src 'self' asset: http://asset.localhost data:; object-src 'none'; base-uri 'self'"}},
-  "bundle":{"active":true,"targets":["nsis","deb","appimage"],"icon":["icons/icon.png","icons/icon.ico"],"shortDescription":"Your Minecraft. In full bloom.","category":"Game"}
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Blossom",
+  "version": "0.2.7",
+  "identifier": "dev.blossom.launcher",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Blossom",
+        "width": 1120,
+        "height": 760,
+        "minWidth": 800,
+        "minHeight": 620,
+        "backgroundColor": "#110f17"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; style-src 'self'; img-src 'self' asset: http://asset.localhost data:; object-src 'none'; base-uri 'self'"
+    },
+    "enableGTKAppId": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "deb",
+      "appimage"
+    ],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "shortDescription": "Your Minecraft. In full bloom.",
+    "category": "Game"
+  }
 }

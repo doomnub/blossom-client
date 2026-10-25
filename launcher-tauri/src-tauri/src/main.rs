@@ -23,6 +23,7 @@ struct State {
     busy: AtomicBool,
     running: AtomicBool,
     cancel: Mutex<Option<Arc<AtomicBool>>>,
+    session: Mutex<Option<(String, std::time::Instant, core::auth::Session)>>,
 }
 fn emit(app: &tauri::AppHandle, kind: &str, text: &str) {
     let _ = app.emit(
@@ -118,26 +119,30 @@ fn work(app: &tauri::AppHandle, action: &str) -> core::Result<()> {
     let mut c = Config::load(root)?;
     c.validate()?;
     let app2 = app.clone();
-    let task = Task::new(move |kind, text| {
+    let mut task = Task::new(move |kind, text| {
         if kind == "running" {
             app2.state::<State>().running.store(true, Ordering::SeqCst);
         }
         emit(&app2, kind, text);
     })?;
+    task.verify_existing = c.verify_game || action == "repair" || action == "java";
     *state.cancel.lock().map_err(|_| "Task lock failed")? = Some(task.cancel.clone());
     match action {
         "signout" => {
             core::auth::sign_out(root)?;
+            *state.session.lock().map_err(|_| "Account lock failed")? = None;
             emit(app, "account", "Signed out");
             return Ok(());
         }
         "signin" => {
             let s = core::auth::sign_in(&task, root, &c.client_id)?;
+            *state.session.lock().map_err(|_| "Account lock failed")? = Some((c.client_id.clone(), std::time::Instant::now(), s.clone()));
             emit(app, "account", &s.name);
             return Ok(());
         }
         "restore" => {
             let s = core::auth::refresh(&task, root, &c.client_id)?;
+            *state.session.lock().map_err(|_| "Account lock failed")? = Some((c.client_id.clone(), std::time::Instant::now(), s.clone()));
             emit(app, "account", &s.name);
             return Ok(());
         }
@@ -150,7 +155,7 @@ fn work(app: &tauri::AppHandle, action: &str) -> core::Result<()> {
         _ => None,
     };
     let java = if c.java_auto || action == "java" {
-        let p = core::install::java(&task, root)?;
+        let p = core::install::java_with_verification(&task, root, c.verify_java || action == "repair" || action == "java")?;
         c.java = p.to_string_lossy().into();
         c.save(root)?;
         p
@@ -165,7 +170,7 @@ fn work(app: &tauri::AppHandle, action: &str) -> core::Result<()> {
     let installed = core::install::install(&task, root, &game)?;
     let agent = agent(root)?;
     if let Some(session) = session {
-        core::install::verify_java(&java)?;
+        if c.verify_java { core::install::verify_java(&java)?; }
         let args = core::launch::arguments(&java, &agent, &game, &installed, &session, &c)?;
         let exit = core::launch::run(&task, &args, &game, session)?;
         if exit != 0 {
@@ -200,6 +205,45 @@ async fn task(app: tauri::AppHandle, action: String) -> Result<(), String> {
     emit(&app, "done", "");
     result
 }
+// The same busy gate serializes profile changes, sign-in, settings and game launch.
+#[tauri::command]
+async fn wardrobe(app: tauri::AppHandle, action: String, id: Option<String>, variant: Option<String>) -> Result<serde_json::Value, String> {
+    if app.state::<State>().busy.swap(true, Ordering::SeqCst) { return Err("Another task is already running".into()); }
+    let cloned=app.clone();
+    let result=tauri::async_runtime::spawn_blocking(move || -> core::Result<serde_json::Value> {
+        let state=cloned.state::<State>(); let root=&state.root;
+        if action == "import" {
+            let model=variant.as_deref().unwrap_or("classic");
+            if !matches!(model,"classic"|"slim") { return Err("Choose Classic or Slim arms".into()); }
+            if let Some(file)=cloned.dialog().file().add_filter("Minecraft skin", &["png"]).blocking_pick_file() {
+                core::wardrobe::import(root,&file.into_path()?,model)?;
+            }
+            return Ok(serde_json::to_value(core::wardrobe::collection(root)?)?);
+        }
+        if action == "collection" { return Ok(serde_json::to_value(core::wardrobe::collection(root)?)?); }
+        if !matches!(action.as_str(), "refresh"|"skin"|"cape") { return Err("Unknown wardrobe action".into()); }
+        let config=Config::load(root)?;
+        if core::auth::saved(root,&config.client_id)?.is_none() { return Err("Sign in with Microsoft to manage your account skin and capes".into()); }
+        let task=Task::new(|_,_|{})?;
+        let cached=state.session.lock().map_err(|_| "Account lock failed")?.clone();
+        let session=match cached {
+            Some((client,at,s)) if client==config.client_id && at.elapsed().as_secs()<1800 => s,
+            _ => {
+                let s=core::auth::refresh(&task,root,&config.client_id)?;
+                *state.session.lock().map_err(|_| "Account lock failed")?=Some((config.client_id.clone(),std::time::Instant::now(),s.clone())); s
+            }
+        };
+        let view=match action.as_str() {
+            "skin" => core::wardrobe::use_skin(&task,root,&session,id.as_deref().ok_or("Select a skin")?)?,
+            "cape" => core::wardrobe::use_cape(&task,root,&session,id.as_deref().ok_or("Select a cape")?)?,
+            _ => core::wardrobe::refresh(&task,root,&session)?,
+        };
+        Ok(serde_json::to_value(view)?)
+    }).await.map_err(|e|e.to_string()).and_then(|r|r.map_err(|e|e.to_string()));
+    app.state::<State>().busy.store(false,Ordering::SeqCst);
+    result
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
@@ -210,6 +254,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            if let Err(e)=core::desktop::install(){eprintln!("Desktop icon setup: {e}");}
             let root = app.path().home_dir()?.join(".blossom");
             std::fs::create_dir_all(&root)?;
             app.manage(State {
@@ -217,6 +262,7 @@ fn main() {
                 busy: AtomicBool::new(false),
                 running: AtomicBool::new(false),
                 cancel: Mutex::new(None),
+                session: Mutex::new(None),
             });
             Ok(())
         })
@@ -238,6 +284,7 @@ fn main() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            wardrobe,
             settings,
             save_settings,
             account,

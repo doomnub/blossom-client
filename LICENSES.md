@@ -52,3 +52,6 @@ https://www.azul.com/products/core/openjdk-terms-of-use/.
 The OS-specific URLs and vendor SHA-256 values are pinned in
 launcher/src/main/resources/runtimes.json, obtained from the official metadata API:
 https://docs.azul.com/core/install/metadata-api.
+
+The native launcher bundles skinview3d, skinview-utils and Three.js (MIT).
+Full notices are in licenses/skin-preview.txt. The Blossom flower SVG is original artwork based on the supplied reference.

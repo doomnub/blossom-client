@@ -69,7 +69,7 @@ public final class CoreTest {
         check(FpsDisplay.format(165,s,false,true).contains("1% 20"),"slow-frame statistics optional");
         ToggleLatch persistent=new ToggleLatch();persistent.press();persistent.context(true,true,true);
         check(persistent.active()&&!persistent.requested(true),"sprint remembers toggle but pauses in menu");
-        persistent.context(true,false,true);check(persistent.requested(false),"sprint resumes after menu");persistent.context(false,false,true);check(!persistent.active(),"world change clears sprint");
+        persistent.context(true,false,true);check(persistent.requested(false),"sprint resumes after menu");persistent.context(false,false,true);check(persistent.active(),"world changes preserve sprint");persistent.context(false,true,true);check(persistent.active()&&!persistent.requested(true),"disconnect keeps latch but menu pauses input");persistent.set(true);persistent.press();check(!persistent.active(),"only another press toggles sprint off");
         SmoothZoom zoom=new SmoothZoom();check(zoom.update(true,4,0)==1,"zoom starts without a jump");
         check(Math.abs(zoom.update(true,4,40000000)-.625)<.0001,"zoom FOV ratio lerps at halfway");
         check(zoom.update(true,4,80000000)==.25,"zoom reaches target in 80 ms");

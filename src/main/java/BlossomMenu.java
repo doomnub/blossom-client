@@ -21,8 +21,7 @@ public final class BlossomMenu extends axu {
         n.add(new BlossomButton(100,l/2-145,y,143,20,"Edit HUD"));
         n.add(new BlossomButton(107,l/2+2,y,143,20,"HUD visuals"));
 
-        n.add(new BlossomButton(103,l/2-145,y+24,94,20,"Save preset"));
-        n.add(new BlossomButton(104,l/2-47,y+24,94,20,"Load preset"));
+        n.add(new BlossomButton(103,l/2-145,y+24,192,20,"Module presets (5 slots)"));
         n.add(new BlossomButton(105,l/2+51,y+24,94,20,"Background"));
 
         n.add(new BlossomButton(109,l/2-47,y+48,94,20,"Keybindings"));
@@ -36,8 +35,8 @@ public final class BlossomMenu extends axu {
             case 100:j.a(new BlossomHudEditor(this));return;
             case 101:j.a(new BlossomCapeMenu(this));return;
             case 102:BlossomHooks.capes.openFolder();break;
-            case 103:BlossomHooks.save("preset");break;
-            case 104:BlossomHooks.load("preset");break;
+            case 103:j.a(new BlossomPresets(this));return;
+
             case 105:BlossomHooks.background=!BlossomHooks.background;break;
             case 107:j.a(new BlossomModuleSettings(this));return;
             case 109:j.a(new ayj(this,j.t));return;

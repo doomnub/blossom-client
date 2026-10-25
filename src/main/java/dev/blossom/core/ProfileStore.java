@@ -10,6 +10,7 @@ public final class ProfileStore {
         if(!name.matches("[a-zA-Z0-9_-]{1,48}")) throw new IllegalArgumentException("Invalid profile name");
         return directory.resolve(name+".properties");
     }
+    public boolean exists(String name){return Files.isRegularFile(path(name));}
     public Properties load(String name) throws IOException {
         Properties p=new Properties(); Path file=path(name);
         if(!Files.exists(file)) return p;

@@ -128,7 +128,7 @@ pub fn install(t: &Task, root: &Path, game: &Path) -> Result<Installed> {
         {
             let target = safe(&destination, name)?;
             std::fs::create_dir_all(target.parent().unwrap())?;
-            std::fs::copy(&path, target)?;
+            if t.verify_existing || !target.is_file() || target.metadata()?.len()!=path.metadata()?.len() {std::fs::copy(&path, target)?;}
         }
         if i % 25 == 0 || i + 1 == objects.len() {
             t.status(&format!("Checking assets: {} / {}", i + 1, objects.len()));
@@ -185,6 +185,7 @@ pub fn extract(t: &Task, archive: &Path, root: &Path, natives: bool) -> Result<(
         {
             return Err("Archive exceeds extraction limit".into());
         }
+        if natives && !t.verify_existing && target.is_file() && target.metadata()?.len()==entry.size() { continue; }
         std::fs::create_dir_all(target.parent().unwrap())?;
         let mut file = tempfile::NamedTempFile::new_in(target.parent().unwrap())?;
         let mut buf = [0; 65536];
@@ -243,7 +244,8 @@ fn link_target(root: &Path, target: &Path, link: &str) -> Result<PathBuf> {
     }
     safe(root, &relative.to_string_lossy().replace('\\', "/"))
 }
-pub fn java(t: &Task, root: &Path) -> Result<PathBuf> {
+pub fn java(t: &Task, root: &Path) -> Result<PathBuf> { java_with_verification(t, root, true) }
+pub fn java_with_verification(t: &Task, root: &Path, verify: bool) -> Result<PathBuf> {
     let meta: Value = serde_json::from_str(include_str!(
         "../../../launcher/src/main/resources/runtimes.json"
     ))?;
@@ -251,13 +253,14 @@ pub fn java(t: &Task, root: &Path) -> Result<PathBuf> {
     let folder = string(runtime, "folder")?;
     let target = root.join("runtimes").join(folder);
     let exe = safe(&target, string(runtime, "executable")?)?;
-    if exe.exists() && verify_java(&exe).is_ok() {
+    if exe.is_file() && (!verify || verify_java(&exe).is_ok()) {
         t.status("Managed Java 8 is ready");
         return Ok(exe);
     }
     t.status("Downloading verified Java 8");
     let archive = root.join("cache/runtimes").join(format!("{folder}.zip"));
-    t.download(
+    let mut verified=t.clone();verified.verify_existing=true;
+    verified.download(
         string(runtime, "url")?,
         &archive,
         string(runtime, "sha256")?,

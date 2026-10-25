@@ -18,6 +18,7 @@ public final class BlossomHooks {
     private static boolean profileWritable=true;
     private static float savedGamma;
     private static ProfileStore store;
+    private static Properties controls=new Properties();
     private static long lastFrame,refresh;
     private static double[] fpsStats=new double[6];
     private static final java.util.concurrent.ExecutorService saves=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom profile writer");t.setDaemon(true);return t;});
@@ -35,6 +36,7 @@ public final class BlossomHooks {
         modules.add("resources","Resource counter","HUD","Iron, gold, diamond and emerald counts in your inventory",false,.78f);
         modules.add("movement","Toggle status","HUD","Local sprint/sneak latch status",false,.87f);
         modules.add("sprint","Toggle sprint","Controls","Press your vanilla sprint key to toggle; vanilla restrictions remain",false,0);
+        modules.add("noscroll","Disable hotbar scrolling","Controls","Keep your selected slot when scrolling; zoom and menus still scroll",false,0);
         modules.add("sneak","Toggle sneak","Controls","Press your vanilla sneak key to toggle; menus clear the latch",false,0);
         modules.add("crosshair","Custom crosshair","Visual","Original plus/dot crosshair with configurable dimensions",false,0);
         modules.add("zoom","Zoom","Visual","Smooth hold-to-zoom; scroll adjusts this hold only",true,0);
@@ -59,6 +61,21 @@ public final class BlossomHooks {
         },"Blossom save flush"));
         initialized=true;
         load("default");BlossomBindings.init();
+        try{controls=store.load("controls");BlossomControls.restoreSprint(Boolean.parseBoolean(controls.getProperty("sprint.latched","false")));}catch(Exception e){message="Sprint state could not be restored";}
+    }
+    public static void saveSprint(boolean active) {
+        controls.setProperty("sprint.latched",Boolean.toString(active));
+        final Properties copy=new Properties();copy.putAll(controls);
+        saves.execute(()->{try{store.save("controls",copy);}catch(Exception e){System.err.println("[Blossom] Sprint state save failed");}});
+    }
+    public static void flushProfiles(){try{saves.submit(()->{}).get();}catch(Exception e){message="Could not finish saving preset";}}
+    public static boolean hasPreset(int slot){return store.exists(slot==1?"preset":"preset"+slot);}
+    public static void savePreset(int slot){save(slot==1?"preset":"preset"+slot);}
+    public static void loadPreset(int slot){
+        // Drain pending writes before loading; selecting a slot immediately after saving is safe.
+        try{saves.submit(()->{}).get();}catch(Exception e){message="Could not finish saving preset";return;}
+        if(!hasPreset(slot)){message="Preset "+slot+" is empty";return;}
+        load(slot==1?"preset":"preset"+slot);BlossomBindings.apply();BlossomHud.invalidate();BlossomCloth.clear();
     }
     public static void load(String name) {
         try {
@@ -129,7 +146,7 @@ public final class BlossomHooks {
     }
     public static float hitTilt(float vanilla){return !initialized||failed||!modules.on("hittilt")?vanilla:vanilla*settings.hitTilt;}
     public static float cameraFov(float vanilla,boolean world){return !initialized||failed?vanilla:BlossomCamera.fov(vanilla,world);}
-    public static int mouseWheel(int delta){return !initialized||failed?delta:BlossomCamera.wheel(delta);}
+    public static int mouseWheel(int delta){if(!initialized||failed)return delta;int value=BlossomCamera.wheel(delta);return modules.on("noscroll")&&ave.A().m==null?0:value;}
     public static boolean keyDown(boolean original,avb binding) {
         return !initialized||failed?original:BlossomControls.down(original,binding);
     }

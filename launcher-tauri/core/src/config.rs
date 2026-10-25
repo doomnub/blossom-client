@@ -5,6 +5,10 @@ use std::collections::HashMap;
 #[serde(rename_all = "camelCase")]
 pub struct Config {
     pub java_auto: bool,
+    #[serde(default = "enabled")]
+    pub verify_game: bool,
+    #[serde(default = "enabled")]
+    pub verify_java: bool,
     pub java: String,
     pub game: String,
     pub client_id: String,
@@ -13,6 +17,7 @@ pub struct Config {
     pub width: u32,
     pub height: u32,
 }
+fn enabled() -> bool { true }
 pub fn properties(path: &Path) -> Result<HashMap<String, String>> {
     if !path.exists() {
         return Ok(HashMap::new());
@@ -88,6 +93,8 @@ impl Config {
                 .clamp(min, max)
         };
         Ok(Self {
+            verify_game: get("verify.game", "true".into()) == "true",
+            verify_java: get("verify.java", "true".into()) == "true",
             java_auto: get("java.auto", "true".into()) == "true",
             java: get("java", String::new()),
             game: get(
@@ -124,6 +131,8 @@ impl Config {
         let path = root.join("launcher.properties");
         let mut p = properties(&path)?;
         for (k, v) in [
+            ("verify.game", self.verify_game.to_string()),
+            ("verify.java", self.verify_java.to_string()),
             ("java.auto", self.java_auto.to_string()),
             ("java", self.java.clone()),
             ("game", self.game.clone()),
@@ -152,6 +161,12 @@ mod tests {
         assert_eq!(Config::load(dir.path()).unwrap().game, config.game);
         let bytes = std::fs::read(path).unwrap();
         assert!(String::from_utf8(bytes).unwrap().contains("Jadé-花-🌸"));
+    }
+    #[test]
+    fn verification_preferences() {
+        let d=tempfile::tempdir().unwrap();let mut c=Config::load(d.path()).unwrap();
+        assert!(c.verify_game&&c.verify_java);c.verify_game=false;c.verify_java=false;c.save(d.path()).unwrap();
+        let c=Config::load(d.path()).unwrap();assert!(!c.verify_game&&!c.verify_java);
     }
     #[test]
     fn migration_roundtrip() {

@@ -35,6 +35,7 @@ public final class BlossomCloth {
         }
         state.x=x;state.y=y;state.z=z;state.yaw=yaw;if(state.world==null||state.world.get()!=mc.f)state.world=new java.lang.ref.WeakReference<Object>(mc.f);state.last=now;state.anchorY=anchorY;state.anchorZ=anchorZ;
         body(state.mesh,model);
+        state.mesh.head[1]+=crouch-anchorY;state.mesh.head[2]-=anchorZ;
         state.mesh.torso[1]+=crouch-anchorY;state.mesh.torso[2]-=anchorZ;
         for(int n=0;n<state.mesh.capsuleCount;n++){int o=n*7;state.mesh.capsules[o+1]+=crouch-anchorY;state.mesh.capsules[o+2]-=anchorZ;state.mesh.capsules[o+4]+=crouch-anchorY;state.mesh.capsules[o+5]-=anchorZ;}
         state.mesh.advance(dt>.5?0:dt,settings);
@@ -42,7 +43,9 @@ public final class BlossomCloth {
         GL11.glPushMatrix();GL11.glTranslated(0,anchorY,anchorZ);
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT|GL11.GL_COLOR_BUFFER_BIT|GL11.GL_CURRENT_BIT|GL11.GL_POLYGON_BIT|GL11.GL_LIGHTING_BIT);
         try{
-            GL11.glShadeModel(GL11.GL_SMOOTH);GL11.glDisable(GL11.GL_CULL_FACE);GL11.glColor4f(1,1,1,1);
+            GL11.glShadeModel(GL11.GL_SMOOTH);GL11.glDisable(GL11.GL_CULL_FACE);
+            // Keep Minecraft's lightmap (including gamma/Fullbright), without directional GL model lights darkening folds.
+            GL11.glDisable(GL11.GL_LIGHTING);GL11.glColor4f(1,1,1,1);
             draw(state.mesh);
         }finally{GL11.glPopAttrib();GL11.glPopMatrix();}
         return true;
@@ -50,7 +53,15 @@ public final class BlossomCloth {
     private static float wrap(float a){while(a>180)a-=360;while(a< -180)a+=360;return a;}
     private static double wrapRadians(double a){while(a>Math.PI)a-=2*Math.PI;while(a< -Math.PI)a+=2*Math.PI;return a;}
     private static void body(Cloth mesh,bbr model){
-        mesh.capsuleCount=0;mesh.torsoCollision=true;
+        mesh.capsuleCount=0;mesh.torsoCollision=true;mesh.headCollision=true;
+        bct h=model.f;double sx=Math.sin(h.f),cx=Math.cos(h.f),sy=Math.sin(h.g),cy=Math.cos(h.g),sz=Math.sin(h.h),cz=Math.cos(h.h);
+        double[] box=mesh.head;
+        box[6]=cz*cy;box[7]=cz*sy*sx-sz*cx;box[8]=cz*sy*cx+sz*sx;
+        box[9]=sz*cy;box[10]=sz*sy*sx+cz*cx;box[11]=sz*sy*cx-cz*sx;
+        box[12]=-sy;box[13]=cy*sx;box[14]=cy*cx;
+        box[0]=h.c/16.-.25*box[7];box[1]=h.d/16.-.25*box[10];box[2]=h.e/16.-.25*box[13];
+        box[3]=box[4]=box[5]=.28125; // 8px head plus 0.5px hat expansion
+
         double angle=model.g.f;mesh.torso[0]=model.g.c/16.;mesh.torso[1]=model.g.d/16.+.375*Math.cos(angle);mesh.torso[2]=model.g.e/16.+.375*Math.sin(angle);
         mesh.torso[3]=.265625;mesh.torso[4]=.390625;mesh.torso[5]=.140625;mesh.torso[6]=angle;
         // Two torso capsules preserve its rectangular width; limbs follow the actual model rotations.

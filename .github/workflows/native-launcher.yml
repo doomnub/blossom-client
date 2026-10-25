@@ -45,6 +45,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node scripts/ui-smoke.cjs
+          node scripts/wardrobe-smoke.cjs
       - run: cargo build --locked --release --features custom-protocol --manifest-path launcher-tauri/src-tauri/Cargo.toml
       - name: Real Linux release WebView and IPC
         if: runner.os == 'Linux'

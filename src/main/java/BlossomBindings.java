@@ -16,6 +16,7 @@ public final class BlossomBindings {
         }
         avb.b();sync();
     }
+    public static void apply(){if(zoom!=null){zoom.b(BlossomHooks.settings.zoomKey);menu.b(BlossomHooks.settings.menuKey);avb.b();}}
     public static void sync(){if(zoom!=null){BlossomHooks.settings.zoomKey=zoom.i();BlossomHooks.settings.menuKey=menu.i();}}
     public static void set(avb key,int code){ave.A().t.a(key,code);avb.b();sync();}
     public static boolean held(avb key){if(key==null)return false;int code=key.i();return code<0?code>=-100&&Mouse.isButtonDown(code+100):code>0&&code<Keyboard.KEYBOARD_SIZE&&Keyboard.isKeyDown(code);}

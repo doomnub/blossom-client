@@ -49,6 +49,8 @@ public final class BlossomTransformer implements ClassFileTransformer {
                         if(frame)super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"frame","()V",false);
                     }
                     @Override public void visitMethodInsn(int op,String owner,String m,String d,boolean itf){
+                        if(name.equals("ave")&&owner.equals("org/lwjgl/opengl/Display")&&m.equals("setIcon")&&d.equals("([Ljava/nio/ByteBuffer;)I")){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomIcon","set","([Ljava/nio/ByteBuffer;)I",false);return;}
+
                         if(arm&&owner.equals("bln")&&m.equals("b")&&d.equals("(Lbet;)V")){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHands","arm","(Lbln;Lbet;)V",false);return;}
                         if(held&&owner.equals("bbj")&&m.equals("a")&&d.equals("(F)V")){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHands","attach","(Lbbj;F)V",false);return;}
                         if(tint&&owner.equals("org/lwjgl/opengl/GL11")&&m.equals("glTexEnv")&&d.equals("(IILjava/nio/FloatBuffer;)V")){super.visitVarInsn(Opcodes.ALOAD,1);super.visitVarInsn(Opcodes.ILOAD,3);super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomVisuals","tint","(Ljava/nio/FloatBuffer;Lpr;Z)Ljava/nio/FloatBuffer;",false);}
