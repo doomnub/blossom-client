@@ -6,12 +6,13 @@ public final class ClientSettings {
     public int crosshairColor=0xffff83b5, menuKey=54;
     public final dev.blossom.core.cloth.ClothSettings cloth=new dev.blossom.core.cloth.ClothSettings();
     public final VisualSettings visual=new VisualSettings();
+    public final LegacySettings legacy=new LegacySettings();
     public final FovSettings fov=new FovSettings();
     public boolean hidePotionOne=true, showEmptyPotions=false;
     public float zoomFactor=4,hitTilt=1;
     public boolean crosshairDot=false, privacy=false, fpsAverage=false, fpsLows=false;
     public void load(Properties p) {
-        visual.load(p);cloth.load(p);fov.load(p);showEmptyPotions=Boolean.parseBoolean(p.getProperty("potions.showEmpty","false"));hidePotionOne=Boolean.parseBoolean(p.getProperty("potions.hideOne","true"));
+        legacy.load(p);visual.load(p);cloth.load(p);fov.load(p);showEmptyPotions=Boolean.parseBoolean(p.getProperty("potions.showEmpty","false"));hidePotionOne=Boolean.parseBoolean(p.getProperty("potions.hideOne","true"));
         zoomKey=integer(p,"zoom.key",46,1,255);
         menuKey=integer(p,"menu.key",54,1,255);
         hitTilt=number(p,"hitTilt.amount",1,0,2);
@@ -26,7 +27,7 @@ public final class ClientSettings {
         privacy=Boolean.parseBoolean(p.getProperty("privacy","false"));
     }
     public void save(Properties p) {
-        visual.save(p);cloth.save(p);fov.save(p);p.setProperty("potions.showEmpty",Boolean.toString(showEmptyPotions));p.setProperty("potions.hideOne",Boolean.toString(hidePotionOne));
+        legacy.save(p);visual.save(p);cloth.save(p);fov.save(p);p.setProperty("potions.showEmpty",Boolean.toString(showEmptyPotions));p.setProperty("potions.hideOne",Boolean.toString(hidePotionOne));
         p.setProperty("fps.average",Boolean.toString(fpsAverage));p.setProperty("fps.lows",Boolean.toString(fpsLows));
         p.setProperty("zoom.key",Integer.toString(zoomKey));p.setProperty("menu.key",Integer.toString(menuKey));
         p.setProperty("hitTilt.amount",Float.toString(hitTilt));

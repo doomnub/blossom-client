@@ -4,6 +4,13 @@ import java.io.*;
 import java.security.MessageDigest;
 public final class BlossomAgent {
     private static final String[][] EXPECTED={
+        {"bjh","f294e78abc95e1258785c14dbc9ecea05d0da576e5fc6914a59d92fff22023a5"},
+        {"bkp","ce4c2d9099e9a8f3b590834c99dad5907bd72cda9994c699991652b6936847f3"},
+        {"bjl","f67bc86bd68414401a5c6fed53fc1ceccdb22cf68f95e6a2f137ac55cf91d214"},
+        {"bec","2e9425b1999cf93869b2c5bf62d2cb591d8b636ff6ba2d3fdaf3c92301914b12"},
+        {"bky","d07d3c2af04d26181bf5cf8a21f03e22b6e0bf3b711540a4a92addaed808ffa7"},
+        {"bbj","2414f0a93e7bbf8128b079976a80615b2c62cff2d7383a6285adff23f848b015"},
+        {"bfn","c9770ea5f79c956e6be5983f081660c2e140c4f94cf2be60d81cd092dc08099b"},
         {"axp","99e54411523cebfbfc9322c80f507e4f0b2e160e4eb180db151125fbe49b3d17"},
         {"avf","45dcd6790540b7e12c0342f9b80ae4ba9d2c0bd1e0b2bf780a0280d90c2713a8"},
 

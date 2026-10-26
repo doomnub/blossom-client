@@ -88,3 +88,22 @@ changes OS pointer settings. No root privileges or input-device permissions are
 needed. The module settings show its status; unavailable raw input falls back to
 vanilla mouse handling. Native Wayland without XWayland is not supported by this
 Minecraft 1.8.9/LWJGL2 client. Physical device behavior needs desktop testing.
+
+## Presets and controls (0.2.7)
+
+The Presets screen has five numbered slots. Save captures the current modules,
+settings and HUD layout; Load applies a populated slot. Overwriting asks first.
+Slot 1 reuses `profiles/preset.properties`; slots 2–5 use `preset2.properties` through
+`preset5.properties`. The active profile still saves to `default.properties`.
+Sprint's latch is stored separately in `profiles/controls.properties`, so loading
+presets or switching servers cannot accidentally toggle it off. Disabling the
+sprint module suspends its effect while preserving the latch.
+
+Disable hotbar scrolling blocks wheel slot changes only during gameplay. Zoom's
+wheel adjustment and GUI scrolling still work.
+
+1.7 Visuals is off by default. Its Visuals page contains independent settings for
+sword blocking, block+swing, smooth sneak camera, rod, bow, switching, eat/drink,
+held-item position, armor damage tint, item glint and always-swing. Always-swing is
+opt-in and only animates the local renderer. It cannot generate attacks. Maps and
+3D item models keep vanilla transforms. Turn the module off to restore vanilla.

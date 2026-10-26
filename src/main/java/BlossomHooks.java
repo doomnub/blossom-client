@@ -44,6 +44,7 @@ public final class BlossomHooks {
         modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
         modules.add("lefthand","Left Hand","Visual","Render your local main hand and held item on the left",false,0);
+        modules.add("legacy","1.7 Visuals","Visual","Independent classic item animations; rendering only",false,0);
         modules.add("hittilt","Hit Tilt","Visual","Adjust damage camera tilt; zero disables the tilt",false,0);
         modules.add("hitcolor","Hit Color","Visual","Custom damage tint, duration and fade",false,0);
         modules.add("particles","Particle Changer","Visual","Per-category particle appearance and density",false,0);
@@ -114,7 +115,7 @@ public final class BlossomHooks {
             capes.setActive(modules.on("cape")||mc.m instanceof BlossomCapeMenu);
             if(modules.on("cape")||mc.m instanceof BlossomCapeMenu)capes.uploadReady();
             if(!modules.on("capephysics")||mc.h==null)BlossomCloth.clear();
-            BlossomVisuals.idle();
+            BlossomVisuals.idle();BlossomLegacy.tick();
             ticks.post(System.nanoTime());
         } catch(Exception|LinkageError e){failed=true;restoreSettings();System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
     }

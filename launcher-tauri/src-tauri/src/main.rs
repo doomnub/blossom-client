@@ -162,6 +162,7 @@ fn work(app: &tauri::AppHandle, action: &str) -> core::Result<()> {
     } else {
         PathBuf::from(&c.java)
     };
+    if action == "repair" && !c.java_auto { core::install::verify_java(&java)?; }
     if action == "java" {
         task.status("Java 8 is ready");
         return Ok(());

@@ -23,6 +23,7 @@ public final class BlossomModuleSettings extends axu {
         visual.l=!visuals;functional.l=visuals;n.add(visual);if(!global)n.add(functional);
         if(visuals){
             VisualSettings v=BlossomHooks.settings.visual;
+            if(module.id.equals("legacy"))for(int i=0;i<LegacySettings.KEYS.length;i++)add(200+i,LegacySettings.LABELS[i]+": "+BlossomHooks.settings.legacy.enabled[i]);
             if(module.id.equals("hittilt"))add(130,"Damage tilt: "+Math.round(BlossomHooks.settings.hitTilt*100)+"% (0 = none)");
             if(module.id.equals("hitcolor")){add(110,"Hit color: "+Integer.toHexString(v.hitColor));add(111,"Opacity: "+v.hitOpacity);add(112,"Duration (ticks): "+v.hitDuration);add(113,"Smooth fade: "+v.hitFade);add(114,"Players: "+v.hitPlayers);add(115,"Mobs: "+v.hitMobs);add(116,"Armor tint: "+v.hitArmor);}
             if(module.id.equals("particles")){int c=particleCategory;add(120,"Category: "+VisualSettings.CATEGORIES[c]);add(121,"Show: "+v.enabled[c]);add(122,"Density / multiplier: "+v.density[c]);add(123,"Scale: "+v.scale[c]);add(124,"Opacity: "+v.opacity[c]);add(125,"Lifetime: "+v.lifetime[c]);add(126,"Color (white = original): "+Integer.toHexString(v.color[c]));add(127,"Reduce all particles to 50%");}
@@ -77,6 +78,7 @@ public final class BlossomModuleSettings extends axu {
     }
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
+        if(button.k>=200&&button.k<200+LegacySettings.KEYS.length){int i=button.k-200;s.legacy.enabled[i]=!s.legacy.enabled[i];rebuildPending=true;return;}
         switch(button.k){
             case 130:j.a(new BlossomSliderScreen(this,"Damage camera tilt",s.hitTilt,0,2,false,v->s.hitTilt=v));return;
             case 110:case 126:

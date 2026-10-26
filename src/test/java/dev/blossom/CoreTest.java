@@ -8,6 +8,9 @@ public final class CoreTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
     public static void main(String[] args)throws Exception {
+        LegacySettings legacy=new LegacySettings();check(!legacy.enabled[10],"always swing is opt-in");
+        Properties legacyProps=new Properties();for(int i=0;i<legacy.enabled.length;i++)legacy.enabled[i]=(i%2==0);legacy.save(legacyProps);
+        LegacySettings legacyRestored=new LegacySettings();legacyRestored.load(legacyProps);for(int i=0;i<legacy.enabled.length;i++)check(legacyRestored.enabled[i]==legacy.enabled[i],"independent legacy option roundtrip "+i);
         check(SettingsPages.move(1,9,5,-1)==0,"previous settings page");
         check(SettingsPages.move(1,9,5,1)==0,"last settings page wraps");
         check(SettingsPages.move(0,9,5,-1)==1,"first settings page wraps backward");

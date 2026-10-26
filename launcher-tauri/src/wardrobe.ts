@@ -18,6 +18,7 @@ const el = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 let skins: Skin[] = [],
   account: Wardrobe | null = null,
+  signedIn = false,
   selectedSkin = "",
   selectedCape = "";
 let viewer: SkinViewer | null = null,
@@ -109,7 +110,9 @@ function preview() {
     ? `${skin.variant === "slim" ? "Slim" : "Classic"} arms`
     : "Import a PNG to start your collection";
   if (!visible || !skin) return;
-  const canvas = el<HTMLCanvasElement>("skin-preview");
+  const previousCanvas = el<HTMLCanvasElement>("skin-preview");
+  const canvas = previousCanvas.cloneNode(false) as HTMLCanvasElement;
+  previousCanvas.replaceWith(canvas);
   try {
     viewer = new SkinViewer({
       canvas,
@@ -128,9 +131,11 @@ function preview() {
       "Drag to rotate. Previewing does not change your account.";
   } catch {
     // Static front/back selection still works on machines without WebGL.
-    canvas.width = 160;
-    canvas.height = 272;
-    void thumbnail(canvas, skin);
+    const fallback = canvas.cloneNode(false) as HTMLCanvasElement;
+    canvas.replaceWith(fallback);
+    fallback.width = 160;
+    fallback.height = 272;
+    void thumbnail(fallback, skin);
     el("preview-help").textContent =
       "3D preview unavailable. Showing the skin from the front.";
   }
@@ -281,6 +286,7 @@ export function wardrobeTab(show: boolean) {
 export function clearAccount() {
   generation++;
   account = null;
+  signedIn = false;
   selectedCape = "";
   el("account-head").hidden = true;
   el("account-flower").hidden = false;
@@ -289,7 +295,8 @@ export function clearAccount() {
     ?.clearRect(0, 0, 32, 32);
   paint();
 }
-export async function refreshWardrobe(signedIn: boolean) {
+export async function refreshWardrobe(hasAccount: boolean) {
+  signedIn = hasAccount;
   if (signedIn) await request("refresh");
   else {
     clearAccount();
@@ -301,7 +308,7 @@ export function initWardrobe(message: typeof notify, busy: typeof setBusy) {
   setBusy = busy;
   el("add-skin").onclick = () => void request("import");
   el("refresh-wardrobe").onclick = () =>
-    void request(account ? "refresh" : "collection");
+    void request(signedIn ? "refresh" : "collection");
   el("use-skin").onclick = () => void request("skin", selectedSkin);
   el("use-cape").onclick = () => void request("cape", selectedCape);
   document.addEventListener("visibilitychange", () => {

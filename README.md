@@ -8,15 +8,17 @@ The full requested scope is preserved in [SPECIFICATION](docs/SPECIFICATION.md).
 Most advanced features are still planned. No graphical game launch, multiplayer,
 OptiFine compatibility or performance improvement is claimed yet.
 
-## Native launcher migration (0.2.6)
+## Native launcher (0.2.7)
 
 The new launcher uses **Tauri 2, Rust and TypeScript**, with the existing settings,
 account file, cache and Java runtime locations preserved. Minecraft stays Java.
 See [native setup](docs/NATIVE-LAUNCHER.md), [parity audit](docs/LAUNCHER-MIGRATION.md)
-and [validation status](docs/VALIDATION-0.2.6.md). The Swing source remains available
+and [validation status](docs/VALIDATION-0.2.7.md). The Swing source remains available
 while desktop acceptance is completed.
 
-New client paths include Custom Cape / Cape Physics, damage tint controls, per-category
+The launcher now includes a permanent skin collection, owned-account capes and skin previews.
+
+New client paths include 1.7 Visuals, Disable hotbar scrolling, Custom Cape / Cape Physics, damage tint controls, per-category
 particles and a passive network graph. These need graphical gameplay acceptance.
 
 ## Legacy launcher
@@ -30,7 +32,7 @@ Live sign-in and gameplay are not yet verified. An existing authenticated launch
 
 Implemented paths, pending graphical acceptance:
 
-- Right Shift module menu with search, toggles and two profile slots.
+- Right Shift module menu with search, toggles and five preset slots.
 - Draggable normalized HUD positions with optional grid snapping/backgrounds.
 - FPS slow-tail statistics, left/right CPS, keystrokes, server ping, coordinates,
   heading, clock and heap-memory display.
@@ -39,8 +41,8 @@ Implemented paths, pending graphical acceptance:
 - Local static PNG, horizontal/vertical spritesheet and PNG-sequence cape selection; worker
   decoding, cached textures, per-frame durations and ping-pong animation.
 
-Validated here: compilation, 80 core assertions and 49 launcher checks, transformation of real 1.8.9
-classes, and full JVM verification/linking. The Rust backend also has ten automated checks. See [test record](docs/TESTING.md).
+Validated here: compilation, 100 core assertions and 49 launcher checks, transformation of real 1.8.9
+classes, and full JVM verification/linking. The Rust backend also has automated configuration, installer and wardrobe checks. See [test record](docs/TESTING.md).
 Unsupported class fingerprints disable Blossom cleanly. OptiFine is not supported
 by this initial adapter; it needs a separately tested integration.
 

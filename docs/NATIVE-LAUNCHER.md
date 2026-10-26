@@ -31,7 +31,7 @@ the frontend; the game token is delivered through stdin, not process arguments.
 
 ## Validation
 
-See `docs/VALIDATION-0.2.6.md` and `docs/LAUNCHER-MIGRATION.md` in the source repository.
+See `docs/VALIDATION-0.2.7.md` and `docs/LAUNCHER-MIGRATION.md` in the source repository.
 The legacy Swing source and build remain available until desktop acceptance is complete.
 The native ZIP does not launch Swing in the background.
 
@@ -50,3 +50,22 @@ cd ..
 cargo build --locked --release --features custom-protocol --manifest-path launcher-tauri/src-tauri/Cargo.toml
 python scripts/package_native.py
 ```
+
+## Skins, capes and verification (0.2.7)
+
+Skins & capes sits below Settings and above Logs. Sign in to see your current skin
+and the capes owned by that Minecraft account. Import PNG skins as Classic or Slim,
+select a card to preview it, then choose Use skin or Use cape. No cape upload or
+unowned cape selection is offered. Changes take effect in Minecraft after restart.
+The launcher archives your current skin before replacing it, and keeps every
+imported skin under `~/.blossom/skins`. Signing out does not delete that collection.
+Blossom's separate in-game custom cape can override an account cape locally.
+
+Settings includes Verify existing game files and Verify Java installation. Both
+are on by default. Turning them off skips existing-file hashes or existing-runtime
+version checks during normal launches. Downloads are always verified. Repair forces
+verification, including custom Java paths.
+
+The new `blossom.svg` is included in native packages. Linux startup installs a user
+application entry and scalable icon using the launcher application ID. Move the
+launcher and run it again to refresh that entry's executable path.

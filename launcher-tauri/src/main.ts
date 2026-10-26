@@ -98,8 +98,10 @@ async function refresh() {
   update();
 }
 async function save() {
+  const oldClientId = config.clientId;
   config = read();
   await invoke("save_settings", { config });
+  if (oldClientId !== config.clientId) clearAccount();
   remembered = await invoke<boolean>("account");
   update();
 }
