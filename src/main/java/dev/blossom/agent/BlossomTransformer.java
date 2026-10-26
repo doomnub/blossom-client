@@ -4,16 +4,22 @@ import java.security.ProtectionDomain;
 import org.objectweb.asm.*;
 /** Exact vanilla 1.8.9 signatures; no networking or player-physics patches. */
 public final class BlossomTransformer implements ClassFileTransformer {
+    private static final String CHAT="dev/blossom/integration/BlossomChat";
     private static final String LEGACY="dev/blossom/integration/BlossomLegacy";
     private static final String HOOKS="dev/blossom/integration/BlossomHooks";
     @Override public byte[] transform(ClassLoader loader,String name,Class<?> type,ProtectionDomain domain,byte[] bytes) {
-        if(!"bjh".equals(name)&&!"bfn".equals(name)&&!"bbj".equals(name)&&!"bky".equals(name)&&!"bec".equals(name)&&!"bjl".equals(name)&&!"bkp".equals(name)&&!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return null;
+        if(!"bgp".equals(name)&&!"avt".equals(name)&&!"bjh".equals(name)&&!"bfn".equals(name)&&!"bbj".equals(name)&&!"bky".equals(name)&&!"bec".equals(name)&&!"bjl".equals(name)&&!"bkp".equals(name)&&!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return null;
         ClassReader reader=new ClassReader(bytes);
         ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);
         final int[] hooks={0};
         reader.accept(new ClassVisitor(Opcodes.ASM9,writer){
             @Override public MethodVisitor visitMethod(int access,String method,String desc,String sig,String[] ex){
                 MethodVisitor base=super.visitMethod(access,method,desc,sig,ex);
+                final boolean chatDraw=name.equals("avt")&&method.equals("a")&&desc.equals("(I)V");
+                final boolean chatLayout=name.equals("avt")&&method.equals("a")&&desc.equals("(Leu;IIZ)V");
+                final boolean chatPick=name.equals("avt")&&method.equals("a")&&desc.equals("(II)Leu;");
+                final boolean chatReceive=name.equals("avt")&&method.equals("a")&&desc.equals("(Leu;I)V");
+                final boolean itemSides=name.equals("bgp")&&method.equals("a")&&desc.equals("(Lbmi;Ljava/lang/String;I)Ljava/util/List;");
                 final boolean hand=name.equals("bfn")&&method.equals("a")&&desc.equals("(F)V");
                 final boolean bow=name.equals("bfn")&&method.equals("a")&&desc.equals("(FLbet;)V");
                 final boolean equip=name.equals("bfn")&&method.equals("a")&&desc.equals("()V");
@@ -37,10 +43,23 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 final boolean key=name.equals("avb")&&method.equals("d")&&desc.equals("()Z");
                 final boolean menuInit=(name.equals("aya")||name.equals("axp"))&&method.equals("b")&&desc.equals("()V");
                 final boolean menuClick=(name.equals("aya")||name.equals("axp"))&&method.equals("a")&&desc.equals("(Lavs;)V");
-                if(bow||equip||camera||glint||hand||arm||pose||held||tilt||tint||particles||added||cloth||tick||frame||hud||crosshair||cape||key||menuInit||menuClick||fov||raw)hooks[0]++;
+                if(chatDraw||chatLayout||chatPick||chatReceive||itemSides||bow||equip||camera||glint||hand||arm||pose||held||tilt||tint||particles||added||cloth||tick||frame||hud||crosshair||cape||key||menuInit||menuClick||fov||raw)hooks[0]++;
                 return new MethodVisitor(Opcodes.ASM9,base){
                     @Override public void visitCode(){
                         super.visitCode();
+                        if(chatDraw||chatLayout||chatPick)super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"beginDraw","()V",false);
+                        if(chatReceive){
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitVarInsn(Opcodes.ALOAD,1);super.visitVarInsn(Opcodes.ILOAD,2);
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"receive","(Lavt;Leu;I)Z",false);
+                            Label vanilla=new Label();super.visitJumpInsn(Opcodes.IFEQ,vanilla);super.visitInsn(Opcodes.RETURN);super.visitLabel(vanilla);super.visitFrame(Opcodes.F_SAME,0,null,0,null);
+                        }
+                        if(itemSides){
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomItemModels","enabled","()Z",false);
+                            Label vanilla=new Label();super.visitJumpInsn(Opcodes.IFEQ,vanilla);
+                            super.visitVarInsn(Opcodes.ALOAD,1);super.visitVarInsn(Opcodes.ALOAD,2);super.visitVarInsn(Opcodes.ILOAD,3);
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomItemModels","sides","(Lbmi;Ljava/lang/String;I)Ljava/util/List;",false);
+                            super.visitInsn(Opcodes.ARETURN);super.visitLabel(vanilla);super.visitFrame(Opcodes.F_SAME,0,null,0,null);
+                        }
                         if(hand){super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfn","d","Lzx;");super.visitVarInsn(Opcodes.FLOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"begin","(Lzx;F)V",false);}
                         if(glint){super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"beginGlint","(Lboq;)V",false);}
                         if(equip){super.visitVarInsn(Opcodes.ALOAD,0);super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfn","d","Lzx;");super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"equipStack","(Lzx;)Lzx;",false);super.visitFieldInsn(Opcodes.PUTFIELD,"bfn","d","Lzx;");}
@@ -57,7 +76,16 @@ public final class BlossomTransformer implements ClassFileTransformer {
                         if(menuClick){super.visitVarInsn(Opcodes.ALOAD,0);super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"mainMenuClick","(Laxu;Lavs;)V",false);}
                         if(frame)super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"frame","()V",false);
                     }
+                    @Override public void visitTypeInsn(int op,String type){
+                        super.visitTypeInsn(op,name.equals("ave")&&op==Opcodes.NEW&&type.equals("awv")?"dev/blossom/integration/BlossomChatScreen":type);
+                    }
+                    @Override public void visitIntInsn(int op,int operand){
+                        super.visitIntInsn(op,operand);
+                        if(chatDraw&&op==Opcodes.SIPUSH&&operand==200)super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"fade","(I)I",false);
+                    }
                     @Override public void visitMethodInsn(int op,String owner,String m,String d,boolean itf){
+                        if(name.equals("ave")&&owner.equals("awv")&&m.equals("<init>")){super.visitMethodInsn(op,"dev/blossom/integration/BlossomChatScreen",m,d,itf);return;}
+                        if(chatDraw&&owner.equals("avt")&&m.equals("a")&&d.equals("(IIIII)V")){super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"background",d,false);return;}
                         if(name.equals("ave")&&owner.equals("org/lwjgl/opengl/Display")&&m.equals("setIcon")&&d.equals("([Ljava/nio/ByteBuffer;)I")){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomIcon","set","([Ljava/nio/ByteBuffer;)I",false);return;}
 
                         if(hand&&owner.equals("bfn")&&m.equals("b")&&d.equals("(FF)V"))super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"useSwing","(F)F",false);
@@ -78,9 +106,12 @@ public final class BlossomTransformer implements ClassFileTransformer {
                             super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,owner.endsWith("Mouse")?"mouseEvent":"keyboardEvent","(Z)V",false);
                         }
                     }
-                    @Override public void visitLdcInsn(Object value){super.visitLdcInsn(value);if(glint&&Integer.valueOf(-8372020).equals(value))super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"glintColor","(I)I",false);if(tilt&&Float.valueOf(14f).equals(value))super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"hitTilt","(F)F",false);}
-                    @Override public void visitFieldInsn(int op,String owner,String field,String descriptor){super.visitFieldInsn(op,owner,field,descriptor);if(tint&&op==Opcodes.GETFIELD&&owner.equals("pr")&&field.equals("au")){super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomVisuals","hurt","(ILpr;)I",false);}}
+                    @Override public void visitLdcInsn(Object value){super.visitLdcInsn(value);if(chatDraw&&Double.valueOf(200d).equals(value))super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"fadeDouble","(D)D",false);if(glint&&Integer.valueOf(-8372020).equals(value))super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"glintColor","(I)I",false);if(tilt&&Float.valueOf(14f).equals(value))super.visitMethodInsn(Opcodes.INVOKESTATIC,HOOKS,"hitTilt","(F)F",false);}
+                    @Override public void visitFieldInsn(int op,String owner,String field,String descriptor){super.visitFieldInsn(op,owner,field,descriptor);if(chatDraw&&op==Opcodes.GETFIELD&&owner.equals("avh")&&field.equals("q"))super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"opacity","(F)F",false);if(tint&&op==Opcodes.GETFIELD&&owner.equals("pr")&&field.equals("au")){super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomVisuals","hurt","(ILpr;)I",false);}}
                     @Override public void visitInsn(int op){
+                        if(((chatDraw||chatLayout)&&op==Opcodes.RETURN)||(chatPick&&op==Opcodes.ARETURN))super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"endDraw","()V",false);
+                        if(name.equals("avt")&&desc.equals("()I")&&op==Opcodes.IRETURN&&(method.equals("f")||method.equals("g")))super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,method.equals("f")?"width":"height","(I)I",false);
+                        if(name.equals("avt")&&method.equals("h")&&desc.equals("()F")&&op==Opcodes.FRETURN)super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"scale","(F)F",false);
                         if(op==Opcodes.RETURN&&glint)super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"endGlint","()V",false);
                         if(op==Opcodes.RETURN&&hand)super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"end","()V",false);
                         if(op==Opcodes.RETURN&&hand)super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomHands","end","()V",false);
@@ -105,7 +136,7 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 };
             }
         },0);
-        int expected=name.equals("bfn")?4:name.equals("bfk")?3:name.equals("bec")||name.equals("ave")||name.equals("avo")||name.equals("aya")||name.equals("axp")?2:1;
+        int expected=name.equals("avt")?4:name.equals("bfn")?4:name.equals("bfk")?3:name.equals("bec")||name.equals("ave")||name.equals("avo")||name.equals("aya")||name.equals("axp")?2:1;
         if(hooks[0]!=expected){System.err.println("[Blossom] Unsupported class layout: "+name);return null;}
         System.out.println("[Blossom] Patched "+name);
         return writer.toByteArray();

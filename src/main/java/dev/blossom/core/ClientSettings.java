@@ -2,17 +2,20 @@ package dev.blossom.core;
 import java.util.Properties;
 /** Version-one settings with bounded parsing; malformed optional values use defaults. */
 public final class ClientSettings {
+    public int coordinateDecimals=1;
     public int zoomKey=46, crosshairLength=5, crosshairGap=3, crosshairThickness=1;
     public int crosshairColor=0xffff83b5, menuKey=54;
     public final dev.blossom.core.cloth.ClothSettings cloth=new dev.blossom.core.cloth.ClothSettings();
     public final VisualSettings visual=new VisualSettings();
     public final LegacySettings legacy=new LegacySettings();
+    public final ChatSettings chat=new ChatSettings();
     public final FovSettings fov=new FovSettings();
     public boolean hidePotionOne=true, showEmptyPotions=false;
     public float zoomFactor=4,hitTilt=1;
     public boolean crosshairDot=false, privacy=false, fpsAverage=false, fpsLows=false;
     public void load(Properties p) {
-        legacy.load(p);visual.load(p);cloth.load(p);fov.load(p);showEmptyPotions=Boolean.parseBoolean(p.getProperty("potions.showEmpty","false"));hidePotionOne=Boolean.parseBoolean(p.getProperty("potions.hideOne","true"));
+        chat.load(p);legacy.load(p);visual.load(p);cloth.load(p);fov.load(p);showEmptyPotions=Boolean.parseBoolean(p.getProperty("potions.showEmpty","false"));hidePotionOne=Boolean.parseBoolean(p.getProperty("potions.hideOne","true"));
+        coordinateDecimals=integer(p,"coords.decimals",1,0,6);
         zoomKey=integer(p,"zoom.key",46,1,255);
         menuKey=integer(p,"menu.key",54,1,255);
         hitTilt=number(p,"hitTilt.amount",1,0,2);
@@ -27,7 +30,8 @@ public final class ClientSettings {
         privacy=Boolean.parseBoolean(p.getProperty("privacy","false"));
     }
     public void save(Properties p) {
-        legacy.save(p);visual.save(p);cloth.save(p);fov.save(p);p.setProperty("potions.showEmpty",Boolean.toString(showEmptyPotions));p.setProperty("potions.hideOne",Boolean.toString(hidePotionOne));
+        chat.save(p);legacy.save(p);visual.save(p);cloth.save(p);fov.save(p);p.setProperty("potions.showEmpty",Boolean.toString(showEmptyPotions));p.setProperty("potions.hideOne",Boolean.toString(hidePotionOne));
+        p.setProperty("coords.decimals",Integer.toString(coordinateDecimals));
         p.setProperty("fps.average",Boolean.toString(fpsAverage));p.setProperty("fps.lows",Boolean.toString(fpsLows));
         p.setProperty("zoom.key",Integer.toString(zoomKey));p.setProperty("menu.key",Integer.toString(menuKey));
         p.setProperty("hitTilt.amount",Float.toString(hitTilt));

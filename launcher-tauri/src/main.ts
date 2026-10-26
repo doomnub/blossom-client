@@ -208,6 +208,11 @@ async function start() {
         status(e.text);
         update();
         break;
+      case "stopped":
+        running = false;
+        status(e.text);
+        update();
+        break;
       case "device": {
         const d = JSON.parse(e.text) as { code: string; url: string };
         $("device-code").textContent = d.code;

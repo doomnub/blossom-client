@@ -30,7 +30,7 @@ impl Task {
             http: reqwest::blocking::Client::builder()
                 .connect_timeout(std::time::Duration::from_secs(15))
                 .timeout(std::time::Duration::from_secs(120))
-                .user_agent("Blossom/0.2.7.1")
+                .user_agent("Blossom/0.2.8")
                 .build()?,
         })
     }

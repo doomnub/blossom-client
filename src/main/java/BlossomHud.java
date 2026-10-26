@@ -32,16 +32,21 @@ public final class BlossomHud {
         if(BlossomHooks.modules.on("resources")) {
             int[] ids={265,266,264,388},counts=new int[4];
             for(zx stack:mc.h.bi.a)if(stack!=null)for(int i=0;i<ids.length;i++)if(zw.b(stack.b())==ids[i])counts[i]+=stack.b;
-            cached.put("resources",new String[]{"Iron "+counts[0]+" | Gold "+counts[1],"Diamond "+counts[2]+" | Emerald "+counts[3]});
+            cached.put("resources",new String[]{resource(ids[0],counts[0])+" | "+resource(ids[1],counts[1]),resource(ids[2],counts[2])+" | "+resource(ids[3],counts[3])});
         }
     }
+    private static String resource(int id,int count){return new zx(zw.b(id)).q()+" "+count;}
     private static void addItem(List<String> lines,zx stack) {
         if(stack==null)return;
         if(stack.e()) {
             int remaining=Math.max(0,stack.j()-stack.h());
             int percent=stack.j()==0?0:Math.round(100f*remaining/stack.j());
             lines.add((percent<=15?"§c":"")+stack.q()+" "+remaining+"/"+stack.j()+" ("+percent+"%)");
-        } else lines.add(stack.q()+" x"+stack.b);
+        } else {
+            int count=0;
+            for(zx candidate:ave.A().h.bi.a)if(candidate!=null&&candidate.b()==stack.b()&&candidate.i()==stack.i()&&zx.a(candidate,stack))count+=candidate.b;
+            lines.add(stack.q()+" x"+Math.max(stack.b,count));
+        }
     }
     public static String[] lines(Modules.Module module) {
         if(module.id.equals("network"))return BlossomNetwork.lines();

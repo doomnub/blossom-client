@@ -22,6 +22,13 @@ public final class BlossomModuleSettings extends axu {
         avs visual=new BlossomButton(90,l/2-140,44,138,20,"Visuals"),functional=new BlossomButton(91,l/2+2,44,138,20,"Functionality");
         visual.l=!visuals;functional.l=visuals;n.add(visual);if(!global)n.add(functional);
         if(visuals){
+            if(module.id.equals("chat")){
+                ChatSettings c=BlossomHooks.settings.chat;
+                add(300,"Background opacity: "+Math.round(c.background*100)+"%");add(301,"Text opacity: "+Math.round(c.textOpacity*100)+"%");
+                add(302,"Width: "+c.width);add(303,"Height: "+c.height);add(304,"Scale: "+c.scale);add(305,"Fade after seconds: "+c.fadeSeconds);
+                add(306,"Timestamps: "+c.timestamps);add(307,"Timestamp format: "+c.timestampFormat);add(308,"Timestamp color: "+c.timestampColor);
+                add(309,"Unicode font (resource pack): "+c.unicode);
+            }
             VisualSettings v=BlossomHooks.settings.visual;
             if(module.id.equals("legacy"))for(int i=0;i<LegacySettings.KEYS.length;i++)add(200+i,LegacySettings.LABELS[i]+": "+BlossomHooks.settings.legacy.enabled[i]);
             if(module.id.equals("hittilt"))add(130,"Damage tilt: "+Math.round(BlossomHooks.settings.hitTilt*100)+"% (0 = none)");
@@ -43,12 +50,18 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("cape"))add(40,"Choose cape / library");
         }else{
             add(0,"Enabled: "+module.enabled);
+            if(module.id.equals("chat")){
+                ChatSettings c=BlossomHooks.settings.chat;
+                add(310,"Highlight mentions: "+c.mentions);add(311,"Mention sound: "+c.sounds);add(312,"Stack repeated messages: "+c.duplicates);
+                add(313,"Filter phrases (comma separated)");add(314,"Save history on disk: "+c.persistent);add(315,"Search / copy history (Ctrl+F in chat)");
+                add(316,"Text shortcut (Ctrl+Space inserts)");add(317,"Erase saved and session history");
+            }
             if(module.id.equals("fps")){add(31,"FPS display: "+(BlossomHooks.settings.fpsAverage?"Average":"Current"));add(32,"Show 1% / 0.1% lows: "+BlossomHooks.settings.fpsLows);}
             if(module.id.equals("zoom")){add(10,"Zoom factor: "+BlossomHooks.settings.zoomFactor);add(11,binding?"Press key / mouse (Esc unbinds)":"Zoom key: "+BlossomBindings.label(BlossomBindings.zoom));}
             if(module.id.equals("sprint")||module.id.equals("sneak"))add(12,binding?"Press key / mouse (Esc unbinds)":"Key: "+BlossomBindings.label(module.id.equals("sprint")?j.t.ae:j.t.ad));
             if(module.id.equals("keys"))add(13,"Edit movement / mouse controls");
             if(module.id.equals("rawmouse"))add(14,BlossomMouse.status());
-            if(module.id.equals("coords"))add(30,"Privacy: "+BlossomHooks.settings.privacy);
+            if(module.id.equals("coords")){add(30,"Privacy: "+BlossomHooks.settings.privacy);add(36,"Decimal places: "+BlossomHooks.settings.coordinateDecimals);}
             if(module.id.equals("cape"))add(40,"Animation playback / library");
             if(HudText.supportsCompact(module.id))add(33,"Extra text / units: "+module.extraText);
             if(module.id.equals("potions")){add(34,"Hide level 1: "+BlossomHooks.settings.hidePotionOne);add(35,"Show when empty: "+BlossomHooks.settings.showEmptyPotions);}
@@ -59,8 +72,8 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("fov")){
                 FovSettings f=BlossomHooks.settings.fov;
                 add(50,"FOV mode: "+(f.constant?"Static":"Dynamic"));add(51,"Base FOV: "+f.base);
-                add(53,"Sprint FOV: "+f.sprint);add(54,"Speed I FOV: "+f.speed);add(55,"Speed II+ FOV: "+f.speedTwo);
-                add(56,"Slowness FOV: "+f.slowness);add(57,"Flying FOV: "+f.flying);add(58,"Drawn bow FOV: "+f.bow);
+                if(!f.constant){add(53,"Sprint FOV: "+f.sprint);add(54,"Speed I FOV: "+f.speed);add(55,"Speed II+ FOV: "+f.speedTwo);
+                add(56,"Slowness FOV: "+f.slowness);add(57,"Flying FOV: "+f.flying);add(58,"Drawn bow FOV: "+f.bow);}
             }
         }
         if(rows>perPage()){
@@ -79,6 +92,30 @@ public final class BlossomModuleSettings extends axu {
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
         if(button.k>=200&&button.k<200+LegacySettings.KEYS.length){int i=button.k-200;s.legacy.enabled[i]=!s.legacy.enabled[i];rebuildPending=true;return;}
+        if(button.k>=300&&button.k<=317){
+            final ChatSettings c=s.chat;final int id=button.k;
+            if(id<=305){
+                float value=id==300?c.background:id==301?c.textOpacity:id==302?c.width:id==303?c.height:id==304?c.scale:c.fadeSeconds;
+                float min=id==300?0:id==301?.05f:id==302?40:id==303?20:id==304?.5f:1;
+                float max=id==300||id==301?1:id==302?640:id==303?360:id==304?2:120;
+                j.a(new BlossomSliderScreen(this,button.j,value,min,max,id==302||id==303||id==305,v->{switch(id){case 300:c.background=v;break;case 301:c.textOpacity=v;break;case 302:c.width=Math.round(v);break;case 303:c.height=Math.round(v);break;case 304:c.scale=v;break;case 305:c.fadeSeconds=Math.round(v);}}));return;
+            }
+            switch(id){
+                case 306:c.timestamps=!c.timestamps;break;
+                case 307:j.a(new BlossomTextInput(this,"Timestamp format (e.g. HH:mm:ss)",c.timestampFormat,t->{try{java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern(t));}catch(RuntimeException e){throw new IllegalArgumentException("Use a valid time format, e.g. HH:mm:ss");}c.timestampFormat=t;}));return;
+                case 308:c.timestampColor="0123456789abcdef".substring(("0123456789abcdef".indexOf(c.timestampColor)+1)%16,("0123456789abcdef".indexOf(c.timestampColor)+1)%16+1);break;
+                case 309:c.unicode=!c.unicode;break;
+                case 310:c.mentions=!c.mentions;break;
+                case 311:c.sounds=!c.sounds;break;
+                case 312:c.duplicates=!c.duplicates;break;
+                case 313:j.a(new BlossomTextInput(this,"Hide messages containing (comma separated)",c.filter,t->c.filter=t));return;
+                case 314:c.persistent=!c.persistent;if(!c.persistent)BlossomChat.forgetSaved();break;
+                case 315:j.a(new BlossomChatHistory(this));return;
+                case 316:j.a(new BlossomTextInput(this,"Shortcut text — inserted, never sent automatically",c.shortcut,t->c.shortcut=t));return;
+                case 317:BlossomChat.clear();break;
+            }
+            rebuildPending=true;return;
+        }
         switch(button.k){
             case 130:j.a(new BlossomSliderScreen(this,"Damage camera tilt",s.hitTilt,0,2,false,v->s.hitTilt=v));return;
             case 110:case 126:
@@ -109,6 +146,7 @@ public final class BlossomModuleSettings extends axu {
             case 22:s.crosshairThickness=s.crosshairThickness%6+1;break;
             case 23:s.crosshairDot=!s.crosshairDot;break;
             case 24:j.a(new BlossomTextInput(this,"Crosshair color: AARRGGBB",String.format("%08x",s.crosshairColor),text->{if(!text.matches("[0-9a-fA-F]{8}"))throw new IllegalArgumentException("Use 8 hex digits");s.crosshairColor=(int)Long.parseLong(text,16);}));return;
+            case 36:s.coordinateDecimals=(s.coordinateDecimals+1)%7;break;
             case 30:s.privacy=!s.privacy;break;
             case 31:s.fpsAverage=!s.fpsAverage;break;
             case 32:s.fpsLows=!s.fpsLows;break;

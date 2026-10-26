@@ -11,5 +11,5 @@ public final class LatencyState {
     }
     public void clear(){connection=null;latency=-1;local=false;}
     public int value(){return latency;}
-    public String text(){return connection==null?"Ping disconnected":local?"0 ms (local)":latency<0?"Ping awaiting server":latency+" ms (server)";}
+    public String text(){return connection==null?"Ping disconnected":local?"0 ms (local)":latency<0?"0 ms (server)":latency+" ms (server)";}
 }

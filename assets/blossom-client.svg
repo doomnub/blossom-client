@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <title>Blossom Minecraft client</title>
+  <desc>Five overlapping pink petals around a soft white centre.</desc>
+  <defs>
+    <linearGradient id="petal" x1="190" y1="35" x2="305" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D57ACB"/>
+      <stop offset=".5" stop-color="#BB58B8"/>
+      <stop offset="1" stop-color="#983AA8"/>
+    </linearGradient>
+    <radialGradient id="centre" cx=".32" cy=".28" r=".8">
+      <stop stop-color="#FFF4F5"/>
+      <stop offset=".62" stop-color="#EACCE6"/>
+      <stop offset="1" stop-color="#DCAAD5"/>
+    </radialGradient>
+    <path id="petal-shape" d="M256 278C216 268 151 165 163 91C170 39 203 18 236 32C294 56 327 139 306 202C296 234 277 261 256 278Z"/>
+  </defs>
+  <g fill="url(#petal)">
+    <use href="#petal-shape" transform="rotate(-10 256 256)"/>
+    <use href="#petal-shape" transform="rotate(62 256 256)"/>
+    <use href="#petal-shape" transform="rotate(134 256 256)"/>
+    <use href="#petal-shape" transform="rotate(206 256 256)"/>
+    <use href="#petal-shape" transform="rotate(278 256 256)"/>
+  </g>
+  <circle cx="256" cy="256" r="51" fill="url(#centre)"/>
+  <g stroke="#211828" stroke-width="9" stroke-linejoin="round">
+    <path d="M352 333 420 295 488 333 420 373Z" fill="#aedb9b"/>
+    <path d="M352 333 420 373 420 457 352 416Z" fill="#93664e"/>
+    <path d="M420 373 488 333 488 416 420 457Z" fill="#684939"/>
+    <path d="M352 333 420 373 420 393 352 353Z" fill="#70a96f" stroke="none"/>
+    <path d="M420 373 488 333 488 353 420 393Z" fill="#548950" stroke="none"/>
+  </g>
+</svg>

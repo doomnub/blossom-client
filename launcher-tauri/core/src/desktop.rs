@@ -9,6 +9,10 @@ pub fn install() -> Result<()> {
     let icons=data.join("icons/hicolor/scalable/apps");
     std::fs::create_dir_all(&applications)?;std::fs::create_dir_all(&icons)?;
     std::fs::write(icons.join("dev.blossom.launcher.svg"),include_bytes!("../../../assets/blossom.svg"))?;
+    // Some desktops lack an SVG loader; provide a raster icon under the same app ID.
+    let raster=data.join("icons/hicolor/128x128/apps");
+    std::fs::create_dir_all(&raster)?;
+    std::fs::write(raster.join("dev.blossom.launcher.png"),include_bytes!("../../src-tauri/icons/128x128.png"))?;
     let exe=std::env::current_exe()?;
     let desktop=format!("[Desktop Entry]\nType=Application\nName=Blossom\nComment=Your Minecraft. In full bloom.\nExec={}\nIcon=dev.blossom.launcher\nTerminal=false\nCategories=Game;\nStartupWMClass=dev.blossom.launcher\n",quote_exec(&exe.to_string_lossy())?);
     let mut file=tempfile::NamedTempFile::new_in(&applications)?;file.write_all(desktop.as_bytes())?;

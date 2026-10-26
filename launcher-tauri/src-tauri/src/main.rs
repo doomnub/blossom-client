@@ -123,6 +123,9 @@ fn work(app: &tauri::AppHandle, action: &str) -> core::Result<()> {
         if kind == "running" {
             app2.state::<State>().running.store(true, Ordering::SeqCst);
         }
+        if kind == "stopped" {
+            app2.state::<State>().running.store(false, Ordering::SeqCst);
+        }
         emit(&app2, kind, text);
     })?;
     task.verify_existing = c.verify_game || action == "repair" || action == "java";
@@ -246,6 +249,7 @@ async fn wardrobe(app: tauri::AppHandle, action: String, id: Option<String>, var
 }
 
 fn main() {
+    if let Err(e)=core::desktop::install(){eprintln!("Desktop icon setup: {e}");}
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             if let Some(w) = app.get_webview_window("main") {
@@ -255,7 +259,18 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            if let Err(e)=core::desktop::install(){eprintln!("Desktop icon setup: {e}");}
+            if let Some(window)=app.get_webview_window("main") {
+                if let Some(icon)=app.default_window_icon() {
+                    if let Err(e)=window.set_icon(icon.clone()) { eprintln!("Window icon setup: {e}"); }
+                }
+                #[cfg(target_os = "linux")]
+                {
+                    use gtk::prelude::GtkWindowExt;
+                    if let Ok(gtk_window)=window.gtk_window() {
+                        gtk_window.set_icon_name(Some("dev.blossom.launcher"));
+                    }
+                }
+            }
             let root = app.path().home_dir()?.join(".blossom");
             std::fs::create_dir_all(&root)?;
             app.manage(State {
@@ -266,23 +281,6 @@ fn main() {
                 session: Mutex::new(None),
             });
             Ok(())
-        })
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                let state = window.state::<State>();
-                if state.busy.load(Ordering::SeqCst) {
-                    api.prevent_close();
-                    emit(
-                        window.app_handle(),
-                        "status",
-                        if state.running.load(Ordering::SeqCst) {
-                            "Close Minecraft before closing Blossom"
-                        } else {
-                            "Cancel the active task before closing Blossom"
-                        },
-                    );
-                }
-            }
         })
         .invoke_handler(tauri::generate_handler![
             wardrobe,

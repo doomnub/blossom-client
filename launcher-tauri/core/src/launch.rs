@@ -81,11 +81,11 @@ pub fn run(t: &Task, args: &[String], game: &Path, session: Session) -> Result<i
             drain(stream, &task, &secret);
         })
     };
-    let a = reader(Box::new(stdout), t.clone(), session.token.clone());
-    let b = reader(Box::new(stderr), t.clone(), session.token);
+    let _stdout_reader = reader(Box::new(stdout), t.clone(), session.token.clone());
+    let _stderr_reader = reader(Box::new(stderr), t.clone(), session.token);
     let result = child.wait()?;
-    let _ = a.join();
-    let _ = b.join();
+    // A descendant may inherit a log pipe. Process exit, not pipe EOF, owns game state.
+    (t.notify)("stopped", "Minecraft has closed");
     let code = result.code().unwrap_or(-1);
     t.status(&format!("Minecraft exited with code {code}"));
     Ok(code)

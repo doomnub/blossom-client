@@ -160,8 +160,14 @@ public final class Launcher extends JPanel {
             List<String> command=LaunchPlan.command(java,agent,dir,installed,signed,memory,w,h);setStatus(signed.offline?"Launching offline as "+signed.username+"...":"Launching Minecraft...");
             synchronized(this){if(Thread.currentThread().isInterrupted())throw new InterruptedException();
             game=LaunchPlan.start(command,dir,signed);}setStatus("Minecraft is running");SwingUtilities.invokeLater(()->{cancel.setEnabled(false);progress.setIndeterminate(false);progress.setValue(100);});
-            try(BufferedReader reader=new BufferedReader(new InputStreamReader(game.getInputStream(),StandardCharsets.UTF_8))){String line;while((line=reader.readLine())!=null)appendLog(LaunchPlan.redact(line,signed));}
-            int code=game.waitFor();game=null;setStatus("Minecraft exited with code "+code);
+            final Process launched=game;final MicrosoftLogin.Session logSession=signed;
+            Thread logs=new Thread(()->{
+                try(BufferedReader reader=new BufferedReader(new InputStreamReader(launched.getInputStream(),StandardCharsets.UTF_8))){
+                    String line;while((line=reader.readLine())!=null)appendLog(LaunchPlan.redact(line,logSession));
+                }catch(IOException ignored){}
+            },"Blossom game logs");
+            logs.setDaemon(true);logs.start();
+            int code=launched.waitFor();game=null;setStatus("Minecraft exited with code "+code);
         });
     }
     private Path agent()throws IOException {
@@ -198,8 +204,8 @@ public final class Launcher extends JPanel {
         Files.createDirectories(root);FileChannel channel=FileChannel.open(root.resolve("launcher.lock"),StandardOpenOption.CREATE,StandardOpenOption.WRITE);FileLock lock=channel.tryLock();
         if(lock==null){channel.close();JOptionPane.showMessageDialog(null,"Blossom Launcher is already open.");return;}
         SwingUtilities.invokeLater(()->{try{
-            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Legacy Launcher • 0.2.7.1");try{frame.setIconImage(javax.imageio.ImageIO.read(Launcher.class.getResourceAsStream("/blossom.png")));}catch(Exception ignored){}frame.setContentPane(panel);frame.setMinimumSize(new Dimension(960,720));frame.setSize(1000,740);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            frame.addWindowListener(new WindowAdapter(){public void windowClosing(WindowEvent event){synchronized(panel){if(panel.game!=null&&panel.game.isAlive()){JOptionPane.showMessageDialog(frame,"Close Minecraft before closing the launcher.");return;}if(panel.task!=null)panel.task.cancel(true);panel.worker.shutdownNow();try{lock.release();channel.close();}catch(IOException ignored){}frame.dispose();System.exit(0);}}});frame.setVisible(true);
+            Launcher panel=new Launcher(root);JFrame frame=new JFrame("Blossom Legacy Launcher • 0.2.8");try{frame.setIconImage(javax.imageio.ImageIO.read(Launcher.class.getResourceAsStream("/blossom.png")));}catch(Exception ignored){}frame.setContentPane(panel);frame.setMinimumSize(new Dimension(960,720));frame.setSize(1000,740);frame.setLocationRelativeTo(null);frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter(){public void windowClosing(WindowEvent event){synchronized(panel){if(panel.task!=null)panel.task.cancel(true);panel.worker.shutdownNow();try{lock.release();channel.close();}catch(IOException ignored){}frame.dispose();System.exit(0);}}});frame.setVisible(true);
         }catch(Exception e){JOptionPane.showMessageDialog(null,e.getMessage(),"Blossom",JOptionPane.ERROR_MESSAGE);System.exit(1);}});
     }
     private static void layoutAll(Container parent){parent.doLayout();for(Component c:parent.getComponents())if(c instanceof Container)layoutAll((Container)c);}

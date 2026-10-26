@@ -47,7 +47,7 @@ def main():
         name=file.relative_to(classes).as_posix()
         if name.startswith('dev/blossom/') and ('Test' in name or 'RelocateIntegration' in name): continue
         entries[name]=file.read_bytes()
-    entries['blossom.png']=(ROOT/'assets/blossom.png').read_bytes()
+    entries['blossom.png']=(ROOT/'assets/blossom-client.png').read_bytes()
     entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\r\nPremain-Class: dev.blossom.agent.BlossomAgent\r\nMain-Class: dev.blossom.agent.InstallHelp\r\n\r\n'
     for name in ['LICENSE','LICENSES.md']: entries[name]=(ROOT/name).read_bytes()
     with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as jar:

@@ -1,36 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="utf-8"/>
+    <meta content="width=device-width,initial-scale=1" name="viewport"/>
     <title>Blossom</title>
-    <link rel="icon" type="image/svg+xml" href="/blossom.svg" />
+    <link href="/blossom.svg" rel="icon" type="image/svg+xml"/>
   </head>
   <body>
     <div class="shell">
+      <!-- Sidebar navigation -->
       <aside>
-        <a class="brand" href="#" aria-label="Blossom home"
-          ><img class="flower" src="/blossom.svg" alt="" /> blossom<span
-            class="brand-dot"
-            >.</span
-          ></a
-        >
+        <a aria-label="Blossom home" class="brand" href="#">
+          <img alt="" class="flower" src="/blossom.svg"/>
+          blossom
+          <span class="brand-dot">.</span>
+        </a>
         <div class="eyebrow sidebar-label">YOUR SPACE</div>
         <nav aria-label="Main navigation">
-          <button class="nav active" data-tab="play"><span>◈</span> Play</button
-          ><button class="nav" data-tab="settings">
-            <span>⚙</span> Settings</button
-          ><button class="nav" data-tab="wardrobe">
-            <span>♧</span> Skins &amp; capes</button
-          ><button class="nav" data-tab="logs">
-            <span>≡</span> Logs <i id="error-dot" hidden></i>
+          <button class="nav active" data-tab="play">
+            <span>◈</span>
+            Play
+          </button>
+          <button class="nav" data-tab="settings">
+            <span>⚙</span>
+            Settings
+          </button>
+          <button class="nav" data-tab="wardrobe">
+            <span>♧</span>
+            Skins &amp; capes
+          </button>
+          <button class="nav" data-tab="logs">
+            <span>≡</span>
+            Logs
+            <i hidden="" id="error-dot"></i>
           </button>
         </nav>
         <div class="sidebar-bottom">
           <span class="edition">JAVA EDITION</span>
           <p>Minecraft 1.8.9</p>
-          <small>Blossom 0.2.7.1</small
-          ><img class="sidebar-flower" src="/blossom.svg" alt="" />
+          <small>Blossom 0.2.8</small>
+          <img alt="" class="sidebar-flower" src="/blossom.svg"/>
         </div>
       </aside>
       <main>
@@ -40,59 +49,53 @@
             <h1 id="section-title">Welcome home.</h1>
           </div>
           <div class="account-chip">
-            <span class="avatar"
-              ><img id="account-flower" src="/blossom.svg" alt="" /><canvas
-                id="account-head"
-                width="32"
-                height="32"
-                aria-label="Current Minecraft skin head"
-                hidden
-              ></canvas></span
-            ><span id="account-label">Not signed in</span>
+            <span class="avatar">
+              <img alt="" id="account-flower" src="/blossom.svg"/>
+              <canvas aria-label="Current Minecraft skin head" height="32" hidden="" id="account-head" width="32"></canvas>
+            </span>
+            <span id="account-label">Not signed in</span>
           </div>
         </header>
-        <section id="play" class="page">
+        <!-- Play page -->
+        <section class="page" id="play">
           <div class="hero">
             <div class="hero-copy">
               <span class="pill">MINECRAFT · 1.8.9</span>
-              <h2>Your game.<br /><span>In full bloom.</span></h2>
+              <h2>
+                Your game.
+                <br/>
+                <span>In full bloom.</span>
+              </h2>
               <p>
-                Make every session yours.<br />Your HUD, your capes, your way to
-                play.
+                Make every session yours.
+                <br/>
+                Your HUD, your capes, your way to play.
               </p>
               <div class="hero-actions">
-                <button id="play-online" class="primary" data-action="online">
-                  Launch Minecraft <span>↗</span></button
-                ><button class="quiet" data-action="repair">
-                  Install / repair
+                <button class="primary" data-action="online" id="play-online">
+                  Launch Minecraft
+                  <span>↗</span>
                 </button>
+                <button class="quiet" data-action="repair">Install / repair</button>
               </div>
             </div>
-            <img class="bloom" src="/blossom.svg" alt="" />
+            <img alt="" class="bloom" src="/blossom.svg"/>
             <div class="hero-foot">
-              <span><i class="dot"></i> Forge-free client</span
-              ><span id="runtime-label">Managed Java 8</span>
+              <span>
+                <i class="dot"></i>
+                Forge-free client
+              </span>
+              <span id="runtime-label">Managed Java 8</span>
             </div>
           </div>
           <div class="cards">
             <article class="card">
               <span class="eyebrow">MICROSOFT ACCOUNT</span>
               <h3 id="account-title">Pick up where you left off.</h3>
-              <p id="account-description">
-                Sign in to play on authenticated servers. Your account stays
-                remembered on this device.
-              </p>
+              <p id="account-description">Sign in to play on authenticated servers. Your account stays remembered on this device.</p>
               <div class="row">
-                <button data-action="signin" class="secondary">
-                  Sign in with Microsoft</button
-                ><button
-                  data-action="signout"
-                  class="quiet"
-                  id="signout"
-                  hidden
-                >
-                  Sign out
-                </button>
+                <button class="secondary" data-action="signin">Sign in with Microsoft</button>
+                <button class="quiet" data-action="signout" hidden="" id="signout">Sign out</button>
               </div>
             </article>
             <article class="card offline">
@@ -101,19 +104,17 @@
               <p>Singleplayer and offline servers, with a local name.</p>
               <label for="offline-name">Offline username</label>
               <div class="row">
-                <input
-                  id="offline-name"
-                  maxlength="16"
-                  autocomplete="off"
-                  value="Player"
-                /><button data-action="offline" class="secondary">
-                  Play offline <span>→</span>
+                <input autocomplete="off" id="offline-name" maxlength="16" value="Player"/>
+                <button class="secondary" data-action="offline">
+                  Play offline
+                  <span>→</span>
                 </button>
               </div>
             </article>
           </div>
         </section>
-        <section id="settings" class="page" hidden>
+        <!-- Launcher settings -->
+        <section class="page" hidden="" id="settings">
           <form id="settings-form">
             <div class="card">
               <div class="section-heading">
@@ -123,125 +124,81 @@
                 </div>
                 <span class="pill subtle">Applies next launch</span>
               </div>
-              <label class="toggle-line"
-                ><span
-                  ><strong>Manage Java automatically</strong
-                  ><small
-                    >Install and verify the correct 64-bit Java 8.</small
-                  ></span
-                ><input type="checkbox" id="java-auto" role="switch" /></label
-              ><label class="toggle-line"
-                ><span
-                  ><strong>Verify game files before launch</strong
-                  ><small
-                    >Check existing files for corruption. Install / repair
-                    always verifies.</small
-                  ></span
-                ><input type="checkbox" id="verify-game" role="switch"
-              /></label>
-              <label class="toggle-line"
-                ><span
-                  ><strong>Verify Java before launch</strong
-                  ><small
-                    >Check that the installed runtime is 64-bit Java 8.</small
-                  ></span
-                ><input type="checkbox" id="verify-java" role="switch"
-              /></label>
+              <label class="toggle-line">
+                <span>
+                  <strong>Manage Java automatically</strong>
+                  <small>Install and verify the correct 64-bit Java 8.</small>
+                </span>
+                <input id="java-auto" role="switch" type="checkbox"/>
+              </label>
+              <label class="toggle-line">
+                <span>
+                  <strong>Verify game files before launch</strong>
+                  <small>Check existing files for corruption. Install / repair always verifies.</small>
+                </span>
+                <input id="verify-game" role="switch" type="checkbox"/>
+              </label>
+              <label class="toggle-line">
+                <span>
+                  <strong>Verify Java before launch</strong>
+                  <small>Check that the installed runtime is 64-bit Java 8.</small>
+                </span>
+                <input id="verify-java" role="switch" type="checkbox"/>
+              </label>
               <label for="java-path">Java executable</label>
               <div class="row">
-                <input
-                  id="java-path"
-                  placeholder="Selected automatically"
-                /><button
-                  type="button"
-                  class="secondary"
-                  data-browse="java-path"
-                >
-                  Browse</button
-                ><button type="button" class="quiet" data-action="java">
-                  Install / check
-                </button>
+                <input id="java-path" placeholder="Selected automatically"/>
+                <button class="secondary" data-browse="java-path" type="button">Browse</button>
+                <button class="quiet" data-action="java" type="button">Install / check</button>
               </div>
               <div class="form-grid">
                 <div>
-                  <label for="memory"
-                    >Memory allocation
-                    <output id="memory-value"></output></label
-                  ><input
-                    id="memory"
-                    type="range"
-                    min="1024"
-                    max="16384"
-                    step="512"
-                  /><small>Leave memory available for your system.</small>
+                  <label for="memory">
+                    Memory allocation
+                    <output id="memory-value"></output>
+                  </label>
+                  <input id="memory" max="16384" min="1024" step="512" type="range"/>
+                  <small>Leave memory available for your system.</small>
                 </div>
                 <div class="resolution">
                   <label for="width">Window resolution</label>
                   <div class="row">
-                    <input
-                      id="width"
-                      type="number"
-                      min="640"
-                      max="7680"
-                      aria-label="Window width"
-                    /><span>×</span
-                    ><input
-                      id="height"
-                      type="number"
-                      min="360"
-                      max="4320"
-                      aria-label="Window height"
-                    />
+                    <input aria-label="Window width" id="width" max="7680" min="640" type="number"/>
+                    <span>×</span>
+                    <input aria-label="Window height" id="height" max="4320" min="360" type="number"/>
                   </div>
                 </div>
               </div>
             </div>
             <div class="card">
-              <span class="eyebrow">FILES & ACCOUNT</span>
+              <span class="eyebrow">FILES &amp; ACCOUNT</span>
               <h3>Everything in its place.</h3>
               <label for="game-path">Minecraft directory</label>
               <div class="row">
-                <input id="game-path" /><button
-                  type="button"
-                  class="secondary"
-                  data-browse="game-path"
-                >
-                  Browse
-                </button>
+                <input id="game-path"/>
+                <button class="secondary" data-browse="game-path" type="button">Browse</button>
               </div>
-              <label for="client-id">Microsoft application ID</label
-              ><input
-                id="client-id"
-                placeholder="Your registered public-client application ID"
-                spellcheck="false"
-              /><small
-                >Used for Microsoft device-code sign-in. Offline play does not
-                need an application ID.</small
-              >
+              <label for="client-id">Microsoft application ID</label>
+              <input id="client-id" placeholder="Your registered public-client application ID" spellcheck="false"/>
+              <small>Used for Microsoft device-code sign-in. Offline play does not need an application ID.</small>
             </div>
             <div class="form-footer">
               <p>Your existing Blossom settings and worlds are preserved.</p>
-              <button type="submit" class="primary">Save settings</button>
+              <button class="primary" type="submit">Save settings</button>
             </div>
           </form>
         </section>
-        <section id="wardrobe" class="page" hidden>
+        <!-- Saved skins and account-owned capes -->
+        <section class="page" hidden="" id="wardrobe">
           <div class="wardrobe-layout">
             <article class="card preview-card">
               <span class="eyebrow">YOUR LOOK</span>
               <h3 id="preview-name">Choose a skin</h3>
               <p id="preview-model">Import a PNG to start your collection</p>
-              <canvas
-                id="skin-preview"
-                width="280"
-                height="340"
-                aria-label="Rotatable Minecraft skin and cape preview"
-              ></canvas>
-              <small id="preview-help"
-                >Drag to rotate. Previewing does not change your account.</small
-              >
-              <button class="primary" id="use-skin" disabled>Use skin</button>
-              <button class="secondary" id="use-cape" disabled>Use cape</button>
+              <canvas aria-label="Rotatable Minecraft skin and cape preview" height="340" id="skin-preview" width="280"></canvas>
+              <small id="preview-help">Drag to rotate. Previewing does not change your account.</small>
+              <button class="primary" disabled="" id="use-skin">Use skin</button>
+              <button class="secondary" disabled="" id="use-cape">Use cape</button>
             </article>
             <div class="wardrobe-collections">
               <article class="card">
@@ -252,46 +209,31 @@
                   </div>
                   <button class="quiet" id="refresh-wardrobe">Refresh</button>
                 </div>
-                <p id="wardrobe-account">
-                  Sign in to apply skins or owned capes.
-                </p>
+                <p id="wardrobe-account">Sign in to apply skins or owned capes.</p>
                 <div class="row import-row">
-                  <label for="skin-model">New skin arms</label
-                  ><select id="skin-model">
+                  <label for="skin-model">New skin arms</label>
+                  <select id="skin-model">
                     <option value="classic">Classic</option>
-                    <option value="slim">Slim</option></select
-                  ><button class="secondary" id="add-skin">
-                    + Add skin PNG
-                  </button>
+                    <option value="slim">Slim</option>
+                  </select>
+                  <button class="secondary" id="add-skin">+ Add skin PNG</button>
                 </div>
-                <div
-                  class="texture-grid"
-                  id="skin-list"
-                  aria-label="Saved skins"
-                ></div>
-                <p id="skin-empty">
-                  Add a skin PNG. Every skin you add stays in this collection.
-                </p>
+                <div aria-label="Saved skins" class="texture-grid" id="skin-list"></div>
+                <p id="skin-empty">Add a skin PNG. Every skin you add stays in this collection.</p>
               </article>
               <article class="card">
                 <span class="eyebrow">YOURS TO WEAR</span>
                 <h3>Account capes.</h3>
                 <p>Only capes owned by your Minecraft account appear here.</p>
-                <div
-                  class="texture-grid cape-grid"
-                  id="cape-list"
-                  aria-label="Owned capes"
-                ></div>
+                <div aria-label="Owned capes" class="texture-grid cape-grid" id="cape-list"></div>
                 <p id="cape-empty">Sign in to see your capes.</p>
-                <small
-                  >A custom cape selected in Blossom's in-game modules can
-                  override the account cape locally.</small
-                >
+                <small>A custom cape selected in Blossom's in-game modules can override the account cape locally.</small>
               </article>
             </div>
           </div>
         </section>
-        <section id="logs" class="page" hidden>
+        <!-- Session logs -->
+        <section class="page" hidden="" id="logs">
           <div class="card logs-card">
             <div class="section-heading">
               <div>
@@ -299,41 +241,38 @@
                 <h3>The session log.</h3>
               </div>
               <div class="row">
-                <button class="quiet" id="clear-log">Clear</button
-                ><button class="secondary" id="open-folder">
-                  Open Blossom folder
-                </button>
+                <button class="quiet" id="clear-log">Clear</button>
+                <button class="secondary" id="open-folder">Open Blossom folder</button>
               </div>
             </div>
-            <pre id="log" role="log" aria-live="off">Ready when you are.</pre>
-            <small
-              >Session-only output. Login credentials are never included in
-              launcher messages.</small
-            >
+            <pre aria-live="off" id="log" role="log">Ready when you are.</pre>
+            <small>Session-only output. Login credentials are never included in launcher messages.</small>
           </div>
         </section>
         <footer>
           <div class="status-row">
-            <span class="status-light" id="status-light"></span
-            ><span id="status" role="status">Ready when you are.</span
-            ><button class="quiet" id="cancel" hidden>Cancel task</button>
+            <span class="status-light" id="status-light"></span>
+            <span id="status" role="status">Ready when you are.</span>
+            <button class="quiet" hidden="" id="cancel">Cancel task</button>
           </div>
-          <div class="progress" id="progress" hidden><span></span></div>
+          <div class="progress" hidden="" id="progress">
+            <span></span>
+          </div>
         </footer>
       </main>
     </div>
+    <!-- Microsoft device sign-in -->
     <dialog id="device">
-      <img class="dialog-flower" src="/blossom.svg" alt="" /><span
-        class="eyebrow"
-        >MICROSOFT SIGN-IN</span
-      >
+      <img alt="" class="dialog-flower" src="/blossom.svg"/>
+      <span class="eyebrow">MICROSOFT SIGN-IN</span>
       <h2>One quick hello.</h2>
       <p>Enter this code on Microsoft's sign-in page.</p>
       <strong id="device-code"></strong>
       <p id="device-url"></p>
-      <button id="open-login" class="primary">Open Microsoft sign-in ↗</button
-      ><button id="cancel-login" class="quiet">Cancel sign-in</button>
+      <button class="primary" id="open-login">Open Microsoft sign-in ↗</button>
+      <button class="quiet" id="cancel-login">Cancel sign-in</button>
     </dialog>
-    <script type="module" src="/src/main.ts"></script>
+    <script src="/src/main.ts" type="module">
+    </script>
   </body>
 </html>

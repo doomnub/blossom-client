@@ -24,7 +24,7 @@ public final class BlossomHooks {
     private static final java.util.concurrent.ExecutorService saves=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom profile writer");t.setDaemon(true);return t;});
     static {
         modules.add("fps","Frame statistics","HUD","Current or average FPS, with optional slow-frame statistics",true,.03f);
-        modules.add("cps","Clicks per second","HUD","Actual left/right mouse input events",true,.09f);
+        modules.add("cps","Clicks per second","HUD","Attack/use binding presses, including keyboard and mouse",true,.09f);
         modules.add("keys","Keystrokes","HUD","Movement bindings and mouse state",true,.15f);
         modules.add("ping","Server ping","HUD","Server-provided player-list latency",true,.21f);
         modules.add("coords","Coordinates","HUD","Local player position",false,.27f);
@@ -44,6 +44,8 @@ public final class BlossomHooks {
         modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
         modules.add("lefthand","Left Hand","Visual","Render your local main hand and held item on the left",false,0);
+        modules.add("itemgaps","Item Model Fix","Visual","Seal gaps in generated item sides; reloads models when toggled",false,0);
+        modules.add("chat","Chat","Controls","Chat appearance, local history, filtering and shortcuts",false,0);
         modules.add("legacy","1.7 Visuals","Visual","Independent classic item animations; rendering only",false,0);
         modules.add("hittilt","Hit Tilt","Visual","Adjust damage camera tilt; zero disables the tilt",false,0);
         modules.add("hitcolor","Hit Color","Visual","Custom damage tint, duration and fade",false,0);
@@ -115,7 +117,7 @@ public final class BlossomHooks {
             capes.setActive(modules.on("cape")||mc.m instanceof BlossomCapeMenu);
             if(modules.on("cape")||mc.m instanceof BlossomCapeMenu)capes.uploadReady();
             if(!modules.on("capephysics")||mc.h==null)BlossomCloth.clear();
-            BlossomVisuals.idle();BlossomLegacy.tick();
+            BlossomVisuals.idle();BlossomLegacy.tick();BlossomItemModels.tick();BlossomChat.tick();
             ticks.post(System.nanoTime());
         } catch(Exception|LinkageError e){failed=true;restoreSettings();System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
     }
@@ -139,11 +141,19 @@ public final class BlossomHooks {
     public static void mouseEvent(boolean available) {
         if(!available||!Mouse.getEventButtonState()) return;
         if(initialized&&!failed)BlossomControls.press(Mouse.getEventButton()-100);
-        if(modules.on("cps")&&Mouse.getEventButton()==0) left.click(System.nanoTime());
-        if(modules.on("cps")&&Mouse.getEventButton()==1) right.click(System.nanoTime());
+        countInput(Mouse.getEventButton()-100);
     }
     public static void keyboardEvent(boolean available) {
-        if(initialized&&!failed&&available&&Keyboard.getEventKeyState()&&!Keyboard.isRepeatEvent())BlossomControls.press(Keyboard.getEventKey());
+        if(initialized&&!failed&&available&&Keyboard.getEventKeyState()&&!Keyboard.isRepeatEvent()){
+            int code=Keyboard.getEventKey()==0?Keyboard.getEventCharacter()+256:Keyboard.getEventKey();
+            BlossomControls.press(code);countInput(code);
+        }
+    }
+    private static void countInput(int code){
+        if(!initialized||failed||!modules.on("cps")||ave.A().m!=null)return;
+        long now=System.nanoTime();
+        if(code==ave.A().t.ai.i())left.click(now);
+        if(code==ave.A().t.ag.i())right.click(now);
     }
     public static float hitTilt(float vanilla){return !initialized||failed||!modules.on("hittilt")?vanilla:vanilla*settings.hitTilt;}
     public static float cameraFov(float vanilla,boolean world){return !initialized||failed?vanilla:BlossomCamera.fov(vanilla,world);}
@@ -172,17 +182,18 @@ public final class BlossomHooks {
         if(capes.hidden())return null;
         jy selected=capes.current();return selected==null?original:selected;
     }
+    private static String key(avb binding){String label=BlossomBindings.label(binding);return BlossomBindings.held(binding)?" ["+label+"]":" "+label;}
     public static String text(Modules.Module m) {
         ave mc=ave.A();long now=System.nanoTime();
         switch(m.id) {
             case "fps":return FpsDisplay.format(ave.ai(),fpsStats,settings.fpsAverage,settings.fpsLows);
             case "cps":return left.count(now,1000000000L)+" | "+right.count(now,1000000000L)+" CPS";
-            case "keys":return (mc.t.Y.d()?"[W]":" W ")+(mc.t.ab.d()?"[A]":" A ")+(mc.t.Z.d()?"[S]":" S ")+(mc.t.aa.d()?"[D]":" D ")+(mc.t.ac.d()?" [SPACE]":" SPACE")+(Mouse.isButtonDown(0)?" [L]":" L")+(Mouse.isButtonDown(1)?" [R]":" R");
+            case "keys":return key(mc.t.Y)+key(mc.t.ab)+key(mc.t.Z)+key(mc.t.aa)+key(mc.t.ac)+" Attack:"+key(mc.t.ai)+" Use:"+key(mc.t.ag);
             case "movement":return BlossomControls.status();
             case "armor":return "Armor: empty";
             case "potions":return "No potion effects";
             case "resources":return "Iron 0 | Gold 0 | Diamond 0 | Emerald 0";
-            case "coords":return mc.h==null?"XYZ —":String.format(Locale.ROOT,"XYZ %.1f / %.1f / %.1f",mc.h.s,mc.h.t,mc.h.u);
+            case "coords":return mc.h==null?"XYZ —":String.format(Locale.ROOT,"XYZ %."+settings.coordinateDecimals+"f / %."+settings.coordinateDecimals+"f / %."+settings.coordinateDecimals+"f",mc.h.s,mc.h.t,mc.h.u);
             case "direction":return mc.h==null?"Direction —":"Heading "+Math.round(((mc.h.y%360)+360)%360)+"°";
             case "memory":Runtime r=Runtime.getRuntime();return "Heap "+((r.totalMemory()-r.freeMemory())/1048576)+" / "+r.maxMemory()/1048576+" MiB";
             case "clock":return java.time.LocalTime.now().withNano(0).toString();
