@@ -35,6 +35,8 @@ jobs:
       - run: python scripts/build.py
       - run: cargo test --locked --manifest-path launcher-tauri/core/Cargo.toml
       - run: cargo run --locked --manifest-path launcher-tauri/core/Cargo.toml --example verify_install -- build/native-smoke
+      - name: Execute game startup paths on managed Java 8
+        run: python scripts/test_game_startup.py --manifest build/native-smoke/startup.json
       - run: npm ci
         working-directory: launcher-tauri
       - run: npm run build

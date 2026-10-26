@@ -60,8 +60,16 @@ public final class GameInstall {
             });
             for(int i=1;i<=objects.size();i++){completion.take().get();if(i%25==0||i==objects.size())progress.accept("Checking assets: "+i+" / "+objects.size());}
         }finally{pool.shutdownNow();}
-        JsonObject logging=meta.getAsJsonObject("logging").getAsJsonObject("client").getAsJsonObject("file");Path logConfig=Net.safeResolve(cache,"logging/"+logging.get("id").getAsString());artifact(logging,logConfig);
+        Path logConfig=writeLogging(cache);
         return new Installed(cp,assets,natives,logConfig,index);
+    }
+    public static Path writeLogging(Path cache)throws IOException {
+        Path target=cache.resolve("logging/blossom-log4j2.xml");Files.createDirectories(target.getParent());
+        try(InputStream in=GameInstall.class.getResourceAsStream("/log4j2-blossom.xml")){
+            if(in==null)throw new IOException("Missing Blossom logging configuration");
+            Files.copy(in,target,StandardCopyOption.REPLACE_EXISTING);
+        }
+        return target;
     }
     private static void copyAsset(Path source,Path target)throws IOException{Files.createDirectories(target.getParent());Files.copy(source,target,StandardCopyOption.REPLACE_EXISTING);}
     private static JsonObject read(Path path)throws IOException{try(Reader r=Files.newBufferedReader(path)){return JsonParser.parseReader(r).getAsJsonObject();}}

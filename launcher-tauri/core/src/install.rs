@@ -134,9 +134,7 @@ pub fn install(t: &Task, root: &Path, game: &Path) -> Result<Installed> {
             t.status(&format!("Checking assets: {} / {}", i + 1, objects.len()));
         }
     }
-    let log = &meta["logging"]["client"]["file"];
-    let logging = safe(&cache, &format!("logging/{}", string(log, "id")?))?;
-    artifact(t, log, &logging)?;
+    let logging = write_logging(&cache)?;
     Ok(Installed {
         classpath: cp,
         assets,
@@ -144,6 +142,13 @@ pub fn install(t: &Task, root: &Path, game: &Path) -> Result<Installed> {
         logging,
         index,
     })
+}
+/// Use the same dependency-free layout shipped in the legacy launcher.
+pub fn write_logging(cache: &Path) -> Result<PathBuf> {
+    let path=cache.join("logging/blossom-log4j2.xml");
+    std::fs::create_dir_all(path.parent().unwrap())?;
+    std::fs::write(&path,include_bytes!("../../../launcher/src/main/resources/log4j2-blossom.xml"))?;
+    Ok(path)
 }
 pub fn extract(t: &Task, archive: &Path, root: &Path, natives: bool) -> Result<()> {
     let mut zip = zip::ZipArchive::new(std::fs::File::open(archive)?)?;

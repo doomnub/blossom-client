@@ -13,3 +13,5 @@ subprocess.run([str(java),'-jar',str(jar),'--install-java',str(install)],env=env
 cp=os.pathsep.join([str(root/'build/launcher-classes'),str(root/'.deps/gson.jar')])
 subprocess.run([str(java),'-ea','-cp',cp,'dev.blossom.launcher.LauncherTest'],check=True)
 print('Managed Java 8 host installation and offline reuse passed.')
+
+subprocess.run([sys.executable,str(root/"scripts/test_game_startup.py"),"--java",str(java)],check=True)

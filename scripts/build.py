@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pinned Java 8 bytecode build; JRE 17+ and Python 3.9+ suffice (no Gradle required)."""
+"""Pinned Java 8 API/bytecode build; JDK 17+ and Python 3.9+ suffice (no Gradle required)."""
 import concurrent.futures, hashlib, json, os, pathlib, subprocess, sys, urllib.request, zipfile
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEPS = ROOT / '.deps'
@@ -33,7 +33,7 @@ def main():
     jars=[DEPS/'client.jar',DEPS/'asm.jar',DEPS/'asm-commons.jar']+sorted((DEPS/'libraries').rglob('*.jar'))
     cp=os.pathsep.join(map(str,jars))
     sources=sorted((ROOT/'src/main/java').rglob('*.java'))+sorted((ROOT/'src/test/java').rglob('*.java'))
-    subprocess.run(['java','-jar',str(DEPS/'ecj.jar'),'-8','-encoding','UTF-8','-warn:none','-cp',cp,'-d',str(classes)]+list(map(str,sources)),check=True)
+    subprocess.run(['java','-jar',str(DEPS/'ecj.jar'),'--release','8','-encoding','UTF-8','-warn:none','-cp',cp,'-d',str(classes)]+list(map(str,sources)),check=True)
     subprocess.run(['java','-cp',str(classes)+os.pathsep+cp,'dev.blossom.RelocateIntegration',str(classes)],check=True)
     subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+cp,'dev.blossom.CoreTest'],check=True)
     subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+cp,'dev.blossom.TransformTest',str(DEPS/'client.jar')],check=True)
@@ -62,7 +62,7 @@ def build_launcher(agent,version):
     fetch('https://repo.maven.apache.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar',DEPS/'gson.jar','57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b')
     classes=ROOT/'build/launcher-classes';shutil.rmtree(classes,ignore_errors=True);classes.mkdir(parents=True)
     sources=sorted((ROOT/'launcher/src').rglob('*.java'))
-    subprocess.run(['java','-jar',str(DEPS/'ecj.jar'),'-8','-encoding','UTF-8','-warn:none','-cp',str(DEPS/'gson.jar'),'-d',str(classes)]+list(map(str,sources)),check=True)
+    subprocess.run(['java','-jar',str(DEPS/'ecj.jar'),'--release','8','-encoding','UTF-8','-warn:none','-cp',str(DEPS/'gson.jar'),'-d',str(classes)]+list(map(str,sources)),check=True)
     shutil.copyfile(ROOT/'launcher/src/main/resources/runtimes.json',classes/'runtimes.json')
     if (classes/'dev/blossom/launcher/LauncherTest.class').exists():
         subprocess.run(['java','-ea','-cp',str(classes)+os.pathsep+str(DEPS/'gson.jar'),'dev.blossom.launcher.LauncherTest'],check=True)
@@ -73,6 +73,7 @@ def build_launcher(agent,version):
     for file in classes.rglob('*.class'):
         if 'Test' not in file.name:entries[file.relative_to(classes).as_posix()]=file.read_bytes()
     entries['runtimes.json']=(classes/'runtimes.json').read_bytes()
+    entries['log4j2-blossom.xml']=(ROOT/'launcher/src/main/resources/log4j2-blossom.xml').read_bytes()
     entries['licenses/Apache-2.0.txt']=(ROOT/'licenses/Apache-2.0.txt').read_bytes()
     entries['client/blossom-agent.jar']=agent.read_bytes()
     entries['build.properties']=('version='+version+'\nagent.sha256='+hashlib.sha256(agent.read_bytes()).hexdigest()+'\n').encode()

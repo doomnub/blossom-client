@@ -37,7 +37,7 @@ The native ZIP does not launch Swing in the background.
 
 ## Build from source
 
-Install a JRE 17+, Python 3, Node.js 22, stable Rust, and Tauri 2 platform development
+Install a JDK 17+, Python 3, Node.js 22, stable Rust, and Tauri 2 platform development
 prerequisites. Then from the repository root:
 
 ```

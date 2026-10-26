@@ -6,6 +6,9 @@ fn main() -> blossom_launcher_core::Result<()> {
     let java = install::java(&task, &root)?;
     install::verify_java(&java)?;
     let installed = install::install(&task, &root, &root.join("game"))?;
+    std::fs::write(root.join("startup.json"),serde_json::to_vec_pretty(&serde_json::json!({
+        "java":java,"classpath":installed.classpath,"logging":installed.logging
+    }))?)?;
     println!(
         "Verified {} classpath entries; Java {}",
         installed.classpath.len(),
