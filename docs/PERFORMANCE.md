@@ -10,6 +10,9 @@ renderer or a promise of a particular percentage gain.
 - **Model batching:** submit all box faces in a ModelRenderer display list as one
   vertex batch instead of a draw per face. Per-vertex UVs and normals remain intact.
   Changing the setting invalidates compiled model lists and frees the old lists.
+- **Cape geometry:** stream the front/back surface and thickness edges through
+  two reusable vertex-buffer batches, avoiding per-vertex OpenGL calls. Shares
+  the model-batching switch; simulation, UVs, thickness and lightmap stay intact.
 - **Chunk scheduling:** keep one nearby section rebuild immediate per frame and
   queue the others through vanilla's workers. A configurable 0.5–8 ms budget
   (default 2 ms) covers that immediate work and the following upload loop. A

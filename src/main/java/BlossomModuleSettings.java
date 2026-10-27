@@ -52,7 +52,7 @@ public final class BlossomModuleSettings extends axu {
             add(0,"Enabled: "+module.enabled);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
-                add(400,"Batch entity model faces: "+p.modelBatching);
+                add(400,"Batch models and capes: "+p.modelBatching);
                 add(401,"Budget chunk work: "+p.chunkScheduling);
                 add(402,"Chunk budget (ms): "+p.chunkBudgetMs);
                 add(403,"Skip forced world-change GC: "+p.worldGc);

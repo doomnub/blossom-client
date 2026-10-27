@@ -5,6 +5,22 @@ import org.lwjgl.opengl.GL11;
 public final class BlossomCloth {
     private static final Map<bet,State> states=new WeakHashMap<bet,State>();
     private static jy white;
+    // Render-thread-only scratch state; Minecraft owns and reuses the vertex buffer.
+    private static bfd vertices;
+    private static float normalX,normalY,normalZ;
+    private static void begin(int mode){
+        if(BlossomPerformance.batchModels()){
+            vertices=bfx.a().c();vertices.a(mode,bms.c);
+        }else{vertices=null;GL11.glBegin(mode);}
+    }
+    private static void end(){
+        if(vertices==null)GL11.glEnd();
+        else try{bfx.a().b();}finally{vertices=null;}
+    }
+    private static void normal(double x,double y,double z){
+        normalX=(float)x;normalY=(float)y;normalZ=(float)z;
+        if(vertices==null)GL11.glNormal3d(x,y,z);
+    }
     private static final class State {Cloth mesh;java.lang.ref.WeakReference<Object> world;long last;double x,y,z,yaw,anchorY,anchorZ;State(int n){mesh=new Cloth(n);}}
     public static void clear(){if(!states.isEmpty())states.clear();}
     public static boolean render(bet player,bln renderer,float partial){
@@ -81,23 +97,30 @@ public final class BlossomCloth {
     private static void capsule(Cloth c,double x,double y,double z,double ex,double ey,double ez,double r){int o=c.capsuleCount++*7;c.capsules[o]=x;c.capsules[o+1]=y;c.capsules[o+2]=z;c.capsules[o+3]=ex;c.capsules[o+4]=ey;c.capsules[o+5]=ez;c.capsules[o+6]=r;}
     private static void draw(Cloth c){
         c.prepareRender();
-        GL11.glBegin(GL11.GL_TRIANGLES);
-        try{for(int t=0;t<c.triangles.length;t+=3){face(c,c.triangles[t],c.triangles[t+1],c.triangles[t+2],true);face(c,c.triangles[t+2],c.triangles[t+1],c.triangles[t],false);}}finally{GL11.glEnd();}
-        GL11.glBegin(GL11.GL_QUADS);
+        begin(GL11.GL_TRIANGLES);
+        try{for(int t=0;t<c.triangles.length;t+=3){face(c,c.triangles[t],c.triangles[t+1],c.triangles[t+2],true);face(c,c.triangles[t+2],c.triangles[t+1],c.triangles[t],false);}}finally{end();}
+        begin(GL11.GL_QUADS);
         try{for(int y=0;y<c.rows;y++){edge(c,y*(c.cols+1),(y+1)*(c.cols+1),0,1,y/(double)c.rows,(y+1)/(double)c.rows);edge(c,y*(c.cols+1)+c.cols,(y+1)*(c.cols+1)+c.cols,11,12,y/(double)c.rows,(y+1)/(double)c.rows);}
             for(int x=0;x<c.cols;x++){edge(c,x,x+1,1+x*10.0/c.cols,1+(x+1)*10.0/c.cols,0,0);edge(c,c.rows*(c.cols+1)+x,c.rows*(c.cols+1)+x+1,11+x*10.0/c.cols,11+(x+1)*10.0/c.cols,0,0);}
-        }finally{GL11.glEnd();}
+        }finally{end();}
     }
     private static void face(Cloth c,int a,int b,int d,boolean front){
         vertex(c,a,front);vertex(c,b,front);vertex(c,d,front);
     }
-    private static void vertex(Cloth c,int v,boolean front){int i=v*3;double sign=front?1:-1;GL11.glNormal3d(sign*c.renderNormal[i],sign*c.renderNormal[i+1],sign*c.renderNormal[i+2]);double u=(v%(c.cols+1))/(double)c.cols,w=(v/(c.cols+1))/(double)c.rows;point(c,v,front?1+u*10:22-u*10,1+w*16,front?Cloth.RENDER_HALF_THICKNESS:-Cloth.RENDER_HALF_THICKNESS);}
+    private static void vertex(Cloth c,int v,boolean front){int i=v*3;double sign=front?1:-1;normal(sign*c.renderNormal[i],sign*c.renderNormal[i+1],sign*c.renderNormal[i+2]);double u=(v%(c.cols+1))/(double)c.cols,w=(v/(c.cols+1))/(double)c.rows;point(c,v,front?1+u*10:22-u*10,1+w*16,front?Cloth.RENDER_HALF_THICKNESS:-Cloth.RENDER_HALF_THICKNESS);}
     private static void edge(Cloth c,int a,int b,double u0,double u1,double v0,double v1){
         int ai=a*3,bi=b*3;double tx=c.renderPosition[bi]-c.renderPosition[ai],ty=c.renderPosition[bi+1]-c.renderPosition[ai+1],tz=c.renderPosition[bi+2]-c.renderPosition[ai+2];
         double nx=ty*c.renderNormal[ai+2]-tz*c.renderNormal[ai+1],ny=tz*c.renderNormal[ai]-tx*c.renderNormal[ai+2],nz=tx*c.renderNormal[ai+1]-ty*c.renderNormal[ai],len=Math.sqrt(nx*nx+ny*ny+nz*nz);
-        if(len>1e-10)GL11.glNormal3d(nx/len,ny/len,nz/len);
+        if(len>1e-10)normal(nx/len,ny/len,nz/len);
         if(v0==0&&v1==0){point(c,a,u0,0,Cloth.RENDER_HALF_THICKNESS);point(c,b,u1,0,Cloth.RENDER_HALF_THICKNESS);point(c,b,u1,1,-Cloth.RENDER_HALF_THICKNESS);point(c,a,u0,1,-Cloth.RENDER_HALF_THICKNESS);}
         else{point(c,a,u0,1+v0*16,Cloth.RENDER_HALF_THICKNESS);point(c,b,u0,1+v1*16,Cloth.RENDER_HALF_THICKNESS);point(c,b,u1,1+v1*16,-Cloth.RENDER_HALF_THICKNESS);point(c,a,u1,1+v0*16,-Cloth.RENDER_HALF_THICKNESS);}
     }
-    private static void point(Cloth c,int v,double u,double w,double offset){int i=v*3;GL11.glTexCoord2d(u/64.,w/32.);GL11.glVertex3d(c.renderPosition[i]+c.renderNormal[i]*offset,c.renderPosition[i+1]+c.renderNormal[i+1]*offset,c.renderPosition[i+2]+c.renderNormal[i+2]*offset);}
+    private static void point(Cloth c,int v,double u,double w,double offset){
+        int i=v*3;
+        double x=c.renderPosition[i]+c.renderNormal[i]*offset;
+        double y=c.renderPosition[i+1]+c.renderNormal[i+1]*offset;
+        double z=c.renderPosition[i+2]+c.renderNormal[i+2]*offset;
+        if(vertices!=null)vertices.b(x,y,z).a(u/64.,w/32.).c(normalX,normalY,normalZ).d();
+        else{GL11.glTexCoord2d(u/64.,w/32.);GL11.glVertex3d(x,y,z);}
+    }
 }
