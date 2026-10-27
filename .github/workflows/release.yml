@@ -1,43 +1,46 @@
-name: Publish alpha release
-on:
-  create:
-  workflow_dispatch:
+name: Publish existing 0.2.9 packages
+on: create
 permissions:
   contents: write
-concurrency:
-  group: blossom-release
-  cancel-in-progress: false
+  actions: read
 jobs:
-  native:
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
-    uses: ./.github/workflows/native-launcher.yml
-  release:
-    needs: native
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+  publish:
+    if: github.event.ref_type == 'branch' && github.event.ref == 'publish-0.2.9'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: '17'
+          ref: e912acf76e86f65ed32b94a24a7ca824cfb8cc49
+      - name: Wait for source builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: doomnub/blossom-client
+        run: |
+          for run in 40485049263 40485049316; do
+            test "$(gh api repos/doomnub/blossom-client/actions/runs/$run --jq .head_sha)" = "e912acf76e86f65ed32b94a24a7ca824cfb8cc49"
+            gh run watch "$run" --exit-status --interval 30
+          done
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python scripts/build.py
-      - run: python scripts/test_runtime.py
-      - run: python scripts/package_release.py
       - uses: actions/download-artifact@v4
         with:
+          run-id: 40485049316
+          github-token: ${{ github.token }}
           pattern: blossom-native-*
           path: build/native-artifacts
-      - name: Assemble native and legacy packages
-        run: python scripts/assemble_release.py
-      - name: Publish prerelease with tested artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40485049263
+          github-token: ${{ github.token }}
+          name: blossom-client-ubuntu-latest
+          path: build/libs
+      - name: Assemble existing packages
+        run: |
+          python scripts/package_release.py
+          python scripts/assemble_release.py
+      - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
         run: |
-          version="v$(cat VERSION)"
-          test -f "docs/releases/$version.md"
-          gh release create "$version" build/release/* --target "$GITHUB_SHA" --prerelease --title "Blossom $version" --notes-file "docs/releases/$version.md"
+          gh release create v0.2.9 build/release/* --target e912acf76e86f65ed32b94a24a7ca824cfb8cc49 --prerelease --title "Blossom v0.2.9" --notes-file docs/releases/v0.2.9.md

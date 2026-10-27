@@ -1,5 +1,5 @@
 name: Native launcher
-on: [push, pull_request, workflow_dispatch, workflow_call]
+on: workflow_dispatch
 permissions:
   contents: read
 jobs:
