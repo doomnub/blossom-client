@@ -27,13 +27,14 @@ public final class BlossomMouse {
     }
     private static final class Windows implements Source {
         private final Controller[] mice;
+        private final double[] delta=new double[2];
         Windows()throws Exception{
             Class<?> type=Class.forName("net.java.games.input.RawInputEnvironmentPlugin");java.lang.reflect.Constructor<?> ctor=type.getDeclaredConstructor();ctor.setAccessible(true);
             ControllerEnvironment env=(ControllerEnvironment)ctor.newInstance();java.util.List<Controller> found=new java.util.ArrayList<Controller>();
             for(Controller c:env.getControllers())if(c.getType()==Controller.Type.MOUSE)found.add(c);
             if(found.isEmpty())throw new IllegalStateException("No raw mouse device");mice=found.toArray(new Controller[0]);
         }
-        public double[] poll(){double x=0,y=0;boolean ok=false;for(Controller mouse:mice){if(!mouse.poll())continue;ok=true;for(Component c:mouse.getComponents()){if(!c.isRelative())continue;if(c.getIdentifier()==Component.Identifier.Axis.X)x+=c.getPollData();if(c.getIdentifier()==Component.Identifier.Axis.Y)y+=c.getPollData();}}if(!ok)throw new IllegalStateException("Mouse disconnected");return new double[]{x,y};}
+        public double[] poll(){double x=0,y=0;boolean ok=false;for(Controller mouse:mice){if(!mouse.poll())continue;ok=true;for(Component c:mouse.getComponents()){if(!c.isRelative())continue;if(c.getIdentifier()==Component.Identifier.Axis.X)x+=c.getPollData();if(c.getIdentifier()==Component.Identifier.Axis.Y)y+=c.getPollData();}}if(!ok)throw new IllegalStateException("Mouse disconnected");delta[0]=x;delta[1]=y;return delta;}
         public void close(){} // JInput owns its process-wide event thread and shutdown hook.
     }
     public interface X11 extends Library {
@@ -44,6 +45,7 @@ public final class BlossomMouse {
     /** LP64 Xlib ABI, matching the launcher's supported Linux x86_64 target. */
     private static final class Linux implements Source {
         final X11 x=(X11)Native.loadLibrary("X11",X11.class);final Xi xi=(Xi)Native.loadLibrary("Xi",Xi.class);
+        final double[] delta=new double[2];
         Pointer display;final Memory event=new Memory(192);final int opcode;
         Linux(){
             if(Native.POINTER_SIZE!=8||Native.LONG_SIZE!=8)throw new IllegalStateException("Requires Linux x86_64");
@@ -60,7 +62,7 @@ public final class BlossomMouse {
                 if(x.XGetEventData(display,event)==0)continue;
                 try{Pointer data=event.getPointer(48);int length=data.getInt(64);Pointer mask=data.getPointer(72),values=data.getPointer(88);if(length<1||length>1024||mask==null||values==null)continue;int index=0;for(int axis=0;axis<2;axis++)if((mask.getByte(axis/8)&(1<<(axis%8)))!=0){double value=values.getDouble(8L*index++);if(Double.isFinite(value)){if(axis==0)dx+=value;else dy+=value;}}}
                 finally{x.XFreeEventData(display,event);}
-            }return new double[]{dx,dy};
+            }delta[0]=dx;delta[1]=dy;return delta;
         }
         public void close(){if(display!=null){x.XCloseDisplay(display);display=null;}}
     }

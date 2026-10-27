@@ -50,6 +50,16 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("cape"))add(40,"Choose cape / library");
         }else{
             add(0,"Enabled: "+module.enabled);
+            if(module.id.equals("performance")){
+                PerformanceSettings p=BlossomHooks.settings.performance;
+                add(400,"Batch entity model faces: "+p.modelBatching);
+                add(401,"Budget chunk work: "+p.chunkScheduling);
+                add(402,"Chunk budget (ms): "+p.chunkBudgetMs);
+                add(403,"Skip forced world-change GC: "+p.worldGc);
+                add(404,"Poll input before ticks: "+p.earlyInput);
+                add(406,"Chunk workers (restart): "+(p.chunkWorkers==0?"Auto":p.chunkWorkers)+"; active "+BlossomPerformance.activeWorkers());
+                add(405,BlossomBenchmark.active()?"Finish frame capture":"Capture 60 seconds of frame times");
+            }
             if(module.id.equals("chat")){
                 ChatSettings c=BlossomHooks.settings.chat;
                 add(310,"Highlight mentions: "+c.mentions);add(311,"Mention sound: "+c.sounds);add(312,"Stack repeated messages: "+c.duplicates);
@@ -92,6 +102,19 @@ public final class BlossomModuleSettings extends axu {
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
         if(button.k>=200&&button.k<200+LegacySettings.KEYS.length){int i=button.k-200;s.legacy.enabled[i]=!s.legacy.enabled[i];rebuildPending=true;return;}
+        if(button.k>=400&&button.k<=406){
+            PerformanceSettings p=s.performance;
+            switch(button.k){
+                case 400:p.modelBatching=!p.modelBatching;break;
+                case 401:p.chunkScheduling=!p.chunkScheduling;break;
+                case 402:j.a(new BlossomSliderScreen(this,"Chunk work budget (ms)",p.chunkBudgetMs,.5f,8,false,v->p.chunkBudgetMs=v));return;
+                case 403:p.worldGc=!p.worldGc;break;
+                case 404:p.earlyInput=!p.earlyInput;break;
+                case 406:p.chunkWorkers=(p.chunkWorkers+1)%5;break;
+                case 405:if(BlossomBenchmark.active())BlossomBenchmark.finish();else BlossomBenchmark.start();break;
+            }
+            rebuildPending=true;return;
+        }
         if(button.k>=300&&button.k<=317){
             final ChatSettings c=s.chat;final int id=button.k;
             if(id<=305){

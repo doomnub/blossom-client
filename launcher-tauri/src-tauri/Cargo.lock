@@ -303,7 +303,7 @@ dependencies = [
 
 [[package]]
 name = "blossom-launcher"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "blossom-launcher-core",
  "fs2",
@@ -321,7 +321,7 @@ dependencies = [
 
 [[package]]
 name = "blossom-launcher-core"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "base64 0.22.1",
  "encoding_rs",

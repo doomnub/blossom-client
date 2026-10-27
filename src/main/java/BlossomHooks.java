@@ -13,7 +13,7 @@ public final class BlossomHooks {
     public static BlossomCapes capes;
     public static int accent=0xffff83b5;
     public static boolean background=true;
-    public static String message="";
+    public static volatile String message="";
     private static boolean initialized,failed,shift,bright;
     private static boolean profileWritable=true;
     private static float savedGamma;
@@ -23,6 +23,7 @@ public final class BlossomHooks {
     private static double[] fpsStats=new double[6];
     private static final java.util.concurrent.ExecutorService saves=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom profile writer");t.setDaemon(true);return t;});
     static {
+        modules.add("performance","Performance","Controls","Model batches, chunk budgets, loading stalls and input polling",true,0);
         modules.add("fps","Frame statistics","HUD","Current or average FPS, with optional slow-frame statistics",true,.03f);
         modules.add("cps","Clicks per second","HUD","Attack/use binding presses, including keyboard and mouse",true,.09f);
         modules.add("keys","Keystrokes","HUD","Movement bindings and mouse state",true,.15f);
@@ -167,6 +168,7 @@ public final class BlossomHooks {
     }
     public static void frame() {
         if(!initialized||failed)return;
+        BlossomPerformance.frame();
         BlossomMouse.idle();
         if(!modules.on("fps")||(!settings.fpsAverage&&!settings.fpsLows)){if(lastFrame!=0){lastFrame=0;frames.clear();}return;}
         long now=System.nanoTime();

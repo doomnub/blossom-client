@@ -8,6 +8,14 @@ public final class CoreTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
     public static void main(String[] args)throws Exception {
+        check(PerformanceSettings.workers(0,1)==1&&PerformanceSettings.workers(0,32)==4&&PerformanceSettings.workers(0,4)==2,"automatic workers bounded by buffer pool");
+        check(PerformanceSettings.workers(9,8)==4,"manual workers bounded");
+        PerformanceSettings perf=new PerformanceSettings();Properties perfProps=new Properties();perf.chunkWorkers=3;perf.chunkBudgetMs=4;perf.modelBatching=false;perf.save(perfProps);perf=new PerformanceSettings();perf.load(perfProps);
+        check(perf.chunkWorkers==3&&perf.chunkBudgetMs==4&&!perf.modelBatching,"performance choices survive restart");
+        FrameCapture frames=new FrameCapture();frames.record(0);frames.record(-1);frames.record(10000000);frames.record(1000000000);
+        check(frames.size()==2&&frames.copy()[1]==1000000000,"capture retains one-second stalls and rejects invalid intervals");
+        String captureSummary=FrameCapture.summary(frames.copy());check(captureSummary.contains("1% low FPS: 1.00")&&captureSummary.contains("Worst ms: 1000.000"),"slow-tail report includes stalls");
+        check(FrameCapture.summary(new long[]{10000000,10000000}).contains("Average FPS: 100.00"),"capture mean frame rate");
         LegacySettings legacy=new LegacySettings();check(!legacy.enabled[10],"always swing is opt-in");
         Properties legacyProps=new Properties();for(int i=0;i<legacy.enabled.length;i++)legacy.enabled[i]=(i%2==0);legacy.save(legacyProps);
         LegacySettings legacyRestored=new LegacySettings();legacyRestored.load(legacyProps);for(int i=0;i<legacy.enabled.length;i++)check(legacyRestored.enabled[i]==legacy.enabled[i],"independent legacy option roundtrip "+i);

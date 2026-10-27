@@ -8,7 +8,9 @@ public final class BlossomTransformer implements ClassFileTransformer {
     private static final String LEGACY="dev/blossom/integration/BlossomLegacy";
     private static final String HOOKS="dev/blossom/integration/BlossomHooks";
     @Override public byte[] transform(ClassLoader loader,String name,Class<?> type,ProtectionDomain domain,byte[] bytes) {
-        if(!"bgp".equals(name)&&!"avt".equals(name)&&!"bjh".equals(name)&&!"bfn".equals(name)&&!"bbj".equals(name)&&!"bky".equals(name)&&!"bec".equals(name)&&!"bjl".equals(name)&&!"bkp".equals(name)&&!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return null;
+        byte[] optimized=PerformanceTransformer.transform(name,bytes);
+        if(optimized!=null)bytes=optimized;
+        if(!"bgp".equals(name)&&!"avt".equals(name)&&!"bjh".equals(name)&&!"bfn".equals(name)&&!"bbj".equals(name)&&!"bky".equals(name)&&!"bec".equals(name)&&!"bjl".equals(name)&&!"bkp".equals(name)&&!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return optimized;
         ClassReader reader=new ClassReader(bytes);
         ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);
         final int[] hooks={0};

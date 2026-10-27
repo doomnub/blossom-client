@@ -69,10 +69,13 @@ public final class BlossomHud {
         for(Modules.Module module:BlossomHooks.modules.all())if(module.enabled&&module.category.equals("HUD")) {
             bfl.E();
             try {
-                int x=x(module,resolution.a()),y=y(module,resolution.b());
-                bfl.b(x,y,0);bfl.a(module.scale,module.scale,1);
                 String[] lines=lines(module);int w=0;
                 for(String line:lines)w=Math.max(w,mc.k.a(line));
+                if(module.id.equals("network"))w=Math.max(w,200);
+                int width=(int)Math.ceil((w+8)*module.scale);
+                int height=(int)Math.ceil((lines.length*11+5+(module.id.equals("network")?30:0))*module.scale);
+                int x=HudLayout.position(module.x,resolution.a(),width),y=HudLayout.position(module.y,resolution.b(),height);
+                bfl.b(x,y,0);bfl.a(module.scale,module.scale,1);
                 if(module.id.equals("network")){w=Math.max(w,200);BlossomNetwork.graph(lines.length*11+6,alpha(module.textColor,module.opacity));}
                 if(lines.length>0&&BlossomHooks.background)avp.a(0,0,w+8,lines.length*11+5,alpha(module.backgroundColor,module.opacity));
                 for(int i=0;i<lines.length;i++)mc.k.a(lines[i],4f,4f+i*11,alpha(module.textColor,module.opacity),module.shadow);

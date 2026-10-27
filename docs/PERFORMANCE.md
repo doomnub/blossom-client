@@ -1,20 +1,74 @@
-# Performance — no gameplay benchmark yet
+# Performance work in 0.2.9
 
-FrameStats records a bounded 10,000-frame ring. Snapshot computation sorts only
-once per second. Average FPS is inverse mean frame duration; 1%/0.1% lows are
-inverse means of the slowest ceil(N*0.01) / ceil(N*0.001) samples. The HUD labels
-fewer than 1,000 samples as warming up. Frame boundaries are now sampled at the
-start of Minecraft's main game-loop method, including menus, hidden-HUD periods,
-and intervals longer than one second. These stalls are retained in the slow tail.
-World loading and startup transitions can influence the rolling sample window;
-controlled benchmark scenarios still require separate capture/reset support.
+Implemented mechanisms are verified by bytecode checks and JVM linkage, but no
+hardware gameplay FPS, frame-time, loading-time or input-latency improvement has
+been measured yet. This is an initial performance pass, not a replacement terrain
+renderer or a promise of a particular percentage gain.
 
-No FPS improvement, 165 FPS guarantee, input latency improvement, or memory
-reduction has been measured. No optimization is marked as validated.
+## Implemented
 
-Next benchmark gate: use identical Java 8, hardware, resolution, render distance,
-VSync/cap, world, and route for vanilla and Blossom. Record ten scenarios from
-SPECIFICATION section 61. Collect full render-loop intervals including stalls,
-p50/p95/p99/p99.9, mean slow-tail FPS, allocation/GC, and RSS/heap. Warm up before
-recording, repeat runs, retain raw data, and report variance. Additive HUD overhead
-and texture upload stalls must be measured before enabling aggressive features.
+- **Model batching:** submit all box faces in a ModelRenderer display list as one
+  vertex batch instead of a draw per face. Per-vertex UVs and normals remain intact.
+  Changing the setting invalidates compiled model lists and frees the old lists.
+- **Chunk scheduling:** keep one nearby section rebuild immediate per frame and
+  queue the others through vanilla's workers. A configurable 0.5–8 ms budget
+  (default 2 ms) covers that immediate work and the following upload loop. A
+  single rebuild/upload cannot be interrupted, so this is not a hard frame limit.
+- **Chunk workers:** auto-select 1–4 threads based on CPU count, with an explicit
+  override. Keep vanilla's five-buffer pool and shutdown accounting intact.
+  Worker changes, including restoring vanilla's two workers by disabling the
+  module, require a restart. More workers can contend with the integrated server;
+  fewer workers may be better on small CPUs.
+- **World transitions:** skip the two explicit garbage collections in world
+  loading/unloading. Automatic GC and emergency out-of-memory recovery remain.
+- **Input:** poll LWJGL messages at frame start, after the previous frame's limiter
+  wait and before tick processing. Keep vanilla input events and simulation rate.
+- **HUD/allocation:** build each HUD's lines and text measurements once per draw;
+  reuse raw-mouse delta arrays instead of allocating them on each poll.
+
+These are in the Performance module with individual switches. A smaller chunk
+budget favors smoother frames; a larger budget favors visible chunk completion.
+Client chunk meshing is distinct from world generation, disk loading and server
+chunk delivery: this pass does not accelerate all those operations. VSync, GPU
+queueing and refresh rate can still dominate input latency.
+
+## Research and further work
+
+Primary sources consulted:
+
+- [Patcher](https://github.com/Sk1erLLC/Patcher): model batching, font rendering,
+  removal of forced world-swap GC and configurable entity occlusion.
+- [EntityCulling](https://github.com/tr7zw/EntityCulling): asynchronous visibility
+  decisions with exclusions. This needs careful handling of nametags, transparent
+  blocks and camera changes before integrating into Blossom; not implemented.
+- [Sodium](https://github.com/CaffeineMC/sodium) and
+  [Nothirium](https://github.com/Meldexun/Nothirium): larger terrain-renderer
+  redesigns. These are research references, not drop-in vanilla 1.8.9 dependencies.
+- [LWJGL 2 Display documentation](https://legacy.lwjgl.org/javadoc/org/lwjgl/opengl/Display.html):
+  message processing/input updates and frame presentation.
+
+Next candidates are terrain batching, font batching and conservative entity
+occlusion, guided by CPU/GPU profiling. No source code from these mods was copied.
+
+## Measuring results
+
+Open Performance settings and choose **Capture 60 seconds of frame times**.
+Recording begins after returning to the world. Raw nanosecond frame intervals and
+a summary are written to `blossom/benchmarks` inside the game directory. Use the
+same button to finish early. Sorting and file IO happen on a background thread.
+Capture storage is bounded at 120,000 intervals. Stalls and menu/world transitions
+after recording starts are retained, including intervals longer than a second.
+
+The report includes mean FPS, 1% and 0.1% lows (inverse mean durations of the
+slowest ceil(N*0.01) and ceil(N*0.001) frames), median, p99, p99.9 and worst frame
+time, plus resolution, Java, render distance, frame cap, VSync, workers and
+performance settings. Frame times do **not** measure physical input latency.
+
+Compare module OFF and ON, restarting for each worker configuration. Keep Java,
+hardware, resolution, cap/VSync, resource pack, other modules, world and route
+identical. Warm up first; repeat at least three times in alternating order. Keep
+raw captures and compare run-to-run variation, not just a best run. Separately
+measure fresh-world entry, cached-world entry and travel through new chunks;
+report time to visible chunk completion alongside frame-time lows. Use an
+external input-to-display measurement for latency. JVM allocation/GC and CPU/GPU
+profiles are still needed to identify the next bottleneck.
