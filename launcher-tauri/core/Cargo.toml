@@ -1,6 +1,6 @@
 [package]
 name = "blossom-launcher-core"
-version = "0.2.9"
+version = "0.2.9+perf.1"
 edition = "2021"
 [dependencies]
 base64 = "0.22"

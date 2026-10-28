@@ -1,4 +1,4 @@
-# Performance work in 0.2.9
+# Performance work in 0.2.9.1
 
 Implemented mechanisms are verified by bytecode checks and JVM linkage, but no
 hardware gameplay FPS, frame-time, loading-time or input-latency improvement has
@@ -53,25 +53,58 @@ Primary sources consulted:
 Next candidates are terrain batching, font batching and conservative entity
 occlusion, guided by CPU/GPU profiling. No source code from these mods was copied.
 
-## Measuring results
+## Detailed benchmark in 0.2.9.1
 
-Open Performance settings and choose **Capture 60 seconds of frame times**.
-Recording begins after returning to the world. Raw nanosecond frame intervals and
-a summary are written to `blossom/benchmarks` inside the game directory. Use the
-same button to finish early. Sorting and file IO happen on a background thread.
-Capture storage is bounded at 120,000 intervals. Stalls and menu/world transitions
-after recording starts are retained, including intervals longer than a second.
+Open Performance settings and choose **Capture detailed benchmark (60 seconds)**.
+Return to the world to start. The same button finishes early. Each capture writes
+one `.benchmark.zip` to the game directory's `blossom/benchmarks` folder, and logs
+its exact path. Send that entire file when investigating a performance problem.
+It is first written as `.partial`, then renamed after the ZIP closes successfully.
 
-The report includes mean FPS, 1% and 0.1% lows (inverse mean durations of the
-slowest ceil(N*0.01) and ceil(N*0.001) frames), median, p99, p99.9 and worst frame
-time, plus resolution, Java, render distance, frame cap, VSync, workers and
-performance settings. Frame times do **not** measure physical input latency.
+The archive contains:
 
-Compare module OFF and ON, restarting for each worker configuration. Keep Java,
-hardware, resolution, cap/VSync, resource pack, other modules, world and route
+| File | Measurements |
+| --- | --- |
+| `summary.txt` | Configuration/hardware, average FPS, 1% and 0.1% lows, median/p90/p95/p99/p99.9 frame times, worst frame, standard deviation, counts over 16.667/33.333/50/100/250 ms, sampled peak memory, GC totals, ranked self-time sections |
+| `frames.csv` | Every frame interval, render-thread CPU time, and selected inclusive phase times: ticks, game renderer, display, cap wait, upload drain, cape simulation/drawing, HUD |
+| `sections.csv` | Hierarchical vanilla profiler sections, call counts, inclusive time, self time, maximum call; plus Blossom HUD/cape/chunk work |
+| `resources.csv` | Heap used/committed/max, nonheap, direct/mapped buffers, JVM GC count/time deltas, threads, process CPU counter, pending chunk jobs/uploads, free chunk buffers |
+| `chunk-jobs.csv` | Chunk rebuild, translucent sort, upload task and upload-drain counts, total/max wall times and exceptions, separated into main and worker threads |
+
+Durations/counters use nanoseconds unless named `_ms`; all memory values are bytes.
+`-1` means unavailable. Resources are sampled about four times per second. There
+is no polling thread when idle. The bounded 120,000-frame store is allocated in
+the menu before gameplay capture; disk output, compression and sorting happen
+on a background thread after the session detaches. Section tracking uses bounded
+reusable stacks and at most 1,024 distinct paths. Diagnostic counts flag forced
+closes, unmatched ends and overflow. Worker completions after capture ends are
+excluded. Capture retains stalls and menu/world transitions after it starts.
+
+Self time subtracts nested children; inclusive timings overlap and must not be
+summed. Chunk worker times overlap the main thread and each other. Counts refer
+to completed method invocations, including early-outs/cancelled work, not unique
+fully loaded world chunks. Queue depths are snapshots, not throughput counters.
+Display timings include driver/VSync blocking; they are not GPU execution times.
+GC time is JVM-reported collector time, not total stop-the-world pause duration.
+Physical input latency, VRAM, process RSS, disk throughput and server world
+generation are not measured. Profiling itself has overhead; compare identical
+capture settings. Main-thread CPU timing is unavailable if the JVM disables it.
+
+## Additional optimizations in 0.2.9.1
+
+- Run upload callbacks outside the shared producer-queue lock, so chunk workers
+  can enqueue while the main thread submits geometry. Preserve vanilla's one-task
+  behavior for a zero deadline and its deadline check after each callback.
+- Reuse HUD text widths until text changes; refresh telemetry strings at 20 Hz.
+  Keystrokes, clicks and toggle-state text remain live each frame. Refresh width
+  caches each second to pick up resource-pack font changes. These HUD/queue
+  improvements apply independently of the Performance module switches.
+
+## Comparing runs
+
+Keep Java, hardware, resolution, cap/VSync, resource pack, modules, world and route
 identical. Warm up first; repeat at least three times in alternating order. Keep
 raw captures and compare run-to-run variation, not just a best run. Separately
-measure fresh-world entry, cached-world entry and travel through new chunks;
-report time to visible chunk completion alongside frame-time lows. Use an
-external input-to-display measurement for latency. JVM allocation/GC and CPU/GPU
-profiles are still needed to identify the next bottleneck.
+measure cached-world entry and travel through new chunks; compare visible chunk
+completion alongside frame-time lows. Use external input-to-display measurement
+for latency. No measured gameplay speedup is claimed by this change.

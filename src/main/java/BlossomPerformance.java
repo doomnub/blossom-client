@@ -54,6 +54,19 @@ public final class BlossomPerformance {
         long start=System.nanoTime();
         try{return dispatcher.b(chunk);}finally{immediateNanos+=System.nanoTime()-start;}
     }
+    public static boolean drainUploads(java.util.Queue<? extends Runnable> queue,long deadline){
+        boolean ran=false;
+        do {
+            Runnable task;
+            synchronized(queue){task=queue.poll();}
+            if(task==null)break;
+            // GPU submission must not hold the producer lock used by chunk workers.
+            long begin=BlossomBenchmark.begin("blossom.chunk.uploadTask");boolean success=false;
+            try{task.run();success=true;}finally{BlossomBenchmark.end("blossom.chunk.uploadTask",begin,success);}
+            ran=true;
+        }while(deadline!=0&&deadline-System.nanoTime()>=0);
+        return ran;
+    }
     public static long uploadDeadline(long vanilla){
         if(!enabled()||!settings().chunkScheduling||vanilla==0)return vanilla;
         long budget=(long)(settings().chunkBudgetMs*1000000L);

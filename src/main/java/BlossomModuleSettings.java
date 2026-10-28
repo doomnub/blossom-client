@@ -58,7 +58,7 @@ public final class BlossomModuleSettings extends axu {
                 add(403,"Skip forced world-change GC: "+p.worldGc);
                 add(404,"Poll input before ticks: "+p.earlyInput);
                 add(406,"Chunk workers (restart): "+(p.chunkWorkers==0?"Auto":p.chunkWorkers)+"; active "+BlossomPerformance.activeWorkers());
-                add(405,BlossomBenchmark.active()?"Finish frame capture":"Capture 60 seconds of frame times");
+                add(405,BlossomBenchmark.active()?"Finish detailed benchmark":"Capture detailed benchmark (60 seconds)");
             }
             if(module.id.equals("chat")){
                 ChatSettings c=BlossomHooks.settings.chat;

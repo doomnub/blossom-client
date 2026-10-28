@@ -4,7 +4,17 @@ import java.util.*;
 public final class BlossomHud {
     private static final Map<String,String[]> cached=new HashMap<String,String[]>();
     private static int ticks;
-    public static void invalidate(){cached.clear();ticks=3;tick();}
+    private static final Map<String,String[]> liveText=new HashMap<String,String[]>();
+    private static long textRefresh,layoutRefresh;
+    private static final Map<String,Layout> layouts=new HashMap<String,Layout>();
+    private static final class Layout {String[] lines;int width;}
+    private static int textWidth(String id,String[] lines){
+        Layout layout=layouts.get(id);
+        if(layout==null){layout=new Layout();layouts.put(id,layout);}
+        if(!Arrays.equals(lines,layout.lines)){int width=0;for(String line:lines)width=Math.max(width,ave.A().k.a(line));layout.lines=lines;layout.width=width;}
+        return layout.width;
+    }
+    public static void invalidate(){layouts.clear();liveText.clear();cached.clear();ticks=3;tick();}
     public static void tick() {
         if(!BlossomHooks.modules.on("armor")&&!BlossomHooks.modules.on("potions")&&!BlossomHooks.modules.on("resources")){if(!cached.isEmpty())cached.clear();return;}
         if(++ticks%4!=0)return;
@@ -51,8 +61,14 @@ public final class BlossomHud {
     public static String[] lines(Modules.Module module) {
         if(module.id.equals("network"))return BlossomNetwork.lines();
         if(module.id.equals("coords")&&BlossomHooks.settings.privacy)return new String[]{"Coordinates hidden"};
+        long now=System.nanoTime();
+        // Text-only telemetry refreshes at 20 Hz; input indicators remain per-frame.
+        if(now-textRefresh>=50000000L){liveText.clear();textRefresh=now;}
         String[] lines=cached.get(module.id);
+        boolean reusable=!module.id.equals("keys")&&!module.id.equals("cps")&&!module.id.equals("movement");
+        if(lines==null&&reusable)lines=liveText.get(module.id);
         if(lines==null)lines=module.id.equals("potions")&&!BlossomHooks.settings.showEmptyPotions?new String[0]:new String[]{BlossomHooks.text(module)};
+        if(reusable)liveText.put(module.id,lines);
         if(lines.length==0 && ave.A().m instanceof BlossomHudEditor)lines=new String[]{"Potion effects (preview)"};
         if(!module.extraText){lines=lines.clone();for(int i=0;i<lines.length;i++)lines[i]=HudText.compact(module.id,lines[i]);}
         return lines;
@@ -66,11 +82,11 @@ public final class BlossomHud {
     public static int y(Modules.Module module,int screen){return HudLayout.position(module.y,screen,height(module));}
     public static void draw() {
         ave mc=ave.A();avr resolution=new avr(mc);
+        long now=System.nanoTime();if(now-layoutRefresh>=1000000000L){layouts.clear();layoutRefresh=now;}
         for(Modules.Module module:BlossomHooks.modules.all())if(module.enabled&&module.category.equals("HUD")) {
             bfl.E();
             try {
-                String[] lines=lines(module);int w=0;
-                for(String line:lines)w=Math.max(w,mc.k.a(line));
+                String[] lines=lines(module);int w=textWidth(module.id,lines);
                 if(module.id.equals("network"))w=Math.max(w,200);
                 int width=(int)Math.ceil((w+8)*module.scale);
                 int height=(int)Math.ceil((lines.length*11+5+(module.id.equals("network")?30:0))*module.scale);

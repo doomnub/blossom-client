@@ -1,52 +1,70 @@
 import dev.blossom.core.*;
 import java.nio.file.*;
-import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
+import org.lwjgl.opengl.GL11;
 
-/** User-started frame capture; no per-frame disk IO and no implied latency measurement. */
+/** Opt-in capture. Never enables vanilla's allocating debug profiler or forces GPU synchronization. */
 public final class BlossomBenchmark {
-    private static FrameCapture capture;
-    private static long start,last;
+    private static volatile BenchmarkCapture capture;
+    private static volatile boolean armed;
     private static String metadata;
     private static Path folder;
     public static boolean active(){return capture!=null;}
     public static void start(){
         if(active())return;
         ave mc=ave.A();
-        capture=new FrameCapture();start=last=0;
         folder=mc.v.toPath().resolve("blossom/benchmarks");
-        metadata="Blossom 0.2.9 frame capture\nJava: "+System.getProperty("java.version")+"\nOS: "+System.getProperty("os.name")+"\nResolution: "+mc.d+"x"+mc.e+"\nRender distance: "+mc.t.c+"\nFPS limit: "+mc.t.g+"\nVSync: "+mc.t.t+"\nPerformance module: "+BlossomPerformance.enabled()+"\nActive chunk workers: "+BlossomPerformance.activeWorkers()+"\n";
-        java.util.Properties p=new java.util.Properties();BlossomHooks.settings.performance.save(p);
-        for(String key:new java.util.TreeSet<String>(p.stringPropertyNames()))metadata+=key+"="+p.getProperty(key)+"\n";
-        BlossomHooks.message="Capture starts when you return to the world; records 60 seconds";
+        metadata="Blossom 0.2.9.1 detailed benchmark\nJava: "+System.getProperty("java.version")+"\nVM: "+System.getProperty("java.vm.name")+"\nOS: "+System.getProperty("os.name")+" "+System.getProperty("os.arch")+"\nCPU logical processors: "+Runtime.getRuntime().availableProcessors()+"\nGPU: "+GL11.glGetString(GL11.GL_RENDERER)+"\nGL: "+GL11.glGetString(GL11.GL_VERSION)+"\nResolution: "+mc.d+"x"+mc.e+"\nRender distance: "+mc.t.c+"\nFPS limit: "+mc.t.g+"\nVSync: "+mc.t.t+"\nActive chunk workers: "+BlossomPerformance.activeWorkers()+"\n";
+        Properties p=new Properties();BlossomHooks.settings.performance.save(p);
+        for(Modules.Module module:BlossomHooks.modules.all())p.setProperty("module."+module.id,Boolean.toString(module.enabled));
+        p.setProperty("cloth.subdivisions",Integer.toString(BlossomHooks.settings.cloth.subdivisions));
+        for(String key:new TreeSet<String>(p.stringPropertyNames()))metadata+=key+"="+p.getProperty(key)+"\n";
+        // Allocate storage while the menu is open, before measured gameplay begins.
+        armed=false;capture=new BenchmarkCapture(System.nanoTime());
+        BlossomHooks.message="Benchmark starts on return to world; captures 60 seconds";
     }
     public static void frame(){
-        if(capture==null)return;
-        ave mc=ave.A();long now=System.nanoTime();
-        if(start==0){if(mc.h==null||mc.m!=null)return;start=last=now;return;}
-        // Retain stalls and menu transitions after capture starts; never trim slow frames.
-        capture.record(now-last);last=now;
-        if(now-start>=60000000000L||capture.full())finish();
+        BenchmarkCapture c=capture;if(c==null)return;
+        long now=System.nanoTime();
+        if(!armed){if(ave.A().h==null||ave.A().m!=null)return;c.arm(now);armed=true;return;}
+        boolean full=c.frame(now);
+        if(full||now-c.started>=60000000000L)finish();
+    }
+    public static void sectionStart(Object profiler,String name){BenchmarkCapture c=capture;if(c!=null&&armed&&Thread.currentThread()==c.owner&&profiler==ave.A().A)c.sections.begin(name,System.nanoTime());}
+    public static void sectionEnd(Object profiler){BenchmarkCapture c=capture;if(c!=null&&armed&&Thread.currentThread()==c.owner&&profiler==ave.A().A)c.sections.end(System.nanoTime());}
+    public static long begin(String name){
+        BenchmarkCapture c=capture;if(c==null||!armed)return 0;
+        long now=System.nanoTime();if(Thread.currentThread()==c.owner)c.sections.begin(name,now);return now;
+    }
+    public static void end(String name,long begin,boolean success){
+        if(begin==0)return;BenchmarkCapture c=capture;if(c==null||begin<c.started)return;
+        long now=System.nanoTime();
+        if(Thread.currentThread()==c.owner)c.sections.end(now);
+        int kind=name.equals("blossom.chunk.rebuild")?0:name.equals("blossom.chunk.sort")?1:name.equals("blossom.chunk.uploadTask")?2:name.equals("blossom.chunk.uploads")?3:-1;
+        if(kind>=0)c.job(kind,begin,now,success);
+    }
+    public static void queues(java.util.concurrent.BlockingQueue<?> jobs,Queue<?> uploads,java.util.concurrent.BlockingQueue<?> buffers){
+        BenchmarkCapture c=capture;if(c==null||!armed)return;
+        int pending; synchronized(uploads){pending=uploads.size();}c.queues(jobs.size(),pending,buffers.size());
     }
     public static void finish(){
-        if(capture==null)return;
-        final long[] frames=capture.copy();capture=null;
+        final BenchmarkCapture c=capture;if(c==null)return;
+        capture=null;armed=false;c.close(System.nanoTime());
         final String meta=metadata;final Path dir=folder;
-        BlossomHooks.message="Saving capture...";
+        BlossomHooks.message="Saving benchmark...";
         Thread writer=new Thread(()->{
+            Path partial=null;
             try{
                 Files.createDirectories(dir);
-                String name=LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS"));
-                Path csv=dir.resolve(name+".csv"),report=dir.resolve(name+".txt");
-                try(java.io.BufferedWriter out=Files.newBufferedWriter(csv,StandardCharsets.UTF_8)){
-                    out.write("frame,frame_time_ns\n");
-                    for(int i=0;i<frames.length;i++){out.write(Integer.toString(i));out.write(',');out.write(Long.toString(frames[i]));out.newLine();}
-                }
-                Files.write(report,(meta+"\n"+FrameCapture.summary(frames)+"\nInput latency is not measured by frame times.\n").getBytes(StandardCharsets.UTF_8));
+                String name=LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS"))+"-"+java.util.UUID.randomUUID().toString().substring(0,8);
+                Path report=dir.resolve(name+".benchmark.zip");partial=dir.resolve(name+".partial");
+                c.write(partial,meta);
+                Files.move(partial,report);
                 System.out.println("[Blossom] Benchmark saved: "+report);
-                BlossomHooks.message="Capture saved under blossom/benchmarks (see Logs)";
-            }catch(Exception e){BlossomHooks.message="Capture could not be saved; see Logs";System.err.println("[Blossom] Benchmark could not be saved: "+e.getMessage());}
+                BlossomHooks.message="Benchmark saved in blossom/benchmarks (see Logs)";
+            }catch(Exception e){BlossomHooks.message="Benchmark save failed; see Logs";System.err.println("[Blossom] Benchmark save failed: "+e);if(partial!=null)try{Files.deleteIfExists(partial);}catch(Exception ignored){}}
         },"Blossom benchmark writer");writer.setDaemon(true);writer.start();
     }
 }

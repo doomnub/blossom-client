@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -21,6 +21,9 @@ public final class TransformTest {
                         public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.startsWith("dev/blossom/integration/Blossom")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
+                if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");
+                if(name.equals("bht")&&!calls.containsAll(java.util.Arrays.asList("begin","end")))throw new AssertionError("Chunk timing wrappers missing");
+                if(name.equals("bho")&&!calls.containsAll(java.util.Arrays.asList("queues","drainUploads")))throw new AssertionError("Upload queue optimization/timing missing");
                 String[] required=name.equals("bct")?new String[]{"compiled","clearModel","beginModels","endModels"}:name.equals("bbs")?new String[]{"beginFace","endFace"}:name.equals("bfr")?new String[]{"near","buildNear","uploadDeadline"}:name.equals("bho")?new String[]{"workerCount"}:name.equals("ave")?new String[]{"worldGc"}:new String[0];
                 if(!calls.containsAll(java.util.Arrays.asList(required)))throw new AssertionError("Missing performance hook: "+name);
                 if(name.equals("bfn")&&!calls.containsAll(java.util.Arrays.asList("useSwing","render","swing","bowScale","equipStack")))throw new AssertionError("Legacy item hook missing");

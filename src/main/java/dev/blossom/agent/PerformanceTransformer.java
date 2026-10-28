@@ -16,6 +16,10 @@ public final class PerformanceTransformer {
             }
             @Override public MethodVisitor visitMethod(int access,String method,String desc,String sig,String[] exceptions){
                 MethodVisitor base=super.visitMethod(access,method,desc,sig,exceptions);
+                if(name.equals("bho")&&method.equals("blossom$timed$a")&&desc.equals("(J)Z")){
+                    base.visitCode();base.visitVarInsn(Opcodes.ALOAD,0);base.visitFieldInsn(Opcodes.GETFIELD,"bho","h","Ljava/util/Queue;");base.visitVarInsn(Opcodes.LLOAD,1);
+                    base.visitMethodInsn(Opcodes.INVOKESTATIC,PERF,"drainUploads","(Ljava/util/Queue;J)Z",false);base.visitInsn(Opcodes.IRETURN);base.visitMaxs(3,3);base.visitEnd();return null;
+                }
                 boolean workers=name.equals("bho")&&method.equals("<init>")&&desc.equals("()V");
                 boolean compile=name.equals("bct")&&method.equals("d")&&desc.equals("(F)V");
                 boolean face=name.equals("bbs")&&method.equals("a")&&desc.equals("(Lbfd;F)V");
