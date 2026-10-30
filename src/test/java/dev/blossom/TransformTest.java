@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"bfd","beb","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"bff","bfd","beb","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -24,6 +24,8 @@ public final class TransformTest {
                 if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");
                 if(name.equals("bht")&&!calls.containsAll(java.util.Arrays.asList("begin","end")))throw new AssertionError("Chunk timing wrappers missing");
                 if(name.equals("bho")&&!calls.containsAll(java.util.Arrays.asList("queues","drainUploads")))throw new AssertionError("Upload queue optimization/timing missing");
+                if(name.equals("bff")&&!calls.containsAll(java.util.Arrays.asList("lights","states")))throw new AssertionError("Region scratch hooks missing");
+                if(name.equals("bht")&&!calls.containsAll(java.util.Arrays.asList("enter","leave")))throw new AssertionError("Region scope hooks missing");
                 if(name.equals("bfd")&&!calls.contains("sort"))throw new AssertionError("Primitive sorting hook missing");
                 if(name.equals("beb")&&!calls.contains("particle"))throw new AssertionError("Particle culling hook missing");
                 if(name.equals("bly")&&!calls.contains("deleted"))throw new AssertionError("Texture invalidation hook missing");

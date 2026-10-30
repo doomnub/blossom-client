@@ -36,6 +36,7 @@ public final class BenchmarkTransformer {
         for(Type t:args){local+=t.getSize();locals.add(frameType(t));}
         int timer=local;locals.add(Opcodes.LONG);
         m.visitLdcInsn(w.section);m.visitMethodInsn(Opcodes.INVOKESTATIC,BENCH,"begin","(Ljava/lang/String;)J",false);m.visitVarInsn(Opcodes.LSTORE,timer);
+        if(w.section.equals("blossom.chunk.rebuild"))m.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomRegionCache","enter","()V",false);
         Label start=new Label(),end=new Label(),handler=new Label();m.visitTryCatchBlock(start,end,handler,null);m.visitLabel(start);
         if(owner.equals("bho")){
             for(String field:new String[]{"d","h","e"}){m.visitVarInsn(Opcodes.ALOAD,0);m.visitFieldInsn(Opcodes.GETFIELD,owner,field,field.equals("h")?"Ljava/util/Queue;":"Ljava/util/concurrent/BlockingQueue;");}
@@ -50,6 +51,6 @@ public final class BenchmarkTransformer {
         m.visitLabel(handler);m.visitFrame(Opcodes.F_FULL,locals.size(),locals.toArray(),1,new Object[]{"java/lang/Throwable"});
         m.visitVarInsn(Opcodes.ASTORE,output);finish(m,w.section,timer,false);m.visitVarInsn(Opcodes.ALOAD,output);m.visitInsn(Opcodes.ATHROW);m.visitMaxs(0,0);m.visitEnd();
     }
-    private static void finish(MethodVisitor m,String section,int timer,boolean success){m.visitLdcInsn(section);m.visitVarInsn(Opcodes.LLOAD,timer);m.visitInsn(success?Opcodes.ICONST_1:Opcodes.ICONST_0);m.visitMethodInsn(Opcodes.INVOKESTATIC,BENCH,"end","(Ljava/lang/String;JZ)V",false);}
+    private static void finish(MethodVisitor m,String section,int timer,boolean success){if(section.equals("blossom.chunk.rebuild"))m.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomRegionCache","leave","()V",false);m.visitLdcInsn(section);m.visitVarInsn(Opcodes.LLOAD,timer);m.visitInsn(success?Opcodes.ICONST_1:Opcodes.ICONST_0);m.visitMethodInsn(Opcodes.INVOKESTATIC,BENCH,"end","(Ljava/lang/String;JZ)V",false);}
     private static Object frameType(Type t){switch(t.getSort()){case Type.FLOAT:return Opcodes.FLOAT;case Type.LONG:return Opcodes.LONG;case Type.DOUBLE:return Opcodes.DOUBLE;case Type.ARRAY:return t.getDescriptor();case Type.OBJECT:return t.getInternalName();default:return Opcodes.INTEGER;}}
 }

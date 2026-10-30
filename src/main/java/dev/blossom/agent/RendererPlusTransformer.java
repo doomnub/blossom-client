@@ -4,7 +4,7 @@ import org.objectweb.asm.*;
 public final class RendererPlusTransformer {
     private static final String P="dev/blossom/integration/BlossomPerformance",V="dev/blossom/integration/BlossomVisibility",L="dev/blossom/integration/BlossomLightmap";
     public static byte[] transform(String name,byte[] bytes){
-        if(!"bfd".equals(name)&&!"bho".equals(name)&&!"bfr".equals(name)&&!"beb".equals(name)&&!"bfk".equals(name)&&!"bly".equals(name)&&!"ave".equals(name))return null;
+        if(!"bff".equals(name)&&!"bfd".equals(name)&&!"bho".equals(name)&&!"bfr".equals(name)&&!"beb".equals(name)&&!"bfk".equals(name)&&!"bly".equals(name)&&!"ave".equals(name))return null;
         ClassReader reader=new ClassReader(bytes);ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);
         reader.accept(new ClassVisitor(Opcodes.ASM9,writer){
             public MethodVisitor visitMethod(int access,String method,String desc,String sig,String[] exceptions){
@@ -33,6 +33,14 @@ public final class RendererPlusTransformer {
                             super.visitMethodInsn(Opcodes.INVOKESTATIC,V,"particle","(Lbeb;FFFFFFF)Z",false);
                             Label draw=new Label();super.visitJumpInsn(Opcodes.IFNE,draw);super.visitInsn(Opcodes.RETURN);super.visitLabel(draw);super.visitFrame(Opcodes.F_SAME,0,null,0,null);
                         }
+                    }
+                    public void visitIntInsn(int opcode,int operand){
+                        if(name.equals("bff")&&method.equals("<init>")&&opcode==Opcodes.NEWARRAY&&operand==Opcodes.T_INT){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomRegionCache","lights","(I)[I",false);return;}
+                        super.visitIntInsn(opcode,operand);
+                    }
+                    public void visitTypeInsn(int opcode,String type){
+                        if(name.equals("bff")&&method.equals("<init>")&&opcode==Opcodes.ANEWARRAY&&type.equals("alz")){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomRegionCache","states","(I)[Lalz;",false);return;}
+                        super.visitTypeInsn(opcode,type);
                     }
                     public void visitMethodInsn(int op,String owner,String m,String d,boolean itf){
                         if(name.equals("bho")&&method.equals("<init>")&&owner.equals("com/google/common/collect/Queues")&&m.equals("newArrayBlockingQueue")&&d.equals("(I)Ljava/util/concurrent/ArrayBlockingQueue;")){

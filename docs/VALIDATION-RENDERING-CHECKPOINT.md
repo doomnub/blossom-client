@@ -26,3 +26,8 @@ strides, empty/small meshes, tied distances, NaN and repeated scratch reuse. It
 compares every vertex attribute against stable boxed reference ordering. The
 transformed buffer builder and integration helper are also JVM-verified. No real
 scene speedup is inferred from those correctness checks.
+
+Region scratch tests cover sequential reuse, non-aliasing nested/additional caches,
+disabled/out-of-scope fallback and reference cleanup on normal/exceptional exits.
+Transform checks require both allocation hooks and rebuild scope hooks, and the
+JVM verifier links the changed region cache and wrapper.

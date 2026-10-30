@@ -140,3 +140,11 @@ with a stable primitive sort. Scratch storage belongs to each worker/render thre
 so concurrent builds do not share mutable arrays. Retention is capped at 65,536
 quads per thread; oversized meshes use temporary storage. This changes allocation
 behavior, not visibility, quad geometry or the transparency ordering policy.
+
+**Reuse chunk cache buffers** retains one light array and one block-state array per
+worker instead of allocating both for every rebuilt section. Vanilla already caches
+lookups inside each rebuild; this setting reuses only their storage. State references
+are cleared at rebuild exit, including early returns and exceptions. Nested builds
+and additional caches allocate independently; lighting sentinel initialization stays
+vanilla. Retained storage is 8,000 integers plus 8,000 references per participating
+thread, with no retained world/chunk objects.

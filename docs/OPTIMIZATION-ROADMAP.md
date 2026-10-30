@@ -8,6 +8,7 @@ on top of 0.2.9.1. No gameplay speedup has been measured for this checkpoint.
 
 | Area | Implementation and limits |
 | --- | --- |
+| Region cache storage | Reuse the vanilla 8,000-entry light and block-state arrays per rebuild worker. Existing light sentinel reset is retained; block references are cleared on normal/exceptional exit. Nested/additional caches and disabled scopes allocate independently. No cached world values cross rebuilds. |
 | Translucent sorting | Stable primitive merge sort replaces boxed indices/comparator/BitSet and per-cycle buffer slices. Thread-local scratch is reused up to 65,536 quads; larger sorts use temporary storage. Complete vertex records move together and ties retain their order. Configurable vanilla fallback. |
 | Chunk priorities | Bounded 100-entry primitive-backed priority queue scores distance and camera direction at submission. Stable ties, cancellation removal, duplicate task suppression and aging after 64 newer submissions. Queued scores are not recomputed when turning. Vanilla section task cancellation/deduplication remains authoritative. |
 | Adaptive scheduling | Smoothed main-frame work, excluding Display update and limiter wait, reduces the configured upload budget under load. Minimum 250 microseconds; one indivisible upload may exceed it. This does not preempt a mesh build/upload. Target FPS is configurable. |
