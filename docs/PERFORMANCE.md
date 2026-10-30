@@ -134,3 +134,9 @@ The JSON contains slow frames, overlapping phase timings, GPU correlations and
 ranked section self times. Higher FPS/lows and lower frame-time percentiles are
 better. A single percentage difference is not proof of an improvement; repeat the
 same warmed workload and retain both original archives.
+
+The **Reuse translucent sort buffers** setting replaces vanilla's boxed quad sorting
+with a stable primitive sort. Scratch storage belongs to each worker/render thread,
+so concurrent builds do not share mutable arrays. Retention is capped at 65,536
+quads per thread; oversized meshes use temporary storage. This changes allocation
+behavior, not visibility, quad geometry or the transparency ordering policy.

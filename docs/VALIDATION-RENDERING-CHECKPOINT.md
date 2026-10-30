@@ -20,3 +20,9 @@ JVM, not a graphical Java 8 Minecraft session. No real gameplay benchmark,
 Linux/Windows graphical acceptance or measured FPS/latency improvement is claimed.
 Native launcher code was not changed in this checkpoint. Graphical checks listed
 in OPTIMIZATION-ROADMAP.md remain required before release.
+
+The subsequent mesh-sort pass adds randomized reference comparisons across vertex
+strides, empty/small meshes, tied distances, NaN and repeated scratch reuse. It
+compares every vertex attribute against stable boxed reference ordering. The
+transformed buffer builder and integration helper are also JVM-verified. No real
+scene speedup is inferred from those correctness checks.

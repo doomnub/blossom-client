@@ -4,17 +4,27 @@ import org.objectweb.asm.*;
 public final class RendererPlusTransformer {
     private static final String P="dev/blossom/integration/BlossomPerformance",V="dev/blossom/integration/BlossomVisibility",L="dev/blossom/integration/BlossomLightmap";
     public static byte[] transform(String name,byte[] bytes){
-        if(!"bho".equals(name)&&!"bfr".equals(name)&&!"beb".equals(name)&&!"bfk".equals(name)&&!"bly".equals(name)&&!"ave".equals(name))return null;
+        if(!"bfd".equals(name)&&!"bho".equals(name)&&!"bfr".equals(name)&&!"beb".equals(name)&&!"bfk".equals(name)&&!"bly".equals(name)&&!"ave".equals(name))return null;
         ClassReader reader=new ClassReader(bytes);ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);
         reader.accept(new ClassVisitor(Opcodes.ASM9,writer){
             public MethodVisitor visitMethod(int access,String method,String desc,String sig,String[] exceptions){
                 MethodVisitor base=super.visitMethod(access,method,desc,sig,exceptions);
                 boolean setup=name.equals("bfr")&&method.equals("a")&&desc.equals("(Lpk;DLbia;IZ)V");
                 boolean particle=name.equals("beb")&&method.equals("a")&&desc.equals("(Lbfd;Lpk;FFFFFF)V");
+                boolean sort=name.equals("bfd")&&method.equals("a")&&desc.equals("(FFF)V");
                 boolean deletion=name.equals("bly")&&method.equals("c")&&desc.equals("()V");
                 return new MethodVisitor(Opcodes.ASM9,base){
                     public void visitCode(){
                         super.visitCode();
+                        if(sort){
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfd","d","Ljava/nio/FloatBuffer;");
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfd","b","Ljava/nio/IntBuffer;");
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfd","e","I");
+                            super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfd","m","Lbmu;");super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,"bmu","f","()I",false);
+                            String[] offsets={"j","k","l"};for(int i=0;i<3;i++){super.visitVarInsn(Opcodes.FLOAD,i+1);super.visitInsn(Opcodes.F2D);super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfd",offsets[i],"D");super.visitInsn(Opcodes.DADD);super.visitInsn(Opcodes.D2F);}
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomMesh","sort","(Ljava/nio/FloatBuffer;Ljava/nio/IntBuffer;IIFFF)Z",false);
+                            Label fallback=new Label();super.visitJumpInsn(Opcodes.IFEQ,fallback);super.visitInsn(Opcodes.RETURN);super.visitLabel(fallback);super.visitFrame(Opcodes.F_SAME,0,null,0,null);
+                        }
                         if(setup){super.visitVarInsn(Opcodes.ALOAD,1);super.visitVarInsn(Opcodes.DLOAD,2);super.visitVarInsn(Opcodes.ALOAD,4);super.visitMethodInsn(Opcodes.INVOKESTATIC,V,"camera","(Lpk;DLbia;)V",false);}
                         if(deletion){super.visitVarInsn(Opcodes.ALOAD,0);super.visitMethodInsn(Opcodes.INVOKESTATIC,L,"deleted","(Ljava/lang/Object;)V",false);}
                         if(particle){

@@ -62,6 +62,7 @@ public final class BlossomModuleSettings extends axu {
                 add(408,"Scheduling target FPS: "+p.targetFps);
                 add(409,"Prioritize nearby/front chunks: "+p.prioritize);
                 add(410,"Cull offscreen particle quads: "+p.particleCull);
+                add(412,"Reuse translucent sort buffers: "+p.primitiveSort);
                 add(411,"Skip unchanged lightmap uploads: "+p.lightmapCache);
                 add(405,BlossomBenchmark.active()?"Finish detailed benchmark":"Capture detailed benchmark (60 seconds)");
             }
@@ -120,6 +121,7 @@ public final class BlossomModuleSettings extends axu {
                 case 408:j.a(new BlossomSliderScreen(this,"Scheduling target FPS",p.targetFps,30,360,true,v->p.targetFps=Math.round(v)));return;
                 case 409:p.prioritize=!p.prioritize;break;
                 case 410:p.particleCull=!p.particleCull;break;
+                case 412:p.primitiveSort=!p.primitiveSort;break;
                 case 411:p.lightmapCache=!p.lightmapCache;break;
                 case 405:if(BlossomBenchmark.active())BlossomBenchmark.finish();else BlossomBenchmark.start();break;
             }
