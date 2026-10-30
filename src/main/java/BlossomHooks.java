@@ -119,7 +119,7 @@ public final class BlossomHooks {
             if(modules.on("cape")||mc.m instanceof BlossomCapeMenu)capes.uploadReady();
             if(!modules.on("capephysics")||mc.h==null)BlossomCloth.clear();
             BlossomVisuals.idle();BlossomLegacy.tick();BlossomItemModels.tick();BlossomChat.tick();
-            ticks.post(System.nanoTime());
+            if(ticks.hasListeners())ticks.post(System.nanoTime());
         } catch(Exception|LinkageError e){failed=true;restoreSettings();System.err.println("[Blossom] Disabled after integration error");e.printStackTrace();}
     }
     private static void restoreSettings() {

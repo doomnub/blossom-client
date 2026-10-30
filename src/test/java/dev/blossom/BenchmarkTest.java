@@ -17,12 +17,13 @@ public final class BenchmarkTest {
         capture.frame(now+10000000);capture.frame(now+1000000000);
         capture.job(0,now+1,now+101,true);
         Thread worker=new Thread(()->capture.job(0,now+2,now+202,false));worker.start();worker.join();
-        capture.close(now+1000000001);capture.job(0,now+1,now+9999,true);
+        capture.gpu(0,12345);capture.close(now+1000000001);capture.job(0,now+1,now+9999,true);
         Path zip=Files.createTempFile("blossom-benchmark-", ".zip");
         try{
             capture.write(zip,"test metadata");
             try(ZipFile z=new ZipFile(zip.toFile())){
-                check(z.size()==5,"One complete benchmark archive");
+                check(z.size()==6,"One complete benchmark archive");
+                check(read(z,"gpu.csv").contains("0,12345"),"GPU samples identify source frame");
                 String jobs=read(z,"chunk-jobs.csv");check(jobs.contains("main_chunk_rebuild,1,100,100,0")&&jobs.contains("worker_chunk_rebuild,1,200,200,1"),"Worker/main/exception accounting separated and closed capture frozen");
                 String frames=read(z,"frames.csv");check(frames.contains("1000000000,990000000"),"Long stalls retained");
                 check(read(z,"resources.csv").contains(",5,2,3"),"Chunk queue depths sampled");

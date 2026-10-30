@@ -58,6 +58,11 @@ public final class BlossomModuleSettings extends axu {
                 add(403,"Skip forced world-change GC: "+p.worldGc);
                 add(404,"Poll input before ticks: "+p.earlyInput);
                 add(406,"Chunk workers (restart): "+(p.chunkWorkers==0?"Auto":p.chunkWorkers)+"; active "+BlossomPerformance.activeWorkers());
+                add(407,"Adaptive chunk budget: "+p.adaptive);
+                add(408,"Scheduling target FPS: "+p.targetFps);
+                add(409,"Prioritize nearby/front chunks: "+p.prioritize);
+                add(410,"Cull offscreen particle quads: "+p.particleCull);
+                add(411,"Skip unchanged lightmap uploads: "+p.lightmapCache);
                 add(405,BlossomBenchmark.active()?"Finish detailed benchmark":"Capture detailed benchmark (60 seconds)");
             }
             if(module.id.equals("chat")){
@@ -111,6 +116,11 @@ public final class BlossomModuleSettings extends axu {
                 case 403:p.worldGc=!p.worldGc;break;
                 case 404:p.earlyInput=!p.earlyInput;break;
                 case 406:p.chunkWorkers=(p.chunkWorkers+1)%5;break;
+                case 407:p.adaptive=!p.adaptive;break;
+                case 408:j.a(new BlossomSliderScreen(this,"Scheduling target FPS",p.targetFps,30,360,true,v->p.targetFps=Math.round(v)));return;
+                case 409:p.prioritize=!p.prioritize;break;
+                case 410:p.particleCull=!p.particleCull;break;
+                case 411:p.lightmapCache=!p.lightmapCache;break;
                 case 405:if(BlossomBenchmark.active())BlossomBenchmark.finish();else BlossomBenchmark.start();break;
             }
             rebuildPending=true;return;

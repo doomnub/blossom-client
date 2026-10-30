@@ -8,7 +8,7 @@ public final class TransformTest {
     public static void main(String[] args)throws Exception {
         BlossomTransformer transformer=new BlossomTransformer();
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"beb","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -24,6 +24,11 @@ public final class TransformTest {
                 if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");
                 if(name.equals("bht")&&!calls.containsAll(java.util.Arrays.asList("begin","end")))throw new AssertionError("Chunk timing wrappers missing");
                 if(name.equals("bho")&&!calls.containsAll(java.util.Arrays.asList("queues","drainUploads")))throw new AssertionError("Upload queue optimization/timing missing");
+                if(name.equals("beb")&&!calls.contains("particle"))throw new AssertionError("Particle culling hook missing");
+                if(name.equals("bly")&&!calls.contains("deleted"))throw new AssertionError("Texture invalidation hook missing");
+                if(name.equals("bfk")&&!calls.contains("upload"))throw new AssertionError("Lightmap hook missing");
+                if(name.equals("bho")&&!calls.contains("dispatcherQueue"))throw new AssertionError("Chunk priority hook missing");
+                if(name.equals("ave")&&!calls.containsAll(java.util.Arrays.asList("displayUpdate","sync","render","capture")))throw new AssertionError("Frame/GPU/screenshot hooks missing");
                 String[] required=name.equals("bct")?new String[]{"compiled","clearModel","beginModels","endModels"}:name.equals("bbs")?new String[]{"beginFace","endFace"}:name.equals("bfr")?new String[]{"near","buildNear","uploadDeadline"}:name.equals("bho")?new String[]{"workerCount"}:name.equals("ave")?new String[]{"worldGc"}:new String[0];
                 if(!calls.containsAll(java.util.Arrays.asList(required)))throw new AssertionError("Missing performance hook: "+name);
                 if(name.equals("bfn")&&!calls.containsAll(java.util.Arrays.asList("useSwing","render","swing","bowScale","equipStack")))throw new AssertionError("Legacy item hook missing");

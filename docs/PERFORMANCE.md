@@ -108,3 +108,29 @@ raw captures and compare run-to-run variation, not just a best run. Separately
 measure cached-world entry and travel through new chunks; compare visible chunk
 completion alongside frame-time lows. Use external input-to-display measurement
 for latency. No measured gameplay speedup is claimed by this change.
+
+## Unreleased rendering checkpoint
+
+New settings provide adaptive upload budgets (target FPS), distance/direction chunk
+priority, particle frustum checks and unchanged lightmap upload suppression. Other
+additions batch rounded panels and encode screenshots in the background. See
+[implementation status and remaining work](OPTIMIZATION-ROADMAP.md) for limits.
+
+Detailed captures now include `gpu.csv` with `frame_index` and
+`game_renderer_gpu_interval_ns`; `frames.csv` also includes `frame_index`. Unsupported
+hardware produces an empty GPU data file with its status in `summary.txt`. Available
+queries are collected later without waiting. GPU timestamp intervals include idle
+and dependency time within the game renderer, and are not physical input latency.
+Pending samples at capture end are discarded and counted. All six files remain in
+one ZIP; metadata distinguishes available hardware features from active features.
+
+Analyze a capture or compare it with a matching baseline (Python 3.9+):
+
+```sh
+python scripts/analyze_benchmark.py after.benchmark.zip --baseline before.benchmark.zip --json comparison.json
+```
+
+The JSON contains slow frames, overlapping phase timings, GPU correlations and
+ranked section self times. Higher FPS/lows and lower frame-time percentiles are
+better. A single percentage difference is not proof of an improvement; repeat the
+same warmed workload and retain both original archives.

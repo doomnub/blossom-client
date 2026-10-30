@@ -8,6 +8,32 @@ public final class BlossomPerformance {
     private static int immediateBuilds;
     private static long immediateNanos;
     private static int workers=2;
+    private static final dev.blossom.core.AdaptiveBudget budget=new dev.blossom.core.AdaptiveBudget();
+    private static long lastFrame,waitNanos;
+    private static Object world;
+    private static boolean cameraReady;
+    private static double cameraX,cameraY,cameraZ,forwardX,forwardY,forwardZ;
+    public static void camera(pk entity,double partial){
+        if(!enabled()||!settings().prioritize){cameraReady=false;return;}
+        cameraX=entity.P+(entity.s-entity.P)*partial;cameraY=entity.Q+(entity.t-entity.Q)*partial;cameraZ=entity.R+(entity.u-entity.R)*partial;
+        double yaw=entity.y*Math.PI/180,pitch=entity.z*Math.PI/180;
+        forwardX=-Math.sin(yaw)*Math.cos(pitch);forwardY=-Math.sin(pitch);forwardZ=Math.cos(yaw)*Math.cos(pitch);cameraReady=true;
+    }
+    public static java.util.concurrent.BlockingQueue<?> dispatcherQueue(int capacity){return capacity==100?chunkQueue(capacity):new java.util.concurrent.ArrayBlockingQueue<Object>(capacity);}
+    public static java.util.concurrent.BlockingQueue<bhn> chunkQueue(int capacity){return new dev.blossom.core.BoundedWorkQueue<bhn>(capacity,task->{
+        if(!cameraReady||!enabled()||!settings().prioritize)return 0;
+        cj origin=task.b().j();double x=origin.n()+8-cameraX,y=origin.o()+8-cameraY,z=origin.p()+8-cameraZ;
+        double distance=Math.sqrt(x*x+y*y+z*z);double facing=distance<1?1:(x*forwardX+y*forwardY+z*forwardZ)/distance;
+        return distance*(1-.35*facing);
+    });}
+    public static void displayUpdate(){
+        if(!enabled()||!settings().adaptive){Display.update();return;}
+        long start=System.nanoTime();try{Display.update();}finally{waitNanos+=System.nanoTime()-start;}
+    }
+    public static void sync(int fps){
+        if(!enabled()||!settings().adaptive){Display.sync(fps);return;}
+        long start=System.nanoTime();try{Display.sync(fps);}finally{waitNanos+=System.nanoTime()-start;}
+    }
     public static int workerCount(){
         // Dispatcher construction precedes the first client tick/profile initialization.
         // Read only the saved startup choice; do not alter the fixed buffer pool or shutdown count.
@@ -30,7 +56,12 @@ public final class BlossomPerformance {
     private static PerformanceSettings settings(){return BlossomHooks.settings.performance;}
     public static boolean batchModels(){return enabled()&&settings().modelBatching;}
     public static void frame(){
-        immediateBuilds=0;immediateNanos=0;
+        BlossomVisibility.reset();
+        if(!enabled()){world=null;cameraReady=false;lastFrame=waitNanos=0;immediateBuilds=0;immediateNanos=0;budget.reset();BlossomLightmap.clear();BlossomBenchmark.frame();return;}
+        Object currentWorld=ave.A().f;
+        if(currentWorld!=world){world=currentWorld;lastFrame=0;budget.reset();cameraReady=false;BlossomLightmap.clear();}
+        if(enabled()&&settings().adaptive){long now=System.nanoTime();if(lastFrame!=0)budget.sample(Math.max(1,now-lastFrame-waitNanos));lastFrame=now;}else{lastFrame=0;budget.reset();}
+        waitNanos=0;immediateBuilds=0;immediateNanos=0;
         // Poll after the preceding frame's limiter wait, before vanilla consumes input.
         if(enabled()&&settings().earlyInput&&Display.isCreated())Display.processMessages();
         BlossomBenchmark.frame();
@@ -69,7 +100,7 @@ public final class BlossomPerformance {
     }
     public static long uploadDeadline(long vanilla){
         if(!enabled()||!settings().chunkScheduling||vanilla==0)return vanilla;
-        long budget=(long)(settings().chunkBudgetMs*1000000L);
+        long budget=settings().adaptive?BlossomPerformance.budget.nanos(settings().chunkBudgetMs,settings().targetFps):(long)(settings().chunkBudgetMs*1000000L);
         // Upload at least one ready task (vanilla behavior), then yield to rendering.
         return System.nanoTime()+Math.max(0,budget-immediateNanos);
     }

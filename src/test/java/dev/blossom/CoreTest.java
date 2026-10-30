@@ -16,7 +16,7 @@ public final class CoreTest {
         check(frames.size()==2&&frames.copy()[1]==1000000000,"capture retains one-second stalls and rejects invalid intervals");
         String captureSummary=FrameCapture.summary(frames.copy());check(captureSummary.contains("1% low FPS: 1.00")&&captureSummary.contains("Worst ms: 1000.000"),"slow-tail report includes stalls");
         check(FrameCapture.summary(new long[]{10000000,10000000}).contains("Average FPS: 100.00"),"capture mean frame rate");
-        BenchmarkTest.run();
+        BenchmarkTest.run();RendererPerformanceTest.run();
         LegacySettings legacy=new LegacySettings();check(!legacy.enabled[10],"always swing is opt-in");
         Properties legacyProps=new Properties();for(int i=0;i<legacy.enabled.length;i++)legacy.enabled[i]=(i%2==0);legacy.save(legacyProps);
         LegacySettings legacyRestored=new LegacySettings();legacyRestored.load(legacyProps);for(int i=0;i<legacy.enabled.length;i++)check(legacyRestored.enabled[i]==legacy.enabled[i],"independent legacy option roundtrip "+i);

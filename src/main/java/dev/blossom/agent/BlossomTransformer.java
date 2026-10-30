@@ -13,6 +13,8 @@ public final class BlossomTransformer implements ClassFileTransformer {
         byte[] optimized=PerformanceTransformer.transform(name,bytes);
         if(optimized==null)optimized=measured;
         if(optimized!=null)bytes=optimized;
+        byte[] additions=RendererPlusTransformer.transform(name,bytes);
+        if(additions!=null){bytes=additions;optimized=additions;}
         if(!"bgp".equals(name)&&!"avt".equals(name)&&!"bjh".equals(name)&&!"bfn".equals(name)&&!"bbj".equals(name)&&!"bky".equals(name)&&!"bec".equals(name)&&!"bjl".equals(name)&&!"bkp".equals(name)&&!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return optimized;
         ClassReader reader=new ClassReader(bytes);
         ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);

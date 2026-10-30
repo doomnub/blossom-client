@@ -11,6 +11,7 @@ public final class BlossomBenchmark {
     private static volatile boolean armed;
     private static String metadata;
     private static Path folder;
+    public static BenchmarkCapture current(){return armed?capture:null;}
     public static boolean active(){return capture!=null;}
     public static void start(){
         if(active())return;
@@ -22,7 +23,7 @@ public final class BlossomBenchmark {
         p.setProperty("cloth.subdivisions",Integer.toString(BlossomHooks.settings.cloth.subdivisions));
         for(String key:new TreeSet<String>(p.stringPropertyNames()))metadata+=key+"="+p.getProperty(key)+"\n";
         // Allocate storage while the menu is open, before measured gameplay begins.
-        armed=false;capture=new BenchmarkCapture(System.nanoTime());
+        armed=false;capture=new BenchmarkCapture(System.nanoTime());BlossomGpu.prepare(capture);
         BlossomHooks.message="Benchmark starts on return to world; captures 60 seconds";
     }
     public static void frame(){
@@ -51,7 +52,7 @@ public final class BlossomBenchmark {
     }
     public static void finish(){
         final BenchmarkCapture c=capture;if(c==null)return;
-        capture=null;armed=false;c.close(System.nanoTime());
+        BlossomGpu.finish(c);capture=null;armed=false;c.close(System.nanoTime());
         final String meta=metadata;final Path dir=folder;
         BlossomHooks.message="Saving benchmark...";
         Thread writer=new Thread(()->{
