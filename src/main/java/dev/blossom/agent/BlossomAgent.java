@@ -21,7 +21,18 @@ public final class BlossomAgent {
         {"avo","e883bdbfc9170fffba120e7915f62a7224116e5259dba7b91129757323509e78"},
         {"bet","f1e1848125e253d0c0b8b519321a29cb8f9fe762c8269a72dcacd849d5a5378f"}
     };
+    public static boolean safeMode(){
+        String property=System.getProperty("blossom.safeMode","");
+        String environment=System.getenv("BLOSSOM_SAFE_MODE");
+        return "1".equals(property)||"true".equalsIgnoreCase(property)||"1".equals(environment)||"true".equalsIgnoreCase(environment);
+    }
     public static void premain(String options, Instrumentation instrumentation) {
+        // Checked before class verification/transformer registration: recovery must not
+        // initialize Minecraft, rendering helpers, workers or the module configuration.
+        if(safeMode()){
+            System.out.println("[Blossom] SAFE MODE: all Blossom game patches disabled for this launch");
+            return;
+        }
         try {
             for(String[] expected:EXPECTED) {
                 MessageDigest digest=MessageDigest.getInstance("SHA-256");

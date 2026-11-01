@@ -55,7 +55,7 @@ public final class BlossomModuleSettings extends axu {
                 add(400,"Batch models and capes: "+p.modelBatching);
                 add(401,"Budget chunk work: "+p.chunkScheduling);
                 add(402,"Chunk budget (ms): "+p.chunkBudgetMs);
-                add(403,"Skip forced world-change GC: "+p.worldGc);
+
                 add(404,"Poll input before ticks: "+p.earlyInput);
                 add(406,"Chunk workers (restart): "+(p.chunkWorkers==0?"Auto":p.chunkWorkers)+"; active "+BlossomPerformance.activeWorkers());
                 add(407,"Adaptive chunk budget: "+p.adaptive);
@@ -115,7 +115,7 @@ public final class BlossomModuleSettings extends axu {
                 case 400:p.modelBatching=!p.modelBatching;break;
                 case 401:p.chunkScheduling=!p.chunkScheduling;break;
                 case 402:j.a(new BlossomSliderScreen(this,"Chunk work budget (ms)",p.chunkBudgetMs,.5f,8,false,v->p.chunkBudgetMs=v));return;
-                case 403:p.worldGc=!p.worldGc;break;
+
                 case 404:p.earlyInput=!p.earlyInput;break;
                 case 406:p.chunkWorkers=(p.chunkWorkers+1)%5;break;
                 case 407:p.adaptive=!p.adaptive;break;

@@ -19,6 +19,7 @@ pub fn arguments(
     let mut result = vec![
         java.to_string_lossy().into(),
         "-Xms512M".into(),
+        "-XX:MaxDirectMemorySize=512M".into(),
         format!("-Xmx{}M", c.memory),
         format!("-Djava.library.path={}", installed.natives.display()),
         format!("-Dlog4j.configurationFile={}", installed.logging.display()),
@@ -179,6 +180,7 @@ mod tests {
             &c,
         )
         .unwrap();
+        assert!(a.contains(&"-XX:MaxDirectMemorySize=512M".into()));
         assert!(!a.iter().any(|a| a.contains("super-secret")));
         assert!(a.contains(&"@BLOSSOM_SESSION@".into()));
         assert!(a.iter().any(|a| a.starts_with("-javaagent:")));

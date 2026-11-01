@@ -75,7 +75,7 @@ public final class BlossomPerformance {
     public static void endModels(){if(batching){try{bfx.a().b();}finally{batching=false;}}}
     public static void beginFace(bfd buffer,int mode,bmu format){if(!batching)buffer.a(mode,format);}
     public static void endFace(bfx tessellator){if(!batching)tessellator.b();}
-    public static void worldGc(){if(!enabled()||!settings().worldGc)System.gc();}
+    public static void worldGc(){System.gc();}
     public static boolean near(boolean vanilla){
         // One nearby section remains immediate for block feedback. The rest use vanilla workers.
         return vanilla&&(!enabled()||!settings().chunkScheduling||immediateBuilds++==0);

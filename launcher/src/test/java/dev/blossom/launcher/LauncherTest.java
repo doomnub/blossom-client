@@ -25,7 +25,7 @@ public final class LauncherTest {
             MicrosoftLogin.Session session=new MicrosoftLogin.Session("Player","0123456789abcdef0123456789abcdef","secret-session",System.currentTimeMillis()+3600000);
             GameInstall.Installed installed=new GameInstall.Installed(Arrays.asList(root.resolve("space path/game.jar")),root,root,root.resolve("log.xml"),"1.8");
             List<String> command=LaunchPlan.command(root.resolve("java"),root.resolve("agent with spaces.jar"),root,installed,session,4096,1280,720);
-            check(!command.toString().contains(session.token));check(command.contains("@BLOSSOM_SESSION@"));check(command.contains("-javaagent:"+root.resolve("agent with spaces.jar")));
+            check(command.contains("-XX:MaxDirectMemorySize=512M"));check(!command.toString().contains(session.token));check(command.contains("@BLOSSOM_SESSION@"));check(command.contains("-javaagent:"+root.resolve("agent with spaces.jar")));
             check(LaunchPlan.redact("token=secret-session",session).equals("token=[session redacted]"));
             rejects(()->LaunchPlan.command(root,root,root,installed,session,128,1280,720));
             MicrosoftLogin.Session expired=new MicrosoftLogin.Session("P","id","secret",0);rejects(()->LaunchPlan.command(root,root,root,installed,expired,4096,1280,720));

@@ -7,7 +7,7 @@ public final class LaunchPlan {
         if(!session.valid())throw new IllegalArgumentException("Sign in again; the session has expired.");
         if(memory<1024||memory>16384||width<640||width>7680||height<360||height>4320)throw new IllegalArgumentException("Launch settings outside supported bounds");
         List<String> cp=new ArrayList<String>();for(Path file:install.classpath)cp.add(file.toAbsolutePath().toString());cp.add(agent.toAbsolutePath().toString());
-        List<String> command=new ArrayList<String>(Arrays.asList(java.toString(),"-Xms512M","-Xmx"+memory+"M","-Djava.library.path="+install.natives.toAbsolutePath(),
+        List<String> command=new ArrayList<String>(Arrays.asList(java.toString(),"-Xms512M","-XX:MaxDirectMemorySize=512M","-Xmx"+memory+"M","-Djava.library.path="+install.natives.toAbsolutePath(),
             "-Dlog4j.configurationFile="+install.logging.toAbsolutePath(),"-javaagent:"+agent.toAbsolutePath(),"-cp",String.join(File.pathSeparator,cp),"dev.blossom.agent.GameBootstrap",
             "--username",session.username,"--version","1.8.9","--gameDir",game.toAbsolutePath().toString(),"--assetsDir",install.assets.toAbsolutePath().toString(),"--assetIndex",install.assetIndex,
             "--uuid",session.uuid,"--accessToken","@BLOSSOM_SESSION@","--userProperties","{}","--userType",session.offline?"legacy":"msa","--width",Integer.toString(width),"--height",Integer.toString(height)));

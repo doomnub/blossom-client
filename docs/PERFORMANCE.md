@@ -148,3 +148,12 @@ are cleared at rebuild exit, including early returns and exceptions. Nested buil
 and additional caches allocate independently; lighting sentinel initialization stays
 vanilla. Retained storage is 8,000 integers plus 8,000 references per participating
 thread, with no retained world/chunk objects.
+
+## 0.2.9.2 memory-pressure correction
+
+World-transition GC suppression has been removed, including for existing saved
+profiles. Automatic worker selection now stops at two. Both launchers pass
+`-XX:MaxDirectMemorySize=512M`; this bounds NIO direct allocations, not total RSS,
+GPU memory or Java heap. Earlier descriptions of skipped world GC are historical.
+The Linux OOM report confirms system memory exhaustion but lacks attribution to
+a specific allocation path; this release does not claim that root cause proven.
