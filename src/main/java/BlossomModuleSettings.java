@@ -53,6 +53,7 @@ public final class BlossomModuleSettings extends axu {
             add(0,"Enabled: "+module.enabled);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
+                add(414,"Reduce terrain traversal allocations: "+p.traversalAllocations);
                 if(RendererPolicy.OPTIMIZATIONS){
                 add(400,"Batch models and capes: "+p.modelBatching);
                 add(401,"Budget chunk work: "+p.chunkScheduling);
@@ -67,7 +68,7 @@ public final class BlossomModuleSettings extends axu {
                 add(413,"Reuse chunk cache buffers: "+p.regionBuffers);
                 add(412,"Reuse translucent sort buffers: "+p.primitiveSort);
                 add(411,"Skip unchanged lightmap uploads: "+p.lightmapCache);
-                }else{add(499,"Vanilla renderer active (Linux stability)");}
+                }else{add(499,"Vanilla chunk scheduler (Linux stability)");}
                 add(405,BlossomBenchmark.active()?"Finish detailed benchmark":"Capture detailed benchmark (60 seconds)");
             }
             if(module.id.equals("chat")){
@@ -117,6 +118,7 @@ public final class BlossomModuleSettings extends axu {
             switch(button.k){
                 case 400:p.modelBatching=!p.modelBatching;break;
                 case 401:p.chunkScheduling=!p.chunkScheduling;break;
+                case 414:p.traversalAllocations=!p.traversalAllocations;break;
                 case 402:j.a(new BlossomSliderScreen(this,"Chunk work budget (ms)",p.chunkBudgetMs,.5f,8,false,v->p.chunkBudgetMs=v));return;
 
                 case 404:p.earlyInput=!p.earlyInput;break;

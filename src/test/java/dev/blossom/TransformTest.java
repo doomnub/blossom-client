@@ -15,7 +15,7 @@ public final class TransformTest {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
                 }
                 byte[] compatible=compatibility.transform(null,name,null,null,bytes);
-                if(java.util.Arrays.asList("bff","bfd","beb","bly","bct","bbs","bfr").contains(name)&&compatible!=null)
+                if(java.util.Arrays.asList("bff","bfd","beb","bly","bct","bbs").contains(name)&&compatible!=null)
                     throw new AssertionError("Compatibility mode changed vanilla renderer: "+name);
                 if(compatible!=null)new ClassReader(compatible).accept(new ClassVisitor(Opcodes.ASM9){
                     public MethodVisitor visitMethod(int a,String m,String d,String s,String[] e){return new MethodVisitor(Opcodes.ASM9){
@@ -33,6 +33,7 @@ public final class TransformTest {
                         public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.startsWith("dev/blossom/integration/Blossom")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
+                if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("queue","directions")))throw new AssertionError("Terrain allocation hooks missing");
                 if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");
                 if(name.equals("bht")&&!calls.containsAll(java.util.Arrays.asList("begin","end")))throw new AssertionError("Chunk timing wrappers missing");
                 if(name.equals("bho")&&!calls.containsAll(java.util.Arrays.asList("queues","drainUploads")))throw new AssertionError("Upload queue optimization/timing missing");

@@ -186,3 +186,18 @@ Do not restore the group wholesale or enable it via existing profiles.
 The old blanket experimental override remains a developer diagnostic, not the
 normal optimization rollout mechanism. No renderer optimizations are re-enabled
 by the Media Player/item/icon changes.
+
+## 0.2.10 terrain traversal allocation reduction
+
+The supplied Linux baseline puts terrain visibility first in measured self time.
+An independent allocation-only patch replaces its local linked-list FIFO with
+ArrayDeque and reuses the read-only direction enum array. It does not enable the
+old renderer group or change visibility, chunk workers, scheduling or uploads.
+The Performance setting **Reduce terrain traversal allocations** controls it;
+module-off or -Dblossom.traversalAllocations=false restores vanilla allocation.
+Each traversal owns its queue; no world references are retained between calls.
+
+Detailed captures append culling and cloud timings to frames.csv and explicitly
+record whether the legacy renderer group and traversal reduction are active.
+Allocation behavior is
+verified synthetically; gameplay speedup and hardware acceptance remain unmeasured.
