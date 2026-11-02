@@ -74,10 +74,11 @@ public final class BlossomHud {
         return lines;
     }
     public static int width(Modules.Module module) {
+        if(module.id.equals("media"))return (int)Math.ceil(240*module.scale);
         int w=0;for(String line:lines(module))w=Math.max(w,ave.A().k.a(line));
         return (int)Math.ceil((Math.max(w,module.id.equals("network")?200:0)+8)*module.scale);
     }
-    public static int height(Modules.Module module){return (int)Math.ceil((lines(module).length*11+5+(module.id.equals("network")?30:0))*module.scale);}
+    public static int height(Modules.Module module){if(module.id.equals("media"))return (int)Math.ceil(56*module.scale);return (int)Math.ceil((lines(module).length*11+5+(module.id.equals("network")?30:0))*module.scale);}
     public static int x(Modules.Module module,int screen){return HudLayout.position(module.x,screen,width(module));}
     public static int y(Modules.Module module,int screen){return HudLayout.position(module.y,screen,height(module));}
     public static void draw() {
@@ -86,6 +87,11 @@ public final class BlossomHud {
         for(Modules.Module module:BlossomHooks.modules.all())if(module.enabled&&module.category.equals("HUD")) {
             bfl.E();
             try {
+                if(module.id.equals("media")){
+                    if(!BlossomMedia.visible())continue;
+                    int x=HudLayout.position(module.x,resolution.a(),width(module)),y=HudLayout.position(module.y,resolution.b(),height(module));
+                    bfl.b(x,y,0);bfl.a(module.scale,module.scale,1);BlossomMedia.draw(module);continue;
+                }
                 String[] lines=lines(module);int w=textWidth(module.id,lines);
                 if(module.id.equals("network"))w=Math.max(w,200);
                 int width=(int)Math.ceil((w+8)*module.scale);

@@ -45,6 +45,7 @@ public final class BlossomHooks {
         modules.add("fov","FOV changer","Visual","Constant FOV or per-condition camera settings",false,0);
         modules.add("bright","Fullbright","Visual","Temporarily raises gamma; restores on disable",false,0);
         modules.add("lefthand","Left Hand","Visual","Render your local main hand and held item on the left",false,0);
+        modules.add("media","Now Playing","HUD","System media: album art, title, artist and playback progress",false,.75f);
         modules.add("itemgaps","Item Model Fix","Visual","Seal gaps in generated item sides; reloads models when toggled",false,0);
         modules.add("chat","Chat","Controls","Chat appearance, local history, filtering and shortcuts",false,0);
         modules.add("legacy","1.7 Visuals","Visual","Independent classic item animations; rendering only",false,0);
@@ -114,7 +115,7 @@ public final class BlossomHooks {
             boolean wantBright=modules.on("bright")&&mc.h!=null;
             if(wantBright&&!bright){savedGamma=mc.t.aJ;mc.t.aJ=12f;bright=true;}
             if(!wantBright&&bright){mc.t.aJ=savedGamma;bright=false;}
-            BlossomPing.tick();BlossomNetwork.tick();BlossomControls.updateContext();BlossomHud.tick();
+            BlossomPing.tick();BlossomNetwork.tick();BlossomControls.updateContext();BlossomHud.tick();BlossomMedia.tick();
             capes.setActive(modules.on("cape")||mc.m instanceof BlossomCapeMenu);
             if(modules.on("cape")||mc.m instanceof BlossomCapeMenu)capes.uploadReady();
             if(!modules.on("capephysics")||mc.h==null)BlossomCloth.clear();

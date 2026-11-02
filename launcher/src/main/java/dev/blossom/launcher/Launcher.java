@@ -44,7 +44,7 @@ public final class Launcher extends JPanel {
         JPanel header=new JPanel(new BorderLayout());header.setOpaque(false);
         JLabel title=new JLabel("BLOSSOM");title.setFont(new Font("SansSerif",Font.BOLD,36));title.setForeground(PINK);header.add(title,BorderLayout.NORTH);
         JLabel tagline=new JLabel("Minecraft 1.8.9  /  Your client. Your capes.");tagline.setForeground(MUTED);tagline.setBorder(new EmptyBorder(8,0,0,0));header.add(tagline,BorderLayout.SOUTH);add(header,BorderLayout.NORTH);
-        JTabbedPane tabs=new JTabbedPane();tabs.addTab("Play",playPanel());tabs.addTab("Settings",settingsPanel());tabs.addTab("Logs",logsPanel());add(tabs,BorderLayout.CENTER);
+        JTabbedPane tabs=new JTabbedPane();tabs.addTab("Play",playPanel());tabs.addTab("Settings",settingsPanel());tabs.addTab("Logs",logsPanel());tabs.addTab("Changelog",changesPanel());add(tabs,BorderLayout.CENTER);
         JPanel footer=new JPanel(new BorderLayout(12,8));footer.setOpaque(false);status.setForeground(MUTED);footer.add(status,BorderLayout.NORTH);
         progress.setIndeterminate(false);progress.setPreferredSize(new Dimension(200,6));footer.add(progress,BorderLayout.CENTER);cancel.setEnabled(false);footer.add(cancel,BorderLayout.EAST);add(footer,BorderLayout.SOUTH);
         automaticJava.addActionListener(e->updateButtons());installJava.addActionListener(e->runTask(()->managedJava()));offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
@@ -88,6 +88,13 @@ public final class Launcher extends JPanel {
     private void row(JPanel panel,GridBagConstraints g,int row,String label,JComponent field,Runnable browse){
         g.gridy=row;g.gridwidth=1;g.gridx=0;g.weightx=0;panel.add(new JLabel(label),g);g.gridx=1;g.weightx=1;panel.add(field,g);g.gridx=2;g.weightx=0;
         if(browse!=null){JButton button=new JButton("Browse");button.addActionListener(e->browse.run());panel.add(button,g);}
+    }
+    private JPanel changesPanel(){
+        JPanel panel=new JPanel(new BorderLayout());JTextArea notes=new JTextArea();notes.setEditable(false);notes.setLineWrap(true);notes.setWrapStyleWord(true);
+        try(java.io.InputStream in=Launcher.class.getResourceAsStream("/changelog.txt")){
+            notes.setText(in==null?"Release notes unavailable.":new String(Net.readLimited(in,131072),java.nio.charset.StandardCharsets.UTF_8));
+        }catch(java.io.IOException e){notes.setText("Release notes unavailable.");}
+        notes.setCaretPosition(0);panel.add(new JScrollPane(notes),BorderLayout.CENTER);return panel;
     }
     private JPanel logsPanel(){
         JPanel panel=new LauncherTheme.Card(new BorderLayout(8,8));panel.setBorder(new EmptyBorder(12,12,12,12));log.setEditable(false);log.setFont(new Font("Monospaced",Font.PLAIN,12));panel.add(new JScrollPane(log),BorderLayout.CENTER);

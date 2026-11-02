@@ -47,6 +47,8 @@ def main():
         name=file.relative_to(classes).as_posix()
         if name.startswith('dev/blossom/') and ('Test' in name or 'RelocateIntegration' in name): continue
         entries[name]=file.read_bytes()
+    for resource in (ROOT/'src/main/resources').rglob('*'):
+        if resource.is_file() and "__pycache__" not in resource.parts: entries[resource.relative_to(ROOT/'src/main/resources').as_posix()]=resource.read_bytes()
     entries['blossom.png']=(ROOT/'assets/blossom-client.png').read_bytes()
     entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\r\nPremain-Class: dev.blossom.agent.BlossomAgent\r\nMain-Class: dev.blossom.agent.InstallHelp\r\n\r\n'
     for name in ['LICENSE','LICENSES.md']: entries[name]=(ROOT/name).read_bytes()
@@ -72,6 +74,7 @@ def build_launcher(agent,version):
             if not name.endswith('/') and (name.startswith('com/google/gson/') or name.startswith('META-INF/LICENSE')):entries[name]=gson.read(name)
     for file in classes.rglob('*.class'):
         if 'Test' not in file.name:entries[file.relative_to(classes).as_posix()]=file.read_bytes()
+    entries['changelog.txt']=(ROOT/'docs/releases'/('v'+version+'.md')).read_bytes()
     entries['runtimes.json']=(classes/'runtimes.json').read_bytes()
     entries['log4j2-blossom.xml']=(ROOT/'launcher/src/main/resources/log4j2-blossom.xml').read_bytes()
     entries['licenses/Apache-2.0.txt']=(ROOT/'licenses/Apache-2.0.txt').read_bytes()

@@ -1,3 +1,6 @@
+const releaseFiles = import.meta.glob<string>("../../docs/releases/v*.md", { query: "?raw", import: "default", eager: true });
+const releasePath = Object.keys(releaseFiles).sort((a, b) => a.replace(/\.md$/, "").localeCompare(b.replace(/\.md$/, ""), undefined, { numeric: true })).pop();
+const releaseNotes = releasePath ? releaseFiles[releasePath] : "No release notes available.";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "./style.css";
@@ -127,10 +130,31 @@ async function task(action: string) {
   if (["restore", "signin", "signout"].includes(action))
     await refreshWardrobe(remembered);
 }
+// Render the small release-note Markdown subset as text nodes, never HTML.
+const notes = $("release-notes");
+for (const block of releaseNotes.trim().split(/\n\s*\n/)) {
+  if (block.startsWith("# ")) {
+    const heading = document.createElement("h2");
+    heading.textContent = block.slice(2); notes.append(heading);
+  } else if (block.startsWith("- ")) {
+    const list = document.createElement("ul");
+    for (const item of block.split(/\n(?=- )/)) {
+      const row = document.createElement("li");
+      row.textContent = item.replace(/^- /, "").replace(/\n/g, " ").replace(/`([^`]+)`/g, "$1");
+      list.append(row);
+    }
+    notes.append(list);
+  } else {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = block.replace(/\n/g, " ").replace(/`([^`]+)`/g, "$1");
+    notes.append(paragraph);
+  }
+}
 const titles: Record<string, [string, string]> = {
   play: ["LET'S PLAY", "Welcome home."],
   settings: ["MAKE IT YOURS", "Your setup."],
   wardrobe: ["YOUR SIGNATURE", "Skins & capes."],
+  changelog: ["WHAT’S NEW", "Latest changes."],
   logs: ["A CLOSER LOOK", "Session activity."],
 };
 function tab(id: string) {

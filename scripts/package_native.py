@@ -10,8 +10,8 @@ if not binary.is_file():raise SystemExit('Build the native launcher first')
 files={f'app/{exe}':binary.read_bytes(),'README.md':(root/'docs/NATIVE-LAUNCHER.md').read_bytes(),'licenses/LICENSE':(root/'LICENSE').read_bytes(),'licenses/LICENSES.md':(root/'LICENSES.md').read_bytes()}
 files['licenses/skin-preview.txt']=(root/'licenses/skin-preview.txt').read_bytes()
 files['blossom.svg']=(root/'assets/blossom.svg').read_bytes()
-files['start-blossom.sh']=b'#!/bin/sh\nset -eu\ncd -- "$(dirname -- "$0")"\nexec ./app/blossom-launcher "$@"\n'
-files['Start-Blossom.bat']=b'@echo off\r\ncd /d "%~dp0"\r\nstart "Blossom" "%~dp0app\\blossom-launcher.exe" %*\r\n'
+if platform=='linux':files['start-blossom.sh']=b'#!/bin/sh\nset -eu\ncd -- "$(dirname -- "$0")"\nexec ./app/blossom-launcher "$@"\n'
+if platform=='windows':files['Start-Blossom.bat']=b'@echo off\r\ncd /d "%~dp0"\r\nstart "Blossom" "%~dp0app\\blossom-launcher.exe" %*\r\n'
 files['checksums/SHA256SUMS.txt']=''.join(hashlib.sha256(data).hexdigest()+'  '+name+'\n' for name,data in sorted(files.items())).encode()
 out=root/'build/native-release';out.mkdir(parents=True,exist_ok=True)
 archive=out/f'blossom-{version}-{platform}-x64.zip'

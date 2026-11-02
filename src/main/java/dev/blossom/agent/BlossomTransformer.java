@@ -26,7 +26,7 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 final boolean chatLayout=name.equals("avt")&&method.equals("a")&&desc.equals("(Leu;IIZ)V");
                 final boolean chatPick=name.equals("avt")&&method.equals("a")&&desc.equals("(II)Leu;");
                 final boolean chatReceive=name.equals("avt")&&method.equals("a")&&desc.equals("(Leu;I)V");
-                final boolean itemSides=name.equals("bgp")&&method.equals("a")&&desc.equals("(Lbmi;Ljava/lang/String;I)Ljava/util/List;");
+                final boolean itemSides=name.equals("bgp")&&method.equals("a")&&desc.equals("(ILjava/lang/String;Lbmi;)Ljava/util/List;");
                 final boolean hand=name.equals("bfn")&&method.equals("a")&&desc.equals("(F)V");
                 final boolean bow=name.equals("bfn")&&method.equals("a")&&desc.equals("(FLbet;)V");
                 final boolean equip=name.equals("bfn")&&method.equals("a")&&desc.equals("()V");
@@ -63,9 +63,11 @@ public final class BlossomTransformer implements ClassFileTransformer {
                         if(itemSides){
                             super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomItemModels","enabled","()Z",false);
                             Label vanilla=new Label();super.visitJumpInsn(Opcodes.IFEQ,vanilla);
-                            super.visitVarInsn(Opcodes.ALOAD,1);super.visitVarInsn(Opcodes.ALOAD,2);super.visitVarInsn(Opcodes.ILOAD,3);
+                            super.visitVarInsn(Opcodes.ALOAD,3);super.visitVarInsn(Opcodes.ALOAD,2);super.visitVarInsn(Opcodes.ILOAD,1);
                             super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomItemModels","sides","(Lbmi;Ljava/lang/String;I)Ljava/util/List;",false);
-                            super.visitInsn(Opcodes.ARETURN);super.visitLabel(vanilla);super.visitFrame(Opcodes.F_SAME,0,null,0,null);
+                            Label fallback=new Label();super.visitInsn(Opcodes.DUP);super.visitJumpInsn(Opcodes.IFNULL,fallback);super.visitInsn(Opcodes.ARETURN);
+                            super.visitLabel(fallback);super.visitFrame(Opcodes.F_SAME1,0,null,1,new Object[]{"java/util/List"});super.visitInsn(Opcodes.POP);
+                            super.visitLabel(vanilla);super.visitFrame(Opcodes.F_SAME,0,null,0,null);
                         }
                         if(hand){super.visitVarInsn(Opcodes.ALOAD,0);super.visitFieldInsn(Opcodes.GETFIELD,"bfn","d","Lzx;");super.visitVarInsn(Opcodes.FLOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"begin","(Lzx;F)V",false);}
                         if(glint){super.visitVarInsn(Opcodes.ALOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,LEGACY,"beginGlint","(Lboq;)V",false);}
