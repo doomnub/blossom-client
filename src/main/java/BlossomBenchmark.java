@@ -17,7 +17,7 @@ public final class BlossomBenchmark {
         if(active())return;
         ave mc=ave.A();
         folder=mc.v.toPath().resolve("blossom/benchmarks");
-        metadata="Blossom 0.2.9.2 detailed benchmark\nJava: "+System.getProperty("java.version")+"\nVM: "+System.getProperty("java.vm.name")+"\nOS: "+System.getProperty("os.name")+" "+System.getProperty("os.arch")+"\nCPU logical processors: "+Runtime.getRuntime().availableProcessors()+"\nGPU: "+GL11.glGetString(GL11.GL_RENDERER)+"\nGL: "+GL11.glGetString(GL11.GL_VERSION)+"\nResolution: "+mc.d+"x"+mc.e+"\nRender distance: "+mc.t.c+"\nFPS limit: "+mc.t.g+"\nVSync: "+mc.t.t+"\nActive chunk workers: "+BlossomPerformance.activeWorkers()+"\n";
+        metadata="Blossom 0.2.9.3 detailed benchmark\nJava: "+System.getProperty("java.version")+"\nVM: "+System.getProperty("java.vm.name")+"\nOS: "+System.getProperty("os.name")+" "+System.getProperty("os.arch")+"\nCPU logical processors: "+Runtime.getRuntime().availableProcessors()+"\nGPU: "+GL11.glGetString(GL11.GL_RENDERER)+"\nGL: "+GL11.glGetString(GL11.GL_VERSION)+"\nResolution: "+mc.d+"x"+mc.e+"\nRender distance: "+mc.t.c+"\nFPS limit: "+mc.t.g+"\nVSync: "+mc.t.t+"\nActive chunk workers: "+BlossomPerformance.activeWorkers()+"\n";
         Properties p=new Properties();BlossomHooks.settings.performance.save(p);
         for(Modules.Module module:BlossomHooks.modules.all())p.setProperty("module."+module.id,Boolean.toString(module.enabled));
         p.setProperty("cloth.subdivisions",Integer.toString(BlossomHooks.settings.cloth.subdivisions));

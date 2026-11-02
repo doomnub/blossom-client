@@ -29,4 +29,4 @@ the reporter too, so the absence of a report does not exclude a freeze.
 Validation: real Mojang bytecode checks cover both renderer policies, verify that
 compatibility preserves module hooks and omits experimental renderer calls; Java
 8 API/bytecode build and linkage checks pass. Actual affected-hardware gameplay
-validation is still required. The previously published 0.2.9.2 assets are unchanged.
+validation is still required. Included in 0.2.9.3; older release assets are unchanged.
