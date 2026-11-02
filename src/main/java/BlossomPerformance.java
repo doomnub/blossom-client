@@ -52,7 +52,7 @@ public final class BlossomPerformance {
         }catch(Exception e){return 2;}
     }
     public static int activeWorkers(){return workers;}
-    public static boolean enabled(){return BlossomHooks.modules.on("performance");}
+    public static boolean enabled(){return dev.blossom.core.RendererPolicy.OPTIMIZATIONS&&BlossomHooks.modules.on("performance");}
     private static PerformanceSettings settings(){return BlossomHooks.settings.performance;}
     public static boolean batchModels(){return enabled()&&settings().modelBatching;}
     public static void frame(){

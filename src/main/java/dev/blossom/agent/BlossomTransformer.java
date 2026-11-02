@@ -7,13 +7,16 @@ public final class BlossomTransformer implements ClassFileTransformer {
     private static final String CHAT="dev/blossom/integration/BlossomChat";
     private static final String LEGACY="dev/blossom/integration/BlossomLegacy";
     private static final String HOOKS="dev/blossom/integration/BlossomHooks";
+    private final boolean rendererOptimizations;
+    public BlossomTransformer(){this(dev.blossom.core.RendererPolicy.OPTIMIZATIONS);}
+    public BlossomTransformer(boolean rendererOptimizations){this.rendererOptimizations=rendererOptimizations;}
     @Override public byte[] transform(ClassLoader loader,String name,Class<?> type,ProtectionDomain domain,byte[] bytes) {
         byte[] measured=BenchmarkTransformer.transform(name,bytes);
         if(measured!=null)bytes=measured;
-        byte[] optimized=PerformanceTransformer.transform(name,bytes);
+        byte[] optimized=rendererOptimizations?PerformanceTransformer.transform(name,bytes):null;
         if(optimized==null)optimized=measured;
         if(optimized!=null)bytes=optimized;
-        byte[] additions=RendererPlusTransformer.transform(name,bytes);
+        byte[] additions=rendererOptimizations?RendererPlusTransformer.transform(name,bytes):null;
         if(additions!=null){bytes=additions;optimized=additions;}
         if(!"bgp".equals(name)&&!"avt".equals(name)&&!"bjh".equals(name)&&!"bfn".equals(name)&&!"bbj".equals(name)&&!"bky".equals(name)&&!"bec".equals(name)&&!"bjl".equals(name)&&!"bkp".equals(name)&&!"ave".equals(name)&&!"avo".equals(name)&&!"bet".equals(name)&&!"avb".equals(name)&&!"aya".equals(name)&&!"bfk".equals(name)&&!"axp".equals(name)&&!"avf".equals(name))return optimized;
         ClassReader reader=new ClassReader(bytes);

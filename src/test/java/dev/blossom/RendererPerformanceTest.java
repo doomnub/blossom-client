@@ -5,6 +5,14 @@ import java.util.concurrent.*;
 public final class RendererPerformanceTest {
     private static void check(boolean ok,String why){if(!ok)throw new AssertionError(why);}
     public static void run()throws Exception{
+        check(!RendererPolicy.choose("Linux", ""),"Linux uses vanilla renderer by default");
+        check(RendererPolicy.choose("Windows 11", ""),"Windows policy preserved");
+        check(!RendererPolicy.choose("Linux", "garbage"),"Invalid override cannot enable unstable hooks");
+        check(RendererPolicy.choose("Linux", "true"),"Explicit development override");
+        check(!RendererPolicy.choose("Windows 11", "false"),"Explicit vanilla override");
+        check(!StallReporter.due(6000000001L,1,1),"One report per continuous stall");
+        check(StallReporter.due(6000000001L,1,0),"Five-second stall detected");
+        check(!StallReporter.due(4000000001L,1,0),"Normal frames are not reported");
         AdaptiveBudget budget=new AdaptiveBudget();for(int i=0;i<30;i++)budget.sample(20000000L);long stressed=budget.nanos(4,120);check(stressed>=250000&&stressed<4000000,"Overload reduces bounded budget");for(int i=0;i<60;i++)budget.sample(1000000);check(budget.nanos(4,120)>stressed,"Budget recovers with spare time");
         BoundedWorkQueue<Integer> q=new BoundedWorkQueue<Integer>(3,x->x);
         q.offer(9);q.offer(2);q.offer(5);check(!q.offer(6),"Queue stays bounded");check(q.offer(2)&&q.size()==3,"Duplicate task is not enqueued");check(q.take()==2&&q.take()==5&&q.take()==9,"Near work wins");check(q.poll(1,TimeUnit.MILLISECONDS)==null,"Timed empty poll");

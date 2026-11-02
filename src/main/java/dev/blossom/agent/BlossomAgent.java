@@ -45,6 +45,7 @@ public final class BlossomAgent {
                 if(!expected[1].equals(hex.toString()))throw new IOException("Unsupported game class: "+expected[0]);
             }
             instrumentation.addTransformer(new BlossomTransformer());
+            System.out.println("[Blossom] Renderer: "+(dev.blossom.core.RendererPolicy.OPTIMIZATIONS?"experimental optimizations":"vanilla scheduling/buffers; Blossom modules remain enabled"));
             System.out.println("[Blossom] Verified vanilla 1.8.9; startup hooks registered");
         } catch(Exception e) {
             System.err.println("[Blossom] NOT ENABLED: "+e.getMessage()+". Use unmodified vanilla 1.8.9, without OptiFine/Forge/Lunar.");

@@ -52,6 +52,7 @@ public final class BlossomModuleSettings extends axu {
             add(0,"Enabled: "+module.enabled);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
+                if(RendererPolicy.OPTIMIZATIONS){
                 add(400,"Batch models and capes: "+p.modelBatching);
                 add(401,"Budget chunk work: "+p.chunkScheduling);
                 add(402,"Chunk budget (ms): "+p.chunkBudgetMs);
@@ -65,6 +66,7 @@ public final class BlossomModuleSettings extends axu {
                 add(413,"Reuse chunk cache buffers: "+p.regionBuffers);
                 add(412,"Reuse translucent sort buffers: "+p.primitiveSort);
                 add(411,"Skip unchanged lightmap uploads: "+p.lightmapCache);
+                }else{add(499,"Vanilla renderer active (Linux stability)");}
                 add(405,BlossomBenchmark.active()?"Finish detailed benchmark":"Capture detailed benchmark (60 seconds)");
             }
             if(module.id.equals("chat")){

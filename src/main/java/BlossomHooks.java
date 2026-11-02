@@ -64,6 +64,7 @@ public final class BlossomHooks {
             saves.shutdown();
             try{saves.awaitTermination(3,java.util.concurrent.TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}
         },"Blossom save flush"));
+        StallReporter.start(root.resolve("diagnostics"));
         initialized=true;
         load("default");BlossomBindings.init();
         try{controls=store.load("controls");BlossomControls.restoreSprint(Boolean.parseBoolean(controls.getProperty("sprint.latched","false")));}catch(Exception e){message="Sprint state could not be restored";}
@@ -169,6 +170,7 @@ public final class BlossomHooks {
     }
     public static void frame() {
         if(!initialized||failed)return;
+        StallReporter.beat();
         BlossomPerformance.frame();
         BlossomMouse.idle();
         if(!modules.on("fps")||(!settings.fpsAverage&&!settings.fpsLows)){if(lastFrame!=0){lastFrame=0;frames.clear();}return;}

@@ -7,6 +7,7 @@ public final class BlossomGpu {
     private static GpuTimerPool.Sink sink;
     public static void prepare(BenchmarkCapture capture){
         owner=capture;sink=capture::gpu;
+        if(!RendererPolicy.OPTIMIZATIONS){capture.gpuStatus="Unavailable with vanilla renderer compatibility policy";return;}
         try{
             ContextCapabilities caps=GLContext.getCapabilities();
             capture.gpuStatus="unsupported";

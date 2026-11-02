@@ -16,3 +16,9 @@
 Headless item geometry tests cover holes, empty textures, animated silhouettes,
 complexity fallback and injected hooks. Actual in-game gap elimination and visual
 appearance still need graphical acceptance, including resource-pack mipmaps.
+
+- Linux defaults to vanilla renderer scheduling/buffers while retaining Blossom
+  modules. Experimental renderer transforms cannot be re-enabled by old profiles.
+  Add automatic, bounded stall reports with thread stacks and memory/GC counters.
+  This targets the safe-mode-only stability regression; affected-hardware
+  validation is pending. See LINUX-STABILITY.md.
