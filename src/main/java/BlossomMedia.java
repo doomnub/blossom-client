@@ -16,8 +16,10 @@ public final class BlossomMedia {
     public static void draw(Modules.Module module){
         MediaBridge.Snapshot s=bridge.snapshot();if(s==null&&!(ave.A().m instanceof BlossomHudEditor))return;
         int background=(Math.round((module.backgroundColor>>>24)*module.opacity)<<24)|(module.backgroundColor&0xffffff);
-        BlossomTheme.rounded(0,0,240,56,7,background);
-        BlossomTheme.rounded(6,6,50,50,5,0x55333333);
+        if(BlossomHooks.background){
+            BlossomTheme.rounded(0,0,240,56,7,background);
+            if(texture==null)BlossomTheme.rounded(6,6,50,50,5,background);
+        }
         if(texture!=null&&s!=null){bfl.l();bfl.a(770,771,1,0);bfl.c(1,1,1,module.opacity);ave.A().P().a(texture);avp.a(6,6,0,0,44,44,44,44);bfl.k();}
         String title=s==null?"Currently playing":s.title,artist=s==null?bridge.status():s.artist;
         int alpha=Math.round(255*module.opacity)<<24;

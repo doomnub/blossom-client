@@ -249,6 +249,15 @@ async fn wardrobe(app: tauri::AppHandle, action: String, id: Option<String>, var
 }
 
 fn main() {
+    // Wayland matches this identity to dev.blossom.launcher.desktop, including
+    // direct shell launches. Set it before GTK/Tauri creates the first surface.
+    #[cfg(target_os = "linux")]
+    {
+        gtk::glib::set_prgname(Some("dev.blossom.launcher"));
+        gtk::glib::set_application_name("Blossom");
+        gtk::init().expect("Unable to initialize the Linux desktop");
+        gtk::gdk::set_program_class("dev.blossom.launcher");
+    }
     if let Err(e)=core::desktop::install(){eprintln!("Desktop icon setup: {e}");}
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {

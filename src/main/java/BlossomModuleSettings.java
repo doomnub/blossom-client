@@ -39,6 +39,7 @@ public final class BlossomModuleSettings extends axu {
                 add(1,String.format(java.util.Locale.ROOT,"Text size: %.2fx",module.scale));
                 add(2,String.format(java.util.Locale.ROOT,"Opacity: %.0f%%",module.opacity*100));
                 add(3,"Text color: "+Integer.toHexString(module.textColor));
+                add(8,"Background (all HUD): "+BlossomHooks.background);
                 add(4,"Background color: "+Integer.toHexString(module.backgroundColor));
                 add(5,"Text shadow: "+module.shadow);if(!global){add(7,"Lock position: "+module.locked);add(6,"Reset layout and style");}
             }
@@ -169,7 +170,8 @@ public final class BlossomModuleSettings extends axu {
             case 113:s.visual.hitFade=!s.visual.hitFade;break;case 114:s.visual.hitPlayers=!s.visual.hitPlayers;break;case 115:s.visual.hitMobs=!s.visual.hitMobs;break;case 116:s.visual.hitArmor=!s.visual.hitArmor;break;
             case 120:particleCategory=(particleCategory+1)%VisualSettings.CATEGORIES.length;break;case 121:s.visual.enabled[particleCategory]=!s.visual.enabled[particleCategory];break;case 127:java.util.Arrays.fill(s.visual.density,.5f);break;
             case 0:module.enabled=!module.enabled;break;
-            case 1:module.scale=module.scale>=3?.5f:Math.min(3,module.scale+.25f);apply("scale");break;
+            case 1:j.a(new BlossomSliderScreen(this,"Text size",module.scale,.5f,3,false,value->{module.scale=value;apply("scale");BlossomHud.invalidate();}));return;
+            case 8:BlossomHooks.background=!BlossomHooks.background;break;
             case 2:module.opacity=module.opacity<=.11f?1:module.opacity-.1f;apply("opacity");break;
             case 3:color(false);return;
             case 4:color(true);return;

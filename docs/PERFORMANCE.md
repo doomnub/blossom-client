@@ -157,3 +157,32 @@ profiles. Automatic worker selection now stops at two. Both launchers pass
 GPU memory or Java heap. Earlier descriptions of skipped world GC are historical.
 The Linux OOM report confirms system memory exhaustion but lacks attribution to
 a specific allocation path; this release does not claim that root cause proven.
+
+## Revised rollout after 0.2.9.3
+
+The user reports normal gameplay is stable with the Linux compatibility renderer.
+That is our Linux baseline. It implicates the removed optimization group, but
+neither identifies one defective patch nor proves a particular memory leak.
+Do not restore the group wholesale or enable it via existing profiles.
+
+1. Capture baseline runs for the same world, route, resource pack, render distance,
+   FPS cap and Java heap: repeated world entry/exit, chunk travel, zoom-out while
+   stationary, and single-player-to-server transitions. Include 2-chunk distance.
+2. Evaluate one isolated change at a time against that baseline. Start with HUD
+   work/allocation reductions; then pure mesh calculations. Leave scheduling,
+   worker queues, GPU uploads and buffer lifetime changes until separately audited.
+3. Each experiment needs a startup switch with a true vanilla fallback. Module-off
+   must also remove background work. Record active switches in benchmark reports.
+4. Compare median and tail frame times, 1%/0.1% lows, chunk work and input stalls;
+   measure process RSS, direct buffers, GC and GPU memory as well as Java heap.
+   Repeat runs and include a sustained world-transition soak to expose retention.
+5. Keep ownership explicit: GL operations stay on the render thread, queues/caches
+   have hard bounds, cancellation releases references, and world changes release
+   obsolete work. No waiting for worker completion on a frame-critical path.
+6. Promote only after measured improvement without new stalls, retention or visual
+   regressions on Fedora/KDE/AMD and Windows/NVIDIA. Compilation and headless
+   checks are prerequisites, not evidence of gameplay performance or stability.
+
+The old blanket experimental override remains a developer diagnostic, not the
+normal optimization rollout mechanism. No renderer optimizations are re-enabled
+by the Media Player/item/icon changes.

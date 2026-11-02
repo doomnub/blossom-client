@@ -1,6 +1,6 @@
-# Now Playing HUD (unreleased)
+# Media Player HUD (unreleased)
 
-Enable **Now Playing** in Blossom's HUD modules. It displays album artwork, title,
+Enable **Media Player** in Blossom's HUD modules. It displays album artwork, title,
 artist, elapsed/total playback time and a progress bar in a rounded translucent
 panel. Drag and scale it with the HUD editor. The existing module opacity,
 background color and text color controls affect the panel/progress presentation.
@@ -38,3 +38,7 @@ A blank-session CI check is not a test with Spotify/browser playback or album ar
 Reference APIs:
 - https://specifications.freedesktop.org/mpris/latest/Player_Interface.html
 - https://learn.microsoft.com/en-us/uwp/api/windows.media.control.globalsystemmediatransportcontrolssessionmanager
+
+The HUD Visuals background toggle shares the main menu HUD background setting.
+Turning it off draws no panel or album placeholder; artwork, text and progress
+remain visible. Text size uses the shared drag slider, including All HUD visuals.
