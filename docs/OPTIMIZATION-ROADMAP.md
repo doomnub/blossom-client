@@ -95,3 +95,30 @@ linkage. They cannot accept graphics, input feel or performance. Test zoom/turns
 teleports/dimensions, chunk edits, particles, anaglyph/fullbright, resource reloads,
 screenshots including non-native framebuffer sizes, unsupported timer hardware,
 and Performance off/on in real gameplay before publishing this checkpoint.
+
+
+## Current Bedwars rollout order (unreleased)
+
+1. **Cloud submission batching, chat formatting reuse, billboard culling**:
+   implemented as independent switches. Validate geometry, pass ordering, bounded
+   retention and fallback automatically, then compare warmed multiplayer captures.
+2. **Cloud mesh reuse and font geometry batching**: next investigation targets.
+   Cloud color/UV drift, camera height, resource reloads and font styles require
+   explicit invalidation. Not implemented by the submission-only cloud change.
+3. **Entity/block-entity visibility**: investigate conservative render bounds before
+   occlusion. Player nametags, oversized models, transparent blocks, invisible
+   entities and rapidly changing PvP sightlines must retain correct visibility.
+   No new player-distance cutoff or through-wall occlusion is enabled.
+4. **Chunk rebuilding/sorting and upload budgets**: isolate one audited mechanism
+   at a time from the disabled legacy group. Do not restore that group wholesale.
+5. **Modern GPU submission** (VAOs, persistent mapping, indirect draws, GPU-driven
+   visibility/Hi-Z): requires a separate capability-gated renderer architecture,
+   explicit ownership and synchronization, bounded buffers, and a vanilla fallback.
+   These are not installed by enabling a culling toggle.
+6. **Networking, disk/NBT, runtime/JIT and parallel simulation**: only change after
+   workload attribution demonstrates a bottleneck. Preserve thread ownership and
+   gameplay ordering; never advertise a JVM flag as a proven universal improvement.
+
+The large optimization request is an ongoing roadmap, not a checklist of completed
+features. Existing vanilla mechanisms listed above are retained rather than
+presented as newly implemented. No measured gameplay gain is claimed yet.

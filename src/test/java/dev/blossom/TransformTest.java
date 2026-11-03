@@ -9,13 +9,13 @@ public final class TransformTest {
         BlossomTransformer transformer=new BlossomTransformer(true);
         BlossomTransformer compatibility=new BlossomTransformer(false);
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"bic","bgp","bff","bfd","beb","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"avt","bic","bgp","bff","bfd","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
                 }
                 byte[] compatible=compatibility.transform(null,name,null,null,bytes);
-                if(java.util.Arrays.asList("bff","bfd","beb","bly","bct","bbs").contains(name)&&compatible!=null)
+                if(java.util.Arrays.asList("bff","bfd","bly","bct","bbs").contains(name)&&compatible!=null)
                     throw new AssertionError("Compatibility mode changed vanilla renderer: "+name);
                 if(compatible!=null)new ClassReader(compatible).accept(new ClassVisitor(Opcodes.ASM9){
                     public MethodVisitor visitMethod(int a,String m,String d,String s,String[] e){return new MethodVisitor(Opcodes.ASM9){
@@ -33,6 +33,8 @@ public final class TransformTest {
                         public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.startsWith("dev/blossom/integration/Blossom")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
+                if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("enter","flush","abort","camera")))throw new AssertionError("Cloud/particle hooks missing");
+                if(name.equals("avt")&&!calls.containsAll(java.util.Arrays.asList("beginText","formatted")))throw new AssertionError("Chat cache hooks missing");
                 if(name.equals("bic")&&!calls.contains("visible"))throw new AssertionError("Frustum hook missing");
                 if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("queue","directions","begin","end")))throw new AssertionError("Terrain allocation hooks missing");
                 if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");

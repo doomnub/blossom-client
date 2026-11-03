@@ -15,6 +15,10 @@ public final class BlossomTransformer implements ClassFileTransformer {
         if(measured!=null)bytes=measured;
         byte[] frustum=FrustumTransformer.transform(name,bytes);
         if(frustum!=null){bytes=frustum;measured=frustum;}
+        byte[] particles=ParticleCullTransformer.transform(name,bytes);
+        if(particles!=null){bytes=particles;measured=particles;}
+        byte[] clouds=CloudBatchTransformer.transform(name,bytes);
+        if(clouds!=null){bytes=clouds;measured=clouds;}
         byte[] traversal=TraversalTransformer.transform(name,bytes);
         if(traversal!=null){bytes=traversal;measured=traversal;}
         byte[] optimized=rendererOptimizations?PerformanceTransformer.transform(name,bytes):null;
@@ -61,6 +65,8 @@ public final class BlossomTransformer implements ClassFileTransformer {
                 return new MethodVisitor(Opcodes.ASM9,base){
                     @Override public void visitCode(){
                         super.visitCode();
+                        if(chatDraw){super.visitVarInsn(Opcodes.ILOAD,1);super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"beginText","(I)V",false);}
+                        if(chatLayout||chatReceive)super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"invalidateText","()V",false);
                         if(chatDraw||chatLayout||chatPick)super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"beginDraw","()V",false);
                         if(chatReceive){
                             super.visitVarInsn(Opcodes.ALOAD,0);super.visitVarInsn(Opcodes.ALOAD,1);super.visitVarInsn(Opcodes.ILOAD,2);
@@ -101,6 +107,7 @@ public final class BlossomTransformer implements ClassFileTransformer {
                     }
                     @Override public void visitMethodInsn(int op,String owner,String m,String d,boolean itf){
                         if(name.equals("ave")&&owner.equals("awv")&&m.equals("<init>")){super.visitMethodInsn(op,"dev/blossom/integration/BlossomChatScreen",m,d,itf);return;}
+                        if(chatDraw&&owner.equals("eu")&&m.equals("d")&&d.equals("()Ljava/lang/String;")){super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"formatted","(Leu;)Ljava/lang/String;",false);return;}
                         if(chatDraw&&owner.equals("avt")&&m.equals("a")&&d.equals("(IIIII)V")){super.visitMethodInsn(Opcodes.INVOKESTATIC,CHAT,"background",d,false);return;}
                         if(name.equals("ave")&&owner.equals("org/lwjgl/opengl/Display")&&m.equals("setIcon")&&d.equals("([Ljava/nio/ByteBuffer;)I")){super.visitMethodInsn(Opcodes.INVOKESTATIC,"dev/blossom/integration/BlossomIcon","set","([Ljava/nio/ByteBuffer;)I",false);return;}
 

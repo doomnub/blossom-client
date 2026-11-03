@@ -9,6 +9,19 @@ import java.util.regex.*;
 
 /** Decorates incoming components without changing their click/hover actions or sending messages. */
 public final class BlossomChat {
+    private static final dev.blossom.core.TickTextCache textCache=new dev.blossom.core.TickTextCache();
+    private static boolean cacheText;
+    public static void beginText(int tick){
+        cacheText=BlossomHooks.settings.performance.chatTextCache&&BlossomHooks.modules.on("performance");
+        if(cacheText)textCache.begin(tick);else textCache.clear();
+    }
+    public static void invalidateText(){textCache.clear();}
+    public static String formatted(eu component){
+        if(!cacheText)return component.d();
+        String text=textCache.get(component);
+        if(text==null){text=component.d();textCache.put(component,text);}
+        return text;
+    }
     private static final List<String> history=new ArrayList<String>();
     private static final ExecutorService disk=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"Blossom chat history");t.setDaemon(true);return t;});
     private static final Pattern URL=Pattern.compile("https?://[^\\s<>]+",Pattern.CASE_INSENSITIVE);
@@ -80,7 +93,7 @@ public final class BlossomChat {
         disk.execute(()->{try{Files.createDirectories(target.getParent());Path temp=target.resolveSibling("chat-history.tmp");Files.write(temp,snapshot,StandardCharsets.UTF_8);Files.move(temp,target,StandardCopyOption.REPLACE_EXISTING);}catch(Exception e){System.err.println("[Blossom] Chat history save failed");}});
     }
     public static List<String> search(String query){List<String> found=new ArrayList<String>();String needle=query.toLowerCase(Locale.ROOT);for(int i=history.size()-1;i>=0;i--)if(history.get(i).toLowerCase(Locale.ROOT).contains(needle))found.add(history.get(i));return found;}
-    public static void clear(){history.clear();lastMessage="";disk.execute(()->{try{Files.deleteIfExists(file());}catch(Exception e){System.err.println("[Blossom] Could not erase chat history");}});}
+    public static void clear(){invalidateText();history.clear();lastMessage="";disk.execute(()->{try{Files.deleteIfExists(file());}catch(Exception e){System.err.println("[Blossom] Could not erase chat history");}});}
     public static String links(String text){Matcher m=URL.matcher(text);List<String> links=new ArrayList<String>();while(m.find())links.add(m.group());return String.join("\n",links);}
     public static int width(int vanilla){return enabled()?settings().width:vanilla;}
     public static int height(int vanilla){return enabled()?settings().height:vanilla;}

@@ -53,6 +53,9 @@ public final class BlossomModuleSettings extends axu {
             add(0,"Enabled: "+module.enabled);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
+                add(410,"Cull offscreen particle quads: "+p.particleCull);
+                add(416,"Batch fancy clouds: "+p.cloudBatching);
+                add(417,"Cache chat text per tick: "+p.chatTextCache);
                 add(415,"Support-corner frustum (experimental): "+p.fastFrustum);
                 add(414,"Reduce terrain traversal allocations: "+p.traversalAllocations);
                 if(RendererPolicy.OPTIMIZATIONS){
@@ -65,7 +68,6 @@ public final class BlossomModuleSettings extends axu {
                 add(407,"Adaptive chunk budget: "+p.adaptive);
                 add(408,"Scheduling target FPS: "+p.targetFps);
                 add(409,"Prioritize nearby/front chunks: "+p.prioritize);
-                add(410,"Cull offscreen particle quads: "+p.particleCull);
                 add(413,"Reuse chunk cache buffers: "+p.regionBuffers);
                 add(412,"Reuse translucent sort buffers: "+p.primitiveSort);
                 add(411,"Skip unchanged lightmap uploads: "+p.lightmapCache);
@@ -119,6 +121,8 @@ public final class BlossomModuleSettings extends axu {
             switch(button.k){
                 case 400:p.modelBatching=!p.modelBatching;break;
                 case 401:p.chunkScheduling=!p.chunkScheduling;break;
+                case 416:p.cloudBatching=!p.cloudBatching;break;
+                case 417:p.chatTextCache=!p.chatTextCache;break;
                 case 415:p.fastFrustum=!p.fastFrustum;break;
                 case 414:p.traversalAllocations=!p.traversalAllocations;break;
                 case 402:j.a(new BlossomSliderScreen(this,"Chunk work budget (ms)",p.chunkBudgetMs,.5f,8,false,v->p.chunkBudgetMs=v));return;
