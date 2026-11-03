@@ -13,6 +13,8 @@ public final class BlossomTransformer implements ClassFileTransformer {
     @Override public byte[] transform(ClassLoader loader,String name,Class<?> type,ProtectionDomain domain,byte[] bytes) {
         byte[] measured=BenchmarkTransformer.transform(name,bytes);
         if(measured!=null)bytes=measured;
+        byte[] frustum=FrustumTransformer.transform(name,bytes);
+        if(frustum!=null){bytes=frustum;measured=frustum;}
         byte[] traversal=TraversalTransformer.transform(name,bytes);
         if(traversal!=null){bytes=traversal;measured=traversal;}
         byte[] optimized=rendererOptimizations?PerformanceTransformer.transform(name,bytes):null;

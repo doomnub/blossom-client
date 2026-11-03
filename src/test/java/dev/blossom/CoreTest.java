@@ -16,6 +16,7 @@ public final class CoreTest {
         check(frames.size()==2&&frames.copy()[1]==1000000000,"capture retains one-second stalls and rejects invalid intervals");
         String captureSummary=FrameCapture.summary(frames.copy());check(captureSummary.contains("1% low FPS: 1.00")&&captureSummary.contains("Worst ms: 1000.000"),"slow-tail report includes stalls");
         check(FrameCapture.summary(new long[]{10000000,10000000}).contains("Average FPS: 100.00"),"capture mean frame rate");
+        Class.forName("dev.blossom.integration.BlossomFrustumTest").getMethod("run").invoke(null);
         Class.forName("dev.blossom.integration.BlossomTraversalTest").getMethod("run").invoke(null);
         BenchmarkTest.run();RendererPerformanceTest.run();QuadSortTest.run();java.util.Properties legacyGc=new java.util.Properties();legacyGc.setProperty("performance.worldGc","true");PerformanceSettings safeSettings=new PerformanceSettings();safeSettings.load(legacyGc);check(!safeSettings.worldGc,"old profiles cannot suppress world cleanup");RegionScratchTest.run();AgentSafeModeTest.run();
         LegacySettings legacy=new LegacySettings();check(!legacy.enabled[10],"always swing is opt-in");

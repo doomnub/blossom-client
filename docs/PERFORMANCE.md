@@ -201,3 +201,20 @@ Detailed captures append culling and cloud timings to frames.csv and explicitly
 record whether the legacy renderer group and traversal reduction are active.
 Allocation behavior is
 verified synthetically; gameplay speedup and hardware acceptance remain unmeasured.
+
+## Unreleased: isolated frustum experiment
+
+Support-corner frustum is opt-in under Performance and independent of the legacy
+renderer group. It uses the support corner with greatest signed distance to each
+current plane. No tighter distance cutoff or occlusion heuristic is introduced;
+geometry at the edge of the view follows vanilla's strict positive-plane test.
+Invalid inputs use vanilla. There are no cached camera results or GPU queries.
+
+The culling profiler scope also contains synchronous nearby rebuilds. New frame
+columns separate build near, blossom.visibility.scan, blossom.chunk.rebuild,
+weather and particles. Inclusive durations overlap and must not be added.
+Compare the experimental switch on/off in identical warmed routes before enabling
+it by default. Mathematical equivalence checks are not evidence of an FPS gain.
+
+Synthetic timings were workload-dependent and did not establish a consistent
+speedup. This experiment stays off by default pending gameplay comparisons.

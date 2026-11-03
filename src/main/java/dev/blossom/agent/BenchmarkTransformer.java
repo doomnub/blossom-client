@@ -8,11 +8,12 @@ public final class BenchmarkTransformer {
     public static byte[] transform(String name,byte[] bytes){
         if(name==null)return null;
         boolean integration=name.equals("dev/blossom/integration/BlossomHud")||name.equals("dev/blossom/core/cloth/Cloth")||name.equals("dev/blossom/integration/BlossomCloth");
-        if(!name.equals("nt")&&!name.equals("bht")&&!name.equals("bho")&&!integration)return null;
+        if(!name.equals("nt")&&!name.equals("bht")&&!name.equals("bho")&&!name.equals("bfr")&&!integration)return null;
         ClassReader reader=new ClassReader(bytes);ClassWriter writer=new ClassWriter(reader,ClassWriter.COMPUTE_MAXS);List<Wrap> wrappers=new ArrayList<Wrap>();
         reader.accept(new ClassVisitor(Opcodes.ASM9,writer){
             public MethodVisitor visitMethod(int access,String method,String desc,String sig,String[] exceptions){
                 String section=null;
+                if(name.equals("bfr")&&method.equals("c")&&desc.equals("(Lcj;)Ljava/util/Set;"))section="blossom.visibility.scan";
                 if(name.equals("bht")&&desc.equals("(FFFLbhn;)V")){if(method.equals("b"))section="blossom.chunk.rebuild";if(method.equals("a"))section="blossom.chunk.sort";}
                 if(name.equals("bho")&&method.equals("a")&&desc.equals("(J)Z"))section="blossom.chunk.uploads";
                 if(name.equals("dev/blossom/integration/BlossomHud")&&method.equals("draw")&&desc.equals("()V"))section="blossom.hud";

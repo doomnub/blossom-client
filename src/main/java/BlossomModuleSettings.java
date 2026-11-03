@@ -53,6 +53,7 @@ public final class BlossomModuleSettings extends axu {
             add(0,"Enabled: "+module.enabled);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
+                add(415,"Support-corner frustum (experimental): "+p.fastFrustum);
                 add(414,"Reduce terrain traversal allocations: "+p.traversalAllocations);
                 if(RendererPolicy.OPTIMIZATIONS){
                 add(400,"Batch models and capes: "+p.modelBatching);
@@ -118,6 +119,7 @@ public final class BlossomModuleSettings extends axu {
             switch(button.k){
                 case 400:p.modelBatching=!p.modelBatching;break;
                 case 401:p.chunkScheduling=!p.chunkScheduling;break;
+                case 415:p.fastFrustum=!p.fastFrustum;break;
                 case 414:p.traversalAllocations=!p.traversalAllocations;break;
                 case 402:j.a(new BlossomSliderScreen(this,"Chunk work budget (ms)",p.chunkBudgetMs,.5f,8,false,v->p.chunkBudgetMs=v));return;
 

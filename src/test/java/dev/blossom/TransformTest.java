@@ -9,7 +9,7 @@ public final class TransformTest {
         BlossomTransformer transformer=new BlossomTransformer(true);
         BlossomTransformer compatibility=new BlossomTransformer(false);
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"bgp","bff","bfd","beb","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"bic","bgp","bff","bfd","beb","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -33,7 +33,8 @@ public final class TransformTest {
                         public void visitMethodInsn(int op,String owner,String method,String desc,boolean itf){if(owner.startsWith("dev/blossom/integration/Blossom")){hooks[0]++;calls.add(method);}}
                     };}
                 },0);
-                if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("queue","directions")))throw new AssertionError("Terrain allocation hooks missing");
+                if(name.equals("bic")&&!calls.contains("visible"))throw new AssertionError("Frustum hook missing");
+                if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("queue","directions","begin","end")))throw new AssertionError("Terrain allocation hooks missing");
                 if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");
                 if(name.equals("bht")&&!calls.containsAll(java.util.Arrays.asList("begin","end")))throw new AssertionError("Chunk timing wrappers missing");
                 if(name.equals("bho")&&!calls.containsAll(java.util.Arrays.asList("queues","drainUploads")))throw new AssertionError("Upload queue optimization/timing missing");

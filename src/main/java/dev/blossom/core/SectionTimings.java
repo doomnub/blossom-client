@@ -2,7 +2,7 @@ package dev.blossom.core;
 import java.util.*;
 /** Main-thread nested wall timings. Bounded nodes/depth, reused stacks, no per-call samples. */
 public final class SectionTimings {
-    public static final String[] COLUMNS={"tick","gameRenderer","display_update","fpslimit_wait","blossom.chunk.uploads","blossom.cape.simulation","blossom.cape.draw","blossom.hud","culling","clouds"};
+    public static final String[] COLUMNS={"tick","gameRenderer","display_update","fpslimit_wait","blossom.chunk.uploads","blossom.cape.simulation","blossom.cape.draw","blossom.hud","culling","clouds","build near","blossom.visibility.scan","blossom.chunk.rebuild","weather","particles"};
     public static final class Node {
         public final String path;final Map<String,Node> children=new HashMap<String,Node>();final int column;
         public long calls,inclusive,exclusive,max,failures;
