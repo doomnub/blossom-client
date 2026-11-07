@@ -9,7 +9,7 @@ public final class TransformTest {
         BlossomTransformer transformer=new BlossomTransformer(true);
         BlossomTransformer compatibility=new BlossomTransformer(false);
         try(JarFile game=new JarFile(args[0])) {
-            for(String name:new String[]{"avt","bic","bgp","bff","bfd","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
+            for(String name:new String[]{"avn","avt","bic","bgp","bff","bfd","bly","nt","bht","bct","bbs","bfr","bho","bjh","bfn","bbj","bky","bec","bjl","bkp","ave","avo","bet","avb","aya","bfk","axp","avf"}) {
                 byte[] bytes;
                 try(InputStream in=game.getInputStream(game.getJarEntry(name+".class"));ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                     byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);bytes=out.toByteArray();
@@ -35,6 +35,7 @@ public final class TransformTest {
                 },0);
                 if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("enter","flush","abort","camera")))throw new AssertionError("Cloud/particle hooks missing");
                 if(name.equals("avt")&&!calls.containsAll(java.util.Arrays.asList("beginText","formatted")))throw new AssertionError("Chat cache hooks missing");
+                if(name.equals("avn")&&!calls.contains("text"))throw new AssertionError("Nick Hider font hooks missing");
                 if(name.equals("bic")&&!calls.contains("visible"))throw new AssertionError("Frustum hook missing");
                 if(name.equals("bfr")&&!calls.containsAll(java.util.Arrays.asList("queue","directions","begin","end")))throw new AssertionError("Terrain allocation hooks missing");
                 if(name.equals("nt")&&!calls.containsAll(java.util.Arrays.asList("sectionStart","sectionEnd")))throw new AssertionError("Profiler section hooks missing");

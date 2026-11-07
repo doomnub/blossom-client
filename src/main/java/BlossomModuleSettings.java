@@ -51,6 +51,7 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("cape"))add(40,"Choose cape / library");
         }else{
             add(0,"Enabled: "+module.enabled);
+            if(module.id.equals("nickhider"))add(420,"Replacement name: "+BlossomHooks.settings.nickName);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
                 add(410,"Cull offscreen particle quads: "+p.particleCull);
@@ -115,6 +116,7 @@ public final class BlossomModuleSettings extends axu {
     }
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
+        if(button.k==420){j.a(new BlossomTextInput(this,"Nick Hider replacement name",s.nickName,t->{s.nickName=dev.blossom.core.NickText.validate(t);BlossomHud.invalidate();}));return;}
         if(button.k>=200&&button.k<200+LegacySettings.KEYS.length){int i=button.k-200;s.legacy.enabled[i]=!s.legacy.enabled[i];rebuildPending=true;return;}
         if(button.k>=400&&button.k<=406){
             PerformanceSettings p=s.performance;
@@ -177,7 +179,7 @@ public final class BlossomModuleSettings extends axu {
             }
             case 113:s.visual.hitFade=!s.visual.hitFade;break;case 114:s.visual.hitPlayers=!s.visual.hitPlayers;break;case 115:s.visual.hitMobs=!s.visual.hitMobs;break;case 116:s.visual.hitArmor=!s.visual.hitArmor;break;
             case 120:particleCategory=(particleCategory+1)%VisualSettings.CATEGORIES.length;break;case 121:s.visual.enabled[particleCategory]=!s.visual.enabled[particleCategory];break;case 127:java.util.Arrays.fill(s.visual.density,.5f);break;
-            case 0:module.enabled=!module.enabled;break;
+            case 0:module.enabled=!module.enabled;if(module.id.equals("nickhider"))BlossomHud.invalidate();break;
             case 1:j.a(new BlossomSliderScreen(this,"Text size",module.scale,.5f,3,false,value->{module.scale=value;apply("scale");BlossomHud.invalidate();}));return;
             case 8:BlossomHooks.background=!BlossomHooks.background;break;
             case 2:module.opacity=module.opacity<=.11f?1:module.opacity-.1f;apply("opacity");break;

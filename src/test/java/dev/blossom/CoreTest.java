@@ -16,6 +16,7 @@ public final class CoreTest {
         check(frames.size()==2&&frames.copy()[1]==1000000000,"capture retains one-second stalls and rejects invalid intervals");
         String captureSummary=FrameCapture.summary(frames.copy());check(captureSummary.contains("1% low FPS: 1.00")&&captureSummary.contains("Worst ms: 1000.000"),"slow-tail report includes stalls");
         check(FrameCapture.summary(new long[]{10000000,10000000}).contains("Average FPS: 100.00"),"capture mean frame rate");
+        NickTextTest.run();
         ChatCacheTest.run();
         Class.forName("dev.blossom.integration.BlossomParticleCullTest").getMethod("run").invoke(null);
         Class.forName("dev.blossom.integration.BlossomCloudBatchTest").getMethod("run").invoke(null);

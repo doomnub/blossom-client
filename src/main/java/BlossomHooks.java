@@ -47,6 +47,7 @@ public final class BlossomHooks {
         modules.add("lefthand","Left Hand","Visual","Render your local main hand and held item on the left",false,0);
         modules.add("media","Media Player","HUD","System media: album art, title, artist and playback progress",false,.75f);
         modules.add("itemgaps","Item Model Fix","Visual","Seal gaps in generated item sides; reloads models when toggled",false,0);
+        modules.add("nickhider","Nick Hider","Controls","Replace your account username in displayed game text",false,0);
         modules.add("chat","Chat","Controls","Chat appearance, local history, filtering and shortcuts",false,0);
         modules.add("legacy","1.7 Visuals","Visual","Independent classic item animations; rendering only",false,0);
         modules.add("hittilt","Hit Tilt","Visual","Adjust damage camera tilt; zero disables the tilt",false,0);
@@ -158,6 +159,7 @@ public final class BlossomHooks {
         if(code==ave.A().t.ai.i())left.click(now);
         if(code==ave.A().t.ag.i())right.click(now);
     }
+    public static boolean nickEnabled(){return initialized&&!failed&&modules.on("nickhider");}
     public static float hitTilt(float vanilla){return !initialized||failed||!modules.on("hittilt")?vanilla:vanilla*settings.hitTilt;}
     public static float cameraFov(float vanilla,boolean world){return !initialized||failed?vanilla:BlossomCamera.fov(vanilla,world);}
     public static int mouseWheel(int delta){if(!initialized||failed)return delta;int value=BlossomCamera.wheel(delta);return modules.on("noscroll")&&ave.A().m==null?0:value;}

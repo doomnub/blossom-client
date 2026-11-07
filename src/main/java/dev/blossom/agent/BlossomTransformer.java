@@ -11,6 +11,8 @@ public final class BlossomTransformer implements ClassFileTransformer {
     public BlossomTransformer(){this(dev.blossom.core.RendererPolicy.OPTIMIZATIONS);}
     public BlossomTransformer(boolean rendererOptimizations){this.rendererOptimizations=rendererOptimizations;}
     @Override public byte[] transform(ClassLoader loader,String name,Class<?> type,ProtectionDomain domain,byte[] bytes) {
+        byte[] nick=NickTransformer.transform(name,bytes);
+        if(nick!=null)return nick;
         byte[] measured=BenchmarkTransformer.transform(name,bytes);
         if(measured!=null)bytes=measured;
         byte[] frustum=FrustumTransformer.transform(name,bytes);
