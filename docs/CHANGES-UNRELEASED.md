@@ -1,13 +1,3 @@
-# Unreleased changes after 0.2.10.1
+# Unreleased changes after 0.2.11
 
-- Add Nick Hider under Controls, disabled by default, with a saved replacement name
-  (1–32 visible characters). Match the current session username case-insensitively,
-  including names interrupted by Minecraft formatting codes.
-- Substitute at the shared font draw/width entry points for standard chat, tab,
-  scoreboard, nametag, tooltip and menu text. Wrapped-font drawing masks before
-  splitting. Preserve trailing formatting and avoid repeated alias expansion.
-- This is local display masking, not a server nickname or account change. Original
-  components, click actions, outgoing messages, commands, logs and authentication
-  remain unchanged. Text baked into textures/custom renderers is outside this hook.
-- Automated replacement, settings persistence, bytecode and JVM linkage checks.
-  Actual in-game layout and visual acceptance still need checking.
+No pending changes.
