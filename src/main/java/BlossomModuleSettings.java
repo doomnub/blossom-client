@@ -22,6 +22,9 @@ public final class BlossomModuleSettings extends axu {
         avs visual=new BlossomButton(90,l/2-140,44,138,20,"Visuals"),functional=new BlossomButton(91,l/2+2,44,138,20,"Functionality");
         visual.l=!visuals;functional.l=visuals;n.add(visual);if(!global)n.add(functional);
         if(visuals){
+            if(module.id.equals("xpchanger"))add(421,"XP bar fill: "+BlossomHooks.settings.xpPercent+"%");
+            if(module.id.equals("timechanger"))add(422,"Visual time: "+BlossomHooks.settings.visualTime+":00 (0/24 = midnight)");
+
             if(module.id.equals("chat")){
                 ChatSettings c=BlossomHooks.settings.chat;
                 add(300,"Background opacity: "+Math.round(c.background*100)+"%");add(301,"Text opacity: "+Math.round(c.textOpacity*100)+"%");
@@ -51,6 +54,7 @@ public final class BlossomModuleSettings extends axu {
             if(module.id.equals("cape"))add(40,"Choose cape / library");
         }else{
             add(0,"Enabled: "+module.enabled);
+            if(module.id.equals("freelook"))add(423,binding?"Press key / mouse (Esc unbinds)":"Hold key: "+BlossomBindings.label(BlossomBindings.freeLook));
             if(module.id.equals("nickhider"))add(420,"Replacement name: "+BlossomHooks.settings.nickName);
             if(module.id.equals("performance")){
                 PerformanceSettings p=BlossomHooks.settings.performance;
@@ -116,6 +120,9 @@ public final class BlossomModuleSettings extends axu {
     }
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
+        if(button.k==421){j.a(new BlossomSliderScreen(this,"XP bar fill (%)",s.xpPercent,0,100,true,v->s.xpPercent=Math.round(v)));return;}
+        if(button.k==422){j.a(new BlossomSliderScreen(this,"Visual hour: midnight - morning - noon - midnight",s.visualTime,0,24,true,v->s.visualTime=Math.round(v)));return;}
+        if(button.k==423){bindingTarget=BlossomBindings.freeLook;binding=true;return;}
         if(button.k==420){j.a(new BlossomTextInput(this,"Nick Hider replacement name",s.nickName,t->{s.nickName=dev.blossom.core.NickText.validate(t);BlossomHud.invalidate();}));return;}
         if(button.k>=200&&button.k<200+LegacySettings.KEYS.length){int i=button.k-200;s.legacy.enabled[i]=!s.legacy.enabled[i];rebuildPending=true;return;}
         if(button.k>=400&&button.k<=406){

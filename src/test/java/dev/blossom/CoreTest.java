@@ -8,6 +8,7 @@ public final class CoreTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
     public static void main(String[] args)throws Exception {
+        ViewTransformTest.run();SkyLayerTest.run();Class.forName("dev.blossom.integration.BlossomSkyTest").getMethod("run").invoke(null);Class.forName("dev.blossom.integration.BlossomViewTest").getMethod("run").invoke(null);
         check(PerformanceSettings.workers(0,1)==1&&PerformanceSettings.workers(0,32)==2&&PerformanceSettings.workers(0,4)==2,"automatic workers bounded by buffer pool");
         check(PerformanceSettings.workers(9,8)==4,"manual workers bounded");
         PerformanceSettings perf=new PerformanceSettings();Properties perfProps=new Properties();perf.chunkWorkers=3;perf.chunkBudgetMs=4;perf.modelBatching=false;perf.save(perfProps);perf=new PerformanceSettings();perf.load(perfProps);
