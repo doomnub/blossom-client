@@ -2,7 +2,8 @@ package dev.blossom.core;
 import java.util.Properties;
 /** Version-one settings with bounded parsing; malformed optional values use defaults. */
 public final class ClientSettings {
-    public int xpPercent=100, visualTime=12, freeLookKey=56;
+    public int xpPercent=100, freeLookKey=56;
+    public float visualTime=12;
     public String nickName="Player";
     public int coordinateDecimals=1;
     public int zoomKey=46, crosshairLength=5, crosshairGap=3, crosshairThickness=1;
@@ -18,7 +19,7 @@ public final class ClientSettings {
     public boolean crosshairDot=false, privacy=false, fpsAverage=false, fpsLows=false;
     public void load(Properties p) {
         xpPercent=integer(p,"xpchanger.percent",100,0,100);
-        visualTime=integer(p,"timechanger.hour",12,0,24);
+        visualTime=Math.round(number(p,"timechanger.hour",12,0,24)*100)/100f;
         freeLookKey=integer(p,"freelook.key",56,-100,255);
         try{nickName=NickText.validate(p.getProperty("nickhider.name","Player"));}catch(IllegalArgumentException e){nickName="Player";}
         performance.load(p);chat.load(p);legacy.load(p);visual.load(p);cloth.load(p);fov.load(p);showEmptyPotions=Boolean.parseBoolean(p.getProperty("potions.showEmpty","false"));hidePotionOne=Boolean.parseBoolean(p.getProperty("potions.hideOne","true"));
@@ -38,7 +39,7 @@ public final class ClientSettings {
     }
     public void save(Properties p) {
         p.setProperty("xpchanger.percent",Integer.toString(xpPercent));
-        p.setProperty("timechanger.hour",Integer.toString(visualTime));
+        p.setProperty("timechanger.hour",Float.toString(visualTime));
         p.setProperty("freelook.key",Integer.toString(freeLookKey));
         p.setProperty("nickhider.name",nickName);
         performance.save(p);chat.save(p);legacy.save(p);visual.save(p);cloth.save(p);fov.save(p);p.setProperty("potions.showEmpty",Boolean.toString(showEmptyPotions));p.setProperty("potions.hideOne",Boolean.toString(hidePotionOne));

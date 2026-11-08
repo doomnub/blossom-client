@@ -19,7 +19,7 @@ public final class ViewTransformTest {
                 if(name.equals("avo"))check(calls,"xp",1);
                 if(name.equals("adm"))check(calls,"angle",1);
                 if(name.equals("bnn"))check(calls,"reload",1);
-                if(name.equals("bfr")){check(calls,"render",2);check(calls,"bind",2);}
+                if(name.equals("bfr")){check(calls,"render",2);check(calls,"bind",2);check(calls,"horizonList",2);check(calls,"horizonVbo",1);check(calls,"horizonDraw",1);}
                 if(name.equals("biu")||name.equals("auz"))if(!calls.containsKey("yaw")||!calls.containsKey("pitch"))throw new AssertionError("Missing billboard angles");
                 System.out.println("View hook coverage "+name+": "+calls);
             }

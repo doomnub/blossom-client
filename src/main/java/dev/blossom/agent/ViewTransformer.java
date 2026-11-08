@@ -16,7 +16,7 @@ public final class ViewTransformer {
                 final boolean sky=name.equals("bfr")&&n.equals("a")&&d.equals("(FI)V");
                 final boolean reload=name.equals("bnn")&&n.equals("a")&&d.equals("(Ljava/util/List;)V");
                 return new MethodVisitor(Opcodes.ASM9,base){
-                    private boolean skyInserted;
+                    private boolean skyInserted,horizon;
                     public void visitCode(){super.visitCode();if(frame){call(FREE,"update","()V");sites[0]++;}}
                     private void call(String owner,String method,String desc){super.visitMethodInsn(Opcodes.INVOKESTATIC,owner,method,desc,false);}
                     public void visitFieldInsn(int op,String owner,String field,String desc){
@@ -32,6 +32,10 @@ public final class ViewTransformer {
                         if(frame&&method.equals("c")&&desc.equals("(FF)V")&&owner.equals("bew")){call(FREE,"turn","(Lpk;FF)V");sites[0]++;return;}
                         if(sky&&!skyInserted&&owner.equals("bfl")&&method.equals("w")&&desc.equals("()V")){skyInserted=true;super.visitVarInsn(Opcodes.FLOAD,1);call(SKY,"render","(F)V");sites[0]++;}
                         if(sky&&owner.equals("bmj")&&method.equals("a")&&desc.equals("(Ljy;)V")){call(SKY,"bind","(Lbmj;Ljy;)V");sites[0]++;return;}
+                        if(sky&&method.equals("X")&&desc.equals("()D")&&(owner.equals("bdb")||owner.equals("adm")))horizon=true;
+                        if(horizon&&owner.equals("bfl")&&method.equals("o")&&desc.equals("(I)V")){call(SKY,"horizonList","(I)V");sites[0]++;return;}
+                        if(horizon&&owner.equals("bmt")&&method.equals("a")&&desc.equals("(I)V")){call(SKY,"horizonVbo","(Lbmt;I)V");sites[0]++;return;}
+                        if(horizon&&owner.equals("bfx")&&method.equals("b")&&desc.equals("()V")){call(SKY,"horizonDraw","(Lbfx;)V");sites[0]++;return;}
                         super.visitMethodInsn(op,owner,method,desc,itf);
                         if(sky&&owner.equals("bfx")&&method.equals("b")&&desc.equals("()V"))call(SKY,"afterCelestial","()V");
                         if(sky&&owner.equals("bfr")&&method.equals("r")&&desc.equals("()V")){super.visitVarInsn(Opcodes.FLOAD,1);call(SKY,"render","(F)V");sites[0]++;}
@@ -44,7 +48,7 @@ public final class ViewTransformer {
                 };
             }
         },0);
-        int expected=name.equals("bfk")?21:name.equals("biu")?6:name.equals("auz")?2:name.equals("bfr")?14:1;
+        int expected=name.equals("bfk")?21:name.equals("biu")?6:name.equals("auz")?2:name.equals("bfr")?18:1;
         if(sites[0]!=expected){System.err.println("[Blossom] Visual hooks skipped: unexpected "+name+" layout ("+sites[0]+")");return null;}
         return w.toByteArray();
     }

@@ -23,7 +23,7 @@ public final class BlossomModuleSettings extends axu {
         visual.l=!visuals;functional.l=visuals;n.add(visual);if(!global)n.add(functional);
         if(visuals){
             if(module.id.equals("xpchanger"))add(421,"XP bar fill: "+BlossomHooks.settings.xpPercent+"%");
-            if(module.id.equals("timechanger"))add(422,"Visual time: "+BlossomHooks.settings.visualTime+":00 (0/24 = midnight)");
+            if(module.id.equals("timechanger"))add(422,String.format(java.util.Locale.ROOT,"Visual hour: %.2f (0/24 = midnight)",BlossomHooks.settings.visualTime));
 
             if(module.id.equals("chat")){
                 ChatSettings c=BlossomHooks.settings.chat;
@@ -121,7 +121,7 @@ public final class BlossomModuleSettings extends axu {
     @Override protected void a(avs button){
         ClientSettings s=BlossomHooks.settings;
         if(button.k==421){j.a(new BlossomSliderScreen(this,"XP bar fill (%)",s.xpPercent,0,100,true,v->s.xpPercent=Math.round(v)));return;}
-        if(button.k==422){j.a(new BlossomSliderScreen(this,"Visual hour: midnight - morning - noon - midnight",s.visualTime,0,24,true,v->s.visualTime=Math.round(v)));return;}
+        if(button.k==422){j.a(new BlossomSliderScreen(this,"Visual hour: midnight - morning - noon - midnight",s.visualTime,0,24,.01f,v->s.visualTime=v));return;}
         if(button.k==423){bindingTarget=BlossomBindings.freeLook;binding=true;return;}
         if(button.k==420){j.a(new BlossomTextInput(this,"Nick Hider replacement name",s.nickName,t->{s.nickName=dev.blossom.core.NickText.validate(t);BlossomHud.invalidate();}));return;}
         if(button.k>=200&&button.k<200+LegacySettings.KEYS.length){int i=button.k-200;s.legacy.enabled[i]=!s.legacy.enabled[i];rebuildPending=true;return;}

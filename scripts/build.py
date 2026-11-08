@@ -26,6 +26,7 @@ def prepare():
     fetch('https://repo.maven.apache.org/maven2/org/eclipse/jdt/ecj/3.33.0/ecj-3.33.0.jar',DEPS/'ecj.jar','f7686c4960cf70c2ebc5c500a73a8cfc04541b730c18f1c5c21329889b137f45')
     fetch('https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7.1/asm-commons-9.7.1.jar',DEPS/'asm-commons.jar','9a579b54d292ad9be171d4313fd4739c635592c2b5ac3a459bbd1049cddec6a0')
 def main():
+    os.chdir(ROOT)
     prepare()
     if '--prepare-only' in sys.argv: return
     import shutil

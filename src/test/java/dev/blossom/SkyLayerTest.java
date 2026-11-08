@@ -19,7 +19,7 @@ public final class SkyLayerTest {
         p.setProperty("days","0 2-4");p.setProperty("daysLoop","8");SkyLayer days=new SkyLayer(p,FILE);eq(days.brightness(18000+24000,0,0,0),0);eq(days.brightness(18000+48000,0,0,0),1);
         p.setProperty("axis","NaN 0 1");try{new SkyLayer(p,FILE);throw new AssertionError("NaN accepted");}catch(IllegalArgumentException expected){}
         for(String mode:new String[]{"add","alpha","subtract","multiply","dodge","burn","screen","overlay","replace"}){Properties blend=new Properties();blend.setProperty("blend",mode);check(new SkyLayer(blend,FILE).blend.equals(mode));}
-        ClientSettings settings=new ClientSettings();settings.xpPercent=0;settings.visualTime=24;settings.freeLookKey=-99;Properties saved=new Properties();settings.save(saved);ClientSettings restored=new ClientSettings();restored.load(saved);check(restored.xpPercent==0&&restored.visualTime==24&&restored.freeLookKey==-99);
+        ClientSettings settings=new ClientSettings();settings.xpPercent=0;settings.visualTime=12.34f;settings.freeLookKey=-99;Properties saved=new Properties();settings.save(saved);ClientSettings restored=new ClientSettings();restored.load(saved);check(restored.xpPercent==0&&restored.visualTime==12.34f&&restored.freeLookKey==-99);
         saved.setProperty("xpchanger.percent","999");saved.setProperty("timechanger.hour","-1");restored.load(saved);check(restored.xpPercent==100&&restored.visualTime==0);
         System.out.println("Sky properties, fade boundaries, paths, filters and visual settings passed");
     }

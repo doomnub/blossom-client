@@ -27,6 +27,7 @@ Features:
 - Rotation axis/speed, day loops, weather, 1.8.9 biome names/IDs, heights, and
   smooth location transitions.
 - `sun.properties` and `moon_phases.properties` source/blend overrides.
+- Complete six-face coverage with lower-horizon suppression and smaller sky geometry to avoid low-render-distance clipping.
 - Overworld and End skies; the Nether retains its vanilla environment.
 - Time Changer drives layer fades and sky rotation along with vanilla sunlight.
 

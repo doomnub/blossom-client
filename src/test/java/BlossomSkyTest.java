@@ -5,6 +5,14 @@ import javax.imageio.ImageIO;
 /** Synthetic selected-pack resources exercise the real loader without a GL context. */
 public final class BlossomSkyTest {
     public static void run()throws Exception{
+        java.lang.reflect.Field geometry=BlossomSky.class.getDeclaredField("FACES"),distance=BlossomSky.class.getDeclaredField("SKY_DISTANCE");geometry.setAccessible(true);distance.setAccessible(true);
+        Map<String,Integer> edges=new HashMap<String,Integer>();
+        for(float[][] face:(float[][][])geometry.get(null))for(int i=0;i<4;i++){
+            float[] vertex=face[i];double radius=Math.sqrt(vertex[0]*vertex[0]+vertex[1]*vertex[1]+vertex[2]*vertex[2])*distance.getFloat(null);
+            if(radius>=32)throw new AssertionError("Sky cube reaches low-distance far clip");
+            String a=Arrays.toString(vertex),b=Arrays.toString(face[(i+1)%4]);String key=a.compareTo(b)<0?a+b:b+a;edges.put(key,edges.getOrDefault(key,0)+1);
+        }
+        if(edges.size()!=12)throw new AssertionError("Cube edge count");for(int count:edges.values())if(count!=2)throw new AssertionError("Unsealed cube edge");
         final Map<String,byte[]> files=new HashMap<String,byte[]>();
         String base="minecraft:mcpatcher/sky/world0/";
         ByteArrayOutputStream out=new ByteArrayOutputStream();ImageIO.write(new BufferedImage(3,2,BufferedImage.TYPE_INT_ARGB),"png",out);byte[] image=out.toByteArray();

@@ -8,6 +8,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import org.lwjgl.opengl.GL11;
 /** Bounded, pack-driven sky layers. CPU decoding is isolated; all GL ownership stays on the client thread. */
 public final class BlossomSky {
+    private static final float SKY_DISTANCE=10; // Below the far plane at two chunks, at any camera rotation.
     private static final int MAX_LAYERS=128,MAX_PIXELS=32*1024*1024;
     private static final ThreadPoolExecutor worker=new ThreadPoolExecutor(1,1,10,TimeUnit.SECONDS,new ArrayBlockingQueue<Runnable>(1),r->{Thread t=new Thread(r,"Blossom sky decoder");t.setDaemon(true);return t;});
     static {worker.allowCoreThreadTimeOut(true);}
@@ -15,9 +16,13 @@ public final class BlossomSky {
     private static Pack pack;
     private static Object world;
     private static volatile boolean dirty=true;
-    private static boolean celestial;
+    private static boolean celestial,visibleLayer;
     private static long lastFrame;
-    private static final Map<String,Integer> textures=new HashMap<String,Integer>();
+    private static final Map<String,Texture> textures=new HashMap<String,Texture>();
+    private static final class Texture {
+        final int id,width,height;
+        Texture(int id,BufferedImage image){this.id=id;width=image.getWidth();height=image.getHeight();}
+    }
     private static final class Layer {
         final SkyLayer rule;float location=Float.NaN;
         Layer(SkyLayer rule){this.rule=rule;}
@@ -31,7 +36,8 @@ public final class BlossomSky {
     public static void reload(){dirty=true;}
     private static void clear(){
         if(pending!=null){pending.cancel(true);pending=null;}worker.getQueue().clear();
-        for(int id:textures.values())bml.a(id);
+        for(Texture texture:textures.values())bml.a(texture.id);
+        visibleLayer=false;
         textures.clear();pack=null;lastFrame=0;
     }
     public static void tick(){
@@ -49,7 +55,7 @@ public final class BlossomSky {
         if(pack!=null&&!pack.images.isEmpty()){
             Iterator<Map.Entry<String,BufferedImage>> it=pack.images.entrySet().iterator();Map.Entry<String,BufferedImage> entry=it.next();
             int id=bml.a();
-            try{int max=GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);if(entry.getValue().getWidth()>max||entry.getValue().getHeight()>max)throw new IllegalArgumentException("GPU texture limit");bml.a(id,entry.getValue(),true,true);textures.put(entry.getKey(),id);}catch(RuntimeException e){bml.a(id);System.err.println("[Blossom] Sky texture upload failed");}
+            try{int max=GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);if(entry.getValue().getWidth()>max||entry.getValue().getHeight()>max)throw new IllegalArgumentException("GPU texture limit");bml.a(id,entry.getValue(),true,true);textures.put(entry.getKey(),new Texture(id,entry.getValue()));}catch(RuntimeException e){bml.a(id);System.err.println("[Blossom] Sky texture upload failed");}
             finally{entry.getValue().flush();it.remove();}
         }
     }
@@ -109,6 +115,7 @@ public final class BlossomSky {
         }
     }
     public static void render(float partial){
+        visibleLayer=false;
         ave mc=ave.A();if(!BlossomHooks.modules.on("customskies")||pack==null||mc.f!=world||pack.layers.isEmpty())return;
         long now=System.nanoTime();float dt=lastFrame==0?0:Math.min(1,(now-lastFrame)/1e9f);lastFrame=now;
         pk camera=mc.ac();if(camera==null)return;
@@ -121,16 +128,16 @@ public final class BlossomSky {
             GL11.glDisable(GL11.GL_FOG);GL11.glDisable(GL11.GL_LIGHTING);GL11.glDisable(GL11.GL_DEPTH_TEST);GL11.glDepthMask(false);GL11.glDisable(GL11.GL_CULL_FACE);GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glRotatef(-90,0,1,0);
             for(Layer layer:pack.layers){
-                SkyLayer rule=layer.rule;Integer texture=textures.get(rule.source);if(texture==null)continue;
+                SkyLayer rule=layer.rule;Texture texture=textures.get(rule.source);if(texture==null)continue;
                 float target=rule.location((int)Math.floor(camera.t),biome.ah,biome.az)?1:0;
                 if(Float.isNaN(layer.location)||rule.transition==0)layer.location=target;
                 else layer.location+=Math.max(-dt/rule.transition,Math.min(dt/rule.transition,target-layer.location));
-                float alpha=layer.location*rule.brightness(time,fraction,wet,storm);if(alpha<=0)continue;
-                blend(rule.blend,alpha);GL11.glBindTexture(GL11.GL_TEXTURE_2D,texture);
+                float alpha=layer.location*rule.brightness(time,fraction,wet,storm);if(alpha<=0)continue;visibleLayer=true;
+                blend(rule.blend,alpha);GL11.glBindTexture(GL11.GL_TEXTURE_2D,texture.id);
                 GL11.glPushMatrix();
                 try{
                     if(rule.rotate){double cycles=Math.floorDiv(time,24000L)*rule.speed+mc.f.c(partial)*rule.speed;GL11.glRotatef((float)((cycles%1)*360),rule.axisZ,rule.axisY,-rule.axisX);}
-                    cube();
+                    cube(texture.width,texture.height);
                 }finally{GL11.glPopMatrix();}
             }
         }finally{GL11.glPopMatrix();GL11.glPopAttrib();}
@@ -144,12 +151,12 @@ public final class BlossomSky {
         {{-1,1,1},{-1,-1,1},{-1,-1,-1},{-1,1,-1}},
         {{-1,1,-1},{-1,-1,-1},{1,-1,-1},{1,1,-1}}
     };
-    private static void cube(){
+    private static void cube(int width,int height){
         GL11.glBegin(GL11.GL_QUADS);
         for(int face=0;face<6;face++){double u=(face%3)/3.0,v=(face/3)/2.0;
             for(int corner=0;corner<4;corner++){
-                GL11.glTexCoord2d(u+(corner>=2?1.0/3:0),v+(corner==1||corner==2?.5:0));
-                float[] p=FACES[face][corner];GL11.glVertex3f(p[0]*100,p[1]*100,p[2]*100);
+                GL11.glTexCoord2d(u+(corner>=2?1.0/3-.5/width:.5/width),v+(corner==1||corner==2?.5-.5/height:.5/height));
+                float[] p=FACES[face][corner];GL11.glVertex3f(p[0]*SKY_DISTANCE,p[1]*SKY_DISTANCE,p[2]*SKY_DISTANCE);
             }
         }
         GL11.glEnd();
@@ -171,10 +178,17 @@ public final class BlossomSky {
     }
     public static void bind(bmj manager,jy resource){
         afterCelestial();Layer layer=pack==null?null:pack.objects.get(resource.toString());
-        Integer id=layer==null?null:textures.get(layer.rule.source);
-        if(!BlossomHooks.modules.on("customskies")||ave.A().f!=world||id==null){manager.a(resource);return;}
+        Texture texture=layer==null?null:textures.get(layer.rule.source);
+        if(!BlossomHooks.modules.on("customskies")||ave.A().f!=world||texture==null){manager.a(resource);return;}
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT|GL11.GL_COLOR_BUFFER_BIT|GL11.GL_TEXTURE_BIT|GL11.GL_CURRENT_BIT);celestial=true;
-        blend(layer.rule.blend,1-ave.A().f.j(1));GL11.glBindTexture(GL11.GL_TEXTURE_2D,id);
+        blend(layer.rule.blend,1-ave.A().f.j(1));GL11.glBindTexture(GL11.GL_TEXTURE_2D,texture.id);
+    }
+    private static boolean coversHorizon(){return visibleLayer&&BlossomHooks.modules.on("customskies")&&ave.A().f==world;}
+    public static void horizonList(int list){if(!coversHorizon())bfl.o(list);}
+    public static void horizonVbo(bmt buffer,int mode){if(!coversHorizon())buffer.a(mode);}
+    public static void horizonDraw(bfx tessellator){
+        if(coversHorizon()){tessellator.c().e();tessellator.c().b();}
+        else tessellator.b();
     }
     public static void afterCelestial(){if(celestial){GL11.glPopAttrib();celestial=false;}}
 }

@@ -50,7 +50,7 @@ public final class BlossomHooks {
         modules.add("xpchanger","XP Changer","Visual","Override only the displayed XP bar fill",false,0);
         modules.add("timechanger","Time Changer","Visual","Local sky and sunlight time; server time stays unchanged",false,0);
         modules.add("customskies","Custom Skies","Visual","Automatically use OptiFine / MCPatcher skies from selected packs",true,0);
-        modules.add("freelook","Free Look","Controls","Hold a key to orbit in third person without turning your player",false,0);
+        modules.add("freelook","Free Look","Controls","Tap to toggle or hold to orbit without turning your player",false,0);
         modules.add("nickhider","Nick Hider","Controls","Replace your account username in displayed game text",false,0);
         modules.add("chat","Chat","Controls","Chat appearance, local history, filtering and shortcuts",false,0);
         modules.add("legacy","1.7 Visuals","Visual","Independent classic item animations; rendering only",false,0);
