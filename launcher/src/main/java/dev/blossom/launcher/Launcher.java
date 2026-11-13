@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 /** Standalone Swing launcher. All network/disk/game work runs off the event thread. */
 public final class Launcher extends JPanel {
-    private static final Color BG=new Color(25,17,29),CARD=new Color(39,25,40),PINK=new Color(255,131,181),TEXT=new Color(239,235,242),MUTED=new Color(170,163,182);
+    private static final Color BG=new Color(13,14,18),CARD=new Color(23,24,31),PINK=new Color(222,42,183),TEXT=new Color(239,235,242),MUTED=new Color(170,163,182);
     private final Path root;
     private final AccountStore accounts;
     private final Properties config=new Properties();
@@ -49,14 +49,14 @@ public final class Launcher extends JPanel {
         progress.setIndeterminate(false);progress.setPreferredSize(new Dimension(200,6));footer.add(progress,BorderLayout.CENTER);cancel.setEnabled(false);footer.add(cancel,BorderLayout.EAST);add(footer,BorderLayout.SOUTH);
         automaticJava.addActionListener(e->updateButtons());installJava.addActionListener(e->runTask(()->managedJava()));offlinePlay.addActionListener(e->launch(true));signIn.addActionListener(e->login());play.addActionListener(e->launch(false));install.addActionListener(e->prepare());cancel.addActionListener(e->{cancelTask();});
         signOut.addActionListener(e->{try{accounts.clear();session=null;account.setText("Not signed in");setStatus("Signed out on this device");updateButtons();}catch(IOException ex){error(ex);}});
-        theme(this);LauncherTheme.tabs(tabs);tabs.setForeground(TEXT);progress.setForeground(PINK);progress.setBackground(BG);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));offlinePlay.setBackground(new Color(82,43,68));updateButtons();
+        theme(this);LauncherTheme.tabs(tabs);tabs.setForeground(TEXT);progress.setForeground(PINK);progress.setBackground(BG);setBackground(BG);title.setForeground(PINK);tagline.setForeground(MUTED);play.setBackground(PINK);play.setForeground(BG);play.setFont(new Font("SansSerif",Font.BOLD,20));offlinePlay.setBackground(new Color(37,38,48));updateButtons();
         if(hasSavedAccount())SwingUtilities.invokeLater(()->runTask(()->{session=restoreAccount(clientId.getText().trim());setStatus("Signed in. Ready to play.");}));
     }
     @Override protected void paintComponent(Graphics graphics){
         super.paintComponent(graphics);Graphics2D g=(Graphics2D)graphics.create();
-        g.setPaint(new GradientPaint(0,0,new Color(57,24,44),getWidth(),getHeight(),BG));g.fillRect(0,0,getWidth(),getHeight());
+        g.setPaint(new GradientPaint(0,0,new Color(34,27,39),getWidth(),getHeight(),BG));g.fillRect(0,0,getWidth(),getHeight());
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        g.translate(getWidth()-82,66);g.setColor(new Color(255,131,181,48));for(int i=0;i<5;i++){g.rotate(Math.PI*2/5);g.fillOval(-11,-36,22,32);}
+        g.translate(getWidth()-82,66);g.setColor(new Color(222,42,183,36));for(int i=0;i<5;i++){g.rotate(Math.PI*2/5);g.fillOval(-11,-36,22,32);}
         g.setColor(PINK);g.fillOval(-5,-5,10,10);g.dispose();
     }
     private JPanel playPanel(){

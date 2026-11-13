@@ -11,7 +11,7 @@ public final class BlossomHooks {
     public static final FrameStats frames=new FrameStats(10000);
     public static final EventBus<Long> ticks=new EventBus<Long>();
     public static BlossomCapes capes;
-    public static int accent=0xffff83b5;
+    public static int accent=0xffde2ab7;
     public static boolean background=true;
     public static volatile String message="";
     private static boolean initialized,failed,shift,bright;
@@ -134,12 +134,23 @@ public final class BlossomHooks {
         if(bright){mc.t.aJ=savedGamma;bright=false;}
     }
     public static void mainMenuInit(axu screen,java.util.List<avs> buttons,int width,int height) {
-        try {init();buttons.add(new BlossomButton(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
+        try {init();styleMenuButtons(buttons);buttons.add(new BlossomButton(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
         catch(Exception|LinkageError e){System.err.println("[Blossom] Main menu entry unavailable: "+e.getMessage());}
     }
     public static void pauseMenuInit(axu screen,java.util.List<avs> buttons,int width,int height){
-        try{init();buttons.add(new BlossomButton(42069,width/2-100,pauseButtonY(buttons,height),200,20,"Blossom settings"));}
+        try{init();styleMenuButtons(buttons);buttons.add(new BlossomButton(42069,width/2-100,pauseButtonY(buttons,height),200,20,"Blossom settings"));}
         catch(Exception|LinkageError e){System.err.println("[Blossom] Pause entry unavailable");}
+    }
+    static void styleMenuButtons(java.util.List<avs> buttons) throws ReflectiveOperationException {
+        java.lang.reflect.Field width=avs.class.getDeclaredField("f"),height=avs.class.getDeclaredField("g");
+        width.setAccessible(true);height.setAccessible(true);
+        for(int i=0;i<buttons.size();i++){
+            avs old=buttons.get(i);
+            // Preserve specialized widgets (e.g. the language icon) and other mods' controls.
+            if(old.getClass()!=avs.class)continue;
+            BlossomButton replacement=new BlossomButton(old.k,old.h,old.i,width.getInt(old),height.getInt(old),old.j);
+            replacement.l=old.l;replacement.m=old.m;buttons.set(i,replacement);
+        }
     }
     private static int pauseButtonY(java.util.List<avs> buttons,int height){for(avs b:buttons)if(b.k==0)return b.i-24;return height/4+56;}
     public static void rawMouse(avf helper){if(initialized&&!failed)BlossomMouse.sample(helper);}

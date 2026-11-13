@@ -14,11 +14,21 @@ public final class BlossomTheme {
         tess.b();bfl.w();bfl.k();
     }
     private static void rect(bfd b,int left,int top,int right,int bottom){b.b((double)right,top,0).d();b.b((double)left,top,0).d();b.b((double)left,bottom,0).d();b.b((double)right,bottom,0).d();}
+    public static final int SURFACE=0xf5111218, BORDER=0xff33343f, TEXT=0xfff4f1f7, MUTED=0xffa4a1b1;
+    public static void surface(int left,int top,int right,int bottom){
+        rounded(left,top+3,right,bottom+3,9,0x50000000);
+        rounded(left,top,right,bottom,9,BORDER);
+        rounded(left+1,top+1,right-1,bottom-1,8,SURFACE);
+    }
+    public static String fit(avn font,String text,int width){
+        if(font.a(text)<=width)return text;
+        while(text.length()>0&&font.a(text+"...")>width)text=text.substring(0,text.length()-1);
+        return text+"...";
+    }
     public static void panel(int width,int height){
         int left=Math.max(4,width/2-155),right=Math.min(width-4,width/2+155);
-        rounded(left,6,right,height-6,8,0xf2201726);
-        rounded(left+5,6,right-5,9,1,BlossomHooks.accent);
-        rounded(left+2,10,right-2,40,6,0xf2382034);
-        avp.a(left,height-8,right,height-6,0xff9c4e78);
+        surface(left,6,right,height-6);
+        rounded(left,20,left+3,30,1,BlossomHooks.accent);
+        avp.a(left+12,40,right-12,41,0xff2b2c35);
     }
 }
