@@ -63,7 +63,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cargo install tauri-driver --locked
-          dbus-run-session -- xvfb-run -a python scripts/test_native_desktop.py
+          xvfb-run -a dbus-run-session -- python scripts/test_native_desktop.py
       - run: python scripts/package_native.py
       - uses: actions/upload-artifact@v4
         if: always()
