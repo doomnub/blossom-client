@@ -99,7 +99,11 @@ public final class BlossomHud {
                 int x=HudLayout.position(module.x,resolution.a(),width),y=HudLayout.position(module.y,resolution.b(),height);
                 bfl.b(x,y,0);bfl.a(module.scale,module.scale,1);
                 if(module.id.equals("network")){w=Math.max(w,200);BlossomNetwork.graph(lines.length*11+6,alpha(module.textColor,module.opacity));}
-                if(lines.length>0&&BlossomHooks.background)avp.a(0,0,w+8,lines.length*11+5,alpha(module.backgroundColor,module.opacity));
+                if(lines.length>0&&BlossomHooks.background){
+                    int background=alpha(module.backgroundColor,module.opacity);
+                    if(BlossomTheme.modern())BlossomTheme.rounded(0,0,w+8,lines.length*11+5,5,background);
+                    else avp.a(0,0,w+8,lines.length*11+5,background);
+                }
                 for(int i=0;i<lines.length;i++)mc.k.a(lines[i],4f,4f+i*11,alpha(module.textColor,module.opacity),module.shadow);
             }catch(RuntimeException e){module.enabled=false;BlossomHooks.message="Disabled failing HUD: "+module.name;}
             finally{bfl.F();bfl.c(1,1,1,1);}

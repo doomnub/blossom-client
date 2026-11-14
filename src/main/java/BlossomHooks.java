@@ -134,11 +134,11 @@ public final class BlossomHooks {
         if(bright){mc.t.aJ=savedGamma;bright=false;}
     }
     public static void mainMenuInit(axu screen,java.util.List<avs> buttons,int width,int height) {
-        try {init();styleMenuButtons(buttons);buttons.add(new BlossomButton(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));}
+        try {init();styleMenuButtons(buttons);buttons.add(new BlossomButton(42069,Math.max(4,width-108),6,104,20,"Blossom settings"));buttons.add(new BlossomButton(42070,6,6,104,20,BlossomTheme.styleLabel()));}
         catch(Exception|LinkageError e){System.err.println("[Blossom] Main menu entry unavailable: "+e.getMessage());}
     }
     public static void pauseMenuInit(axu screen,java.util.List<avs> buttons,int width,int height){
-        try{init();styleMenuButtons(buttons);buttons.add(new BlossomButton(42069,width/2-100,pauseButtonY(buttons,height),200,20,"Blossom settings"));}
+        try{init();styleMenuButtons(buttons);buttons.add(new BlossomButton(42069,width/2-100,pauseButtonY(buttons,height),200,20,"Blossom settings"));buttons.add(new BlossomButton(42070,6,6,104,20,BlossomTheme.styleLabel()));}
         catch(Exception|LinkageError e){System.err.println("[Blossom] Pause entry unavailable");}
     }
     static void styleMenuButtons(java.util.List<avs> buttons) throws ReflectiveOperationException {
@@ -155,7 +155,9 @@ public final class BlossomHooks {
     private static int pauseButtonY(java.util.List<avs> buttons,int height){for(avs b:buttons)if(b.k==0)return b.i-24;return height/4+56;}
     public static void rawMouse(avf helper){if(initialized&&!failed)BlossomMouse.sample(helper);}
     public static void mainMenuClick(axu screen,avs button) {
-        if(button.k==42069&&initialized&&!failed)ave.A().a(new BlossomMenu(screen));
+        if(!initialized||failed)return;
+        if(button.k==42069)ave.A().a(new BlossomMenu(screen));
+        if(button.k==42070){BlossomTheme.toggle();button.j=BlossomTheme.styleLabel();}
     }
     public static void mouseEvent(boolean available) {
         if(!available||!Mouse.getEventButtonState()) return;

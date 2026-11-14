@@ -16,6 +16,7 @@ public final class BlossomMenu extends axu {
         body=left+108;columns=width>=470?2:1;cardWidth=(width-120-(columns-1)*8)/columns;
         perPage=Math.max(1,(height-132)/43)*columns;
         n.clear();visible.clear();
+        n.add(new BlossomButton(111,left+10,top+31,86,23,BlossomTheme.styleLabel()));
         String search=query.toLowerCase(Locale.ROOT);
         for(Modules.Module module:BlossomHooks.modules.all()){
             if((category==0||module.category.equals(CATEGORIES[category]))&&(module.name+" "+module.category).toLowerCase(Locale.ROOT).contains(search))visible.add(module);
@@ -46,6 +47,7 @@ public final class BlossomMenu extends axu {
         if(id>=200){j.a(new BlossomModuleSettings(this,visible.get(id-200)));return;}
         if(id<100){Modules.Module module=visible.get(id);module.enabled=!module.enabled;}
         else switch(id){
+            case 111:BlossomTheme.toggle();b();return;
             case 100:j.a(new BlossomHudEditor(this));return;
             case 103:j.a(new BlossomPresets(this));return;
             case 105:BlossomHooks.background=!BlossomHooks.background;break;
@@ -64,9 +66,9 @@ public final class BlossomMenu extends axu {
         q.a("MODULE LIBRARY",body,top+13,BlossomHooks.accent);
         String pagination=(page+1)+" / "+Math.max(1,(visible.size()+perPage-1)/perPage);
         q.a(pagination,left+width-12-q.a(pagination),top+13,BlossomTheme.MUTED);
-        q.a("CATEGORIES",left+12,top+42,BlossomTheme.MUTED);
+
         int searchRight=left+width-(visible.size()>perPage?66:12);
-        BlossomTheme.rounded(body,top+32,searchRight,top+54,5,0xff23242e);
+        BlossomTheme.rounded(body,top+32,searchRight,top+54,5,BlossomTheme.glass(0xff23242e,130));
         q.a(BlossomTheme.fit(q,query.length()==0?"Type to search...":query+"_",searchRight-body-16),body+8,top+39,query.length()==0?BlossomTheme.MUTED:BlossomTheme.TEXT);
         if(visible.isEmpty())q.a("No matching modules",body+8,top+75,BlossomTheme.MUTED);
         avp.a(left+10,top+height-66,left+width-10,top+height-65,0xff30313b);
@@ -87,8 +89,8 @@ public final class BlossomMenu extends axu {
         @Override public void a(ave mc,int mx,int my){
             if(!m)return;
             n=mx>=h&&my>=i&&mx<h+f&&my<i+g;
-            BlossomTheme.rounded(h,i,h+f,i+g,6,module.enabled?0xff633050:n?0xff5b5666:0xff33343f);
-            BlossomTheme.rounded(h+1,i+1,h+f-1,i+g-1,5,n?0xff2d2b36:0xff20212a);
+            BlossomTheme.rounded(h,i,h+f,i+g,6,BlossomTheme.glass(module.enabled?0xff633050:n?0xff5b5666:0xff33343f,module.enabled?100:40));
+            BlossomTheme.rounded(h+1,i+1,h+f-1,i+g-1,5,BlossomTheme.glass(n?0xff2d2b36:0xff20212a,n?155:115));
             mc.k.a(BlossomTheme.fit(mc.k,module.name,f-16),h+8,i+7,BlossomTheme.TEXT);
             mc.k.a(module.enabled?"Enabled":"Disabled",h+8,i+22,module.enabled?0xffff8cdd:BlossomTheme.MUTED);
             int x=h+f-29,y=i+22;

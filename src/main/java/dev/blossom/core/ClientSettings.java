@@ -2,6 +2,7 @@ package dev.blossom.core;
 import java.util.Properties;
 /** Version-one settings with bounded parsing; malformed optional values use defaults. */
 public final class ClientSettings {
+    public UiStyle uiStyle=UiStyle.PIXEL;
     public int xpPercent=100, freeLookKey=56;
     public float visualTime=12;
     public String nickName="Player";
@@ -18,6 +19,7 @@ public final class ClientSettings {
     public float zoomFactor=4,hitTilt=1;
     public boolean crosshairDot=false, privacy=false, fpsAverage=false, fpsLows=false;
     public void load(Properties p) {
+        uiStyle=UiStyle.load(p);
         xpPercent=integer(p,"xpchanger.percent",100,0,100);
         visualTime=Math.round(number(p,"timechanger.hour",12,0,24)*100)/100f;
         freeLookKey=integer(p,"freelook.key",56,-100,255);
@@ -38,6 +40,7 @@ public final class ClientSettings {
         privacy=Boolean.parseBoolean(p.getProperty("privacy","false"));
     }
     public void save(Properties p) {
+        uiStyle.save(p);
         p.setProperty("xpchanger.percent",Integer.toString(xpPercent));
         p.setProperty("timechanger.hour",Float.toString(visualTime));
         p.setProperty("freelook.key",Integer.toString(freeLookKey));

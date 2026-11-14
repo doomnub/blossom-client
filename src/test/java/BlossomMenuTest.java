@@ -1,11 +1,15 @@
 import java.util.*;
+import dev.blossom.core.*;
 /** Check interaction targets at Minecraft's smallest supported scaled UI and larger sizes. */
 public final class BlossomMenuTest {
     public static void run() throws Exception {
         java.lang.reflect.Field targets=axu.class.getDeclaredField("n");targets.setAccessible(true);
+        UiStyle originalStyle=BlossomHooks.settings.uiStyle;
         avb previousBinding=BlossomBindings.menu;
         try {
         BlossomBindings.menu=new avb("Menu test",54,"Blossom test");
+        for(UiStyle style:UiStyle.values()){
+        BlossomHooks.settings.uiStyle=style;
         for(int[] size:new int[][]{{320,240},{427,240},{480,270},{640,360},{960,540}}){
             BlossomMenu menu=new BlossomMenu(null);menu.l=size[0];menu.m=size[1];menu.b();
             for(int category=0;category<5;category++){
@@ -27,11 +31,12 @@ public final class BlossomMenuTest {
                 menu.a('\b',14);menu.a('\b',14);menu.a('\b',14);
             }
         }
+        }
         List<avs> buttons=new ArrayList<avs>();avs old=new avs(3,10,20,80,20,"Example");old.l=false;old.m=false;buttons.add(old);
         BlossomHooks.styleMenuButtons(buttons);avs styled=buttons.get(0);
         check(styled instanceof BlossomButton&&styled.k==3&&styled.h==10&&styled.i==20&&dimension(styled,"f")==80&&!styled.l&&!styled.m,"native menu state preservation");
         System.out.println("Menu target bounds, pagination, category/search and native control state passed");
-        } finally {BlossomBindings.menu=previousBinding;}
+        } finally {BlossomBindings.menu=previousBinding;BlossomHooks.settings.uiStyle=originalStyle;}
     }
     private static int dimension(avs button,String name) throws Exception {java.lang.reflect.Field f=avs.class.getDeclaredField(name);f.setAccessible(true);return f.getInt(button);}
     private static void check(boolean value,String detail){if(!value)throw new AssertionError(detail);}

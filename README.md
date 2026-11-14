@@ -10,6 +10,9 @@ Minecraft runs on Java 8; the native launcher uses Tauri 2, Rust, and TypeScript
   original block artwork, and layouts that adapt to smaller windows.
 - An in-game module library with category filters, search, module cards, explicit
   toggle states, and separate settings buttons.
+- Two in-game styles: **Pixel** (default) and **Modern**, with smooth corners and
+  translucent surfaces. Switch from the Right Shift, main, or pause menu while
+  keeping the same layout. The launcher keeps its current design.
 - Refreshed panels, sliders, and ordinary main/pause-menu buttons, plus a matching
   palette for the legacy launcher.
 

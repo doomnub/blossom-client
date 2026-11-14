@@ -1,3 +1,3 @@
 # Unreleased changes
 
-No pending changes. The launcher and menu redesign is included in 0.3.1.
+No pending changes. The two-style in-game UI is included in the updated 0.3.1.

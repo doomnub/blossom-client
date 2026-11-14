@@ -40,4 +40,14 @@ jobs:
         run: |
           version="v$(cat VERSION)"
           test -f "docs/releases/$version.md"
-          gh release create "$version" build/release/* --target "$GITHUB_SHA" --prerelease --title "Blossom $version" --notes-file "docs/releases/$version.md"
+          if [[ "$GITHUB_REF_NAME" == "release/0.3.1-styles" && "$version" == "v0.3.1" ]]; then
+            # Explicitly requested replacement of the earlier 0.3.1 prerelease.
+            old=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$version" --jq .object.sha)
+            [[ "$old" == "5253c10e0eb63fcc34e7d694c58a94d41afe90b3" || "$old" == "$GITHUB_SHA" ]]
+            gh release edit "$version" --draft=true
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$version" -f sha="$GITHUB_SHA" -F force=false
+            gh release upload "$version" build/release/* --clobber
+            gh release edit "$version" --draft=false --prerelease --title "Blossom $version" --notes-file "docs/releases/$version.md"
+          else
+            gh release create "$version" build/release/* --target "$GITHUB_SHA" --prerelease --title "Blossom $version" --notes-file "docs/releases/$version.md"
+          fi

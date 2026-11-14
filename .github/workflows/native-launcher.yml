@@ -47,6 +47,9 @@ jobs:
       - run: cargo run --locked --manifest-path launcher-tauri/core/Cargo.toml --example verify_install -- build/native-smoke
       - name: Execute game startup paths on managed Java 8
         run: python scripts/test_game_startup.py --manifest build/native-smoke/startup.json
+      - name: Render both in-game themes on LWJGL 2
+        if: runner.os == 'Linux'
+        run: xvfb-run -a python scripts/test_theme_render.py
       - run: npm ci
         working-directory: launcher-tauri
       - run: npm run build
