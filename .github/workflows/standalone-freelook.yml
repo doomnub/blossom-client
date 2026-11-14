@@ -42,8 +42,8 @@ jobs:
           s=s.replace('Installed mouse and camera hooks:', 'Installed camera hooks:')
           at=s.rfind('\n}')
           extra="""
-    private static byte[] patchEntity(byte[] bytes) {
-        try {
+              private static byte[] patchEntity(byte[] bytes) {
+                  try {
             ClassReader reader = new ClassReader(bytes);
             ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
             final int[] patched = {0};
@@ -77,25 +77,25 @@ jobs:
             }
             System.out.println("[StandaloneFreeLook] Installed player mouse interception");
             return writer.toByteArray();
-        } catch (Throwable ex) {
+                  } catch (Throwable ex) {
             ex.printStackTrace();
             return bytes;
-        }
-    }
-"""
+                  }
+              }
+          """
           s=s[:at]+extra+s[at:]
           p.write_text(s)
           p=Path('freelook/work/src/main/java/dev/jade/freelook/client/FreeLookHooks.java')
           s=p.read_text()
           marker='    private static boolean usable() {'
           inject="""    public static boolean interceptTurn(Entity entity, float x, float y) {
-        FreeLookRuntime runtime = FreeLookRuntime.get();
-        if (runtime == null || !runtime.isActive() || !(entity instanceof EntityPlayerSP)
+                  FreeLookRuntime runtime = FreeLookRuntime.get();
+                  if (runtime == null || !runtime.isActive() || !(entity instanceof EntityPlayerSP)
                 || Minecraft.getMinecraft().thePlayer != entity) return false;
-        runtime.turn((EntityPlayerSP) entity, x, y);
-        return true;
-    }
-"""
+                  runtime.turn((EntityPlayerSP) entity, x, y);
+                  return true;
+              }
+          """
           s=s.replace(marker,inject+marker)
           p.write_text(s)
           PY
