@@ -29,6 +29,8 @@ jobs:
           # Both are redirected; the hook delegates to vanilla when FreeLook is inactive.
           sed -i 's/mouseCalls\[0\] != 1 || angles\[0\] < 4/mouseCalls[0] != 2 || angles[0] < 4/g' freelook/work/src/main/java/dev/jade/freelook/core/FreeLookTransformer.java
           grep -n 'mouseCalls\[0\]' freelook/work/src/main/java/dev/jade/freelook/core/FreeLookTransformer.java
+          sed -n '1,260p' freelook/work/src/main/java/dev/jade/freelook/core/FreeLookTransformer.java
+          sed -n '1,240p' freelook/work/src/main/java/dev/jade/freelook/client/FreeLookHooks.java
           ls -la freelook/work
       - name: Set up Forge 1.8.9 workspace
         working-directory: freelook/work
