@@ -25,6 +25,10 @@ jobs:
           sed -i 's/\.turn(/.setAngles(/g' freelook/work/src/main/java/dev/jade/freelook/client/FreeLookHooks.java freelook/work/src/main/java/dev/jade/freelook/client/FreeLookRuntime.java
           sed -i 's/runtime\.setAngles(/runtime.turn(/g' freelook/work/src/main/java/dev/jade/freelook/client/FreeLookHooks.java
           sed -i 's/"turn".equals(name)/"turn".equals(name) || "setAngles".equals(name)/g' freelook/work/src/main/java/dev/jade/freelook/core/FreeLookTransformer.java
+          # Lunar/OptiFine 1.8.9 has two mouse-turn call sites, not one.
+          # Both are redirected; the hook delegates to vanilla when FreeLook is inactive.
+          sed -i 's/mouseCalls\[0\] != 1 || angles\[0\] < 4/mouseCalls[0] != 2 || angles[0] < 4/g' freelook/work/src/main/java/dev/jade/freelook/core/FreeLookTransformer.java
+          grep -n 'mouseCalls\[0\]' freelook/work/src/main/java/dev/jade/freelook/core/FreeLookTransformer.java
           ls -la freelook/work
       - name: Set up Forge 1.8.9 workspace
         working-directory: freelook/work
