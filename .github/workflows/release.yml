@@ -40,7 +40,7 @@ jobs:
         run: |
           version="v$(cat VERSION)"
           test -f "docs/releases/$version.md"
-          if [[ "$GITHUB_REF_NAME" == "release/0.3.1-styles" && "$version" == "v0.3.1" ]]; then
+          if [[ "$GITHUB_REF_NAME" == release/0.3.1-styles* && "$version" == "v0.3.1" ]]; then
             # Explicitly requested replacement of the earlier 0.3.1 prerelease.
             old=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$version" --jq .object.sha)
             [[ "$old" == "5253c10e0eb63fcc34e7d694c58a94d41afe90b3" || "$old" == "$GITHUB_SHA" ]]

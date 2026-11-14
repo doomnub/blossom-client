@@ -9,8 +9,30 @@ import org.lwjgl.opengl.*;
 public final class ThemeRenderSmoke {
     private static Method rounded,surface,glass;
     public static void main(String[] args)throws Exception{
-        Display.setDisplayMode(new DisplayMode(640,400));Display.create();
+        final java.util.concurrent.CountDownLatch finished=new java.util.concurrent.CountDownLatch(1);
+        final java.util.concurrent.atomic.AtomicReference<Throwable> failure=new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        final java.awt.Frame[] frame=new java.awt.Frame[1];
+        final AWTGLCanvas[] canvas=new AWTGLCanvas[1];
+        java.awt.EventQueue.invokeAndWait(()->{
+            try{
+                canvas[0]=new AWTGLCanvas(){
+                    private boolean rendered;
+                    protected void paintGL(){
+                        if(rendered)return;rendered=true;
+                        try{render(args);}catch(Throwable e){failure.set(e);}finally{finished.countDown();}
+                    }
+                    protected void exceptionOccurred(org.lwjgl.LWJGLException e){failure.set(e);finished.countDown();}
+                };
+                canvas[0].setPreferredSize(new java.awt.Dimension(640,400));
+                frame[0]=new java.awt.Frame("Blossom theme render check");frame[0].add(canvas[0]);frame[0].pack();frame[0].setVisible(true);
+            }catch(Throwable e){failure.set(e);finished.countDown();}
+        });
         try{
+            if(!finished.await(30,java.util.concurrent.TimeUnit.SECONDS))throw new AssertionError("OpenGL canvas did not render");
+            if(failure.get()!=null)throw new AssertionError("OpenGL canvas failed",failure.get());
+        }finally{java.awt.EventQueue.invokeAndWait(()->{if(canvas[0]!=null)canvas[0].destroy();if(frame[0]!=null)frame[0].dispose();});}
+    }
+    private static void render(String[] args)throws Exception{
             GL11.glViewport(0,0,640,400);GL11.glMatrixMode(GL11.GL_PROJECTION);GL11.glLoadIdentity();GL11.glOrtho(0,320,200,0,-1,1);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glLoadIdentity();GL11.glDisable(GL11.GL_DEPTH_TEST);
             Class<?> theme=Class.forName("dev.blossom.integration.BlossomTheme");
@@ -43,7 +65,6 @@ public final class ThemeRenderSmoke {
                 if(GL11.glGetError()!=GL11.GL_NO_ERROR)throw new AssertionError("OpenGL error");
             }
             System.out.println("Real LWJGL 2 theme render, transparency, smooth edges and GL state restoration passed");
-        }finally{Display.destroy();}
     }
     private static void draw(int x,int y,int r,int b,int radius,int color,int alpha)throws Exception{rounded.invoke(null,x,y,r,b,radius,glass.invoke(null,color,alpha));}
     private static ByteBuffer read(){ByteBuffer pixels=BufferUtils.createByteBuffer(640*400*4);GL11.glReadPixels(0,0,640,400,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,pixels);return pixels;}
